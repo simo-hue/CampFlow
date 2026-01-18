@@ -1,13 +1,13 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Grid, Calendar } from 'lucide-react';
+import { Grid, Calendar, RefreshCw, Zap } from 'lucide-react';
 import type { Pitch } from '@/lib/types';
 import { SECTORS } from '@/lib/pitchUtils';
-import { addDays, format, startOfDay } from 'date-fns';
+import { addDays, format, startOfDay, isWithinInterval, parseISO } from 'date-fns';
 import { it } from 'date-fns/locale';
 
 interface DayOccupancy {
@@ -31,105 +31,203 @@ const TIMEFRAMES = [
     { id: 'monthly', name: 'Mensile', days: 30 },
 ];
 
+// PERSISTENT CACHE in localStorage - cancellato solo su nuova prenotazione
+const CACHE_KEY_PREFIX = 'occupancy_cache_';
+const CACHE_VERSION_KEY = 'occupancy_cache_version';
+
+function getCacheVersion(): string {
+    if (typeof window === 'undefined') return '0';
+    return localStorage.getItem(CACHE_VERSION_KEY) || '0';
+}
+
+export function invalidateOccupancyCache() {
+    if (typeof window === 'undefined') return;
+    const newVersion = (parseInt(getCacheVersion()) + 1).toString();
+    localStorage.setItem(CACHE_VERSION_KEY, newVersion);
+    console.log('🗑️ Occupancy cache invalidated - version:', newVersion);
+}
+
+function getCachedData(key: string): PitchWithDays[] | null {
+    if (typeof window === 'undefined') return null;
+    try {
+        const item = localStorage.getItem(CACHE_KEY_PREFIX + key);
+        if (!item) return null;
+
+        const parsed = JSON.parse(item);
+        if (parsed.version !== getCacheVersion()) {
+            localStorage.removeItem(CACHE_KEY_PREFIX + key);
+            return null;
+        }
+
+        console.log('📦 Cache HIT:', key);
+        return parsed.data;
+    } catch (error) {
+        console.error('Error reading cache:', error);
+        return null;
+    }
+}
+
+function setCachedData(key: string, data: PitchWithDays[]) {
+    if (typeof window === 'undefined') return;
+    try {
+        const cacheObject = {
+            version: getCacheVersion(),
+            timestamp: Date.now(),
+            data,
+        };
+        localStorage.setItem(CACHE_KEY_PREFIX + key, JSON.stringify(cacheObject));
+        console.log('💾 Cache SAVED:', key);
+    } catch (error) {
+        console.error('Error writing cache:', error);
+    }
+}
+
 export function SectorOccupancyViewer() {
     const [selectedSector, setSelectedSector] = useState(SECTORS[0]);
-    const [selectedTimeframe, setSelectedTimeframe] = useState(TIMEFRAMES[2]); // Default: Mensile
+    const [selectedTimeframe, setSelectedTimeframe] = useState(TIMEFRAMES[1]); // Default: Settimanale
     const [pitchesWithDays, setPitchesWithDays] = useState<PitchWithDays[]>([]);
     const [loading, setLoading] = useState(false);
     const [dateRange, setDateRange] = useState<Date[]>([]);
 
-    // Genera array di date basato sul timeframe selezionato
     useEffect(() => {
         const today = startOfDay(new Date());
         const dates = Array.from({ length: selectedTimeframe.days }, (_, i) => addDays(today, i));
         setDateRange(dates);
     }, [selectedTimeframe]);
 
-    const loadSectorOccupancy = useCallback(async () => {
+    const cacheKey = useMemo(() => {
+        if (dateRange.length === 0) return '';
+        const startDate = format(dateRange[0], 'yyyy-MM-dd');
+        const endDate = format(dateRange[dateRange.length - 1], 'yyyy-MM-dd');
+        return `${selectedSector.id}_${selectedTimeframe.id}_${startDate}_${endDate}`;
+    }, [selectedSector, selectedTimeframe, dateRange]);
+
+    const loadSectorOccupancy = useCallback(async (forceRefresh: boolean = false) => {
         if (dateRange.length === 0) return;
 
+        // Check cache
+        if (!forceRefresh && cacheKey) {
+            const cached = getCachedData(cacheKey);
+            if (cached) {
+                setPitchesWithDays(cached);
+                return;
+            }
+        }
+
         setLoading(true);
+        const startTime = performance.now();
+
         try {
-            // Step 1: Get all pitches in the sector
-            const pitchesResponse = await fetch('/api/pitches/sector?' + new URLSearchParams({
-                min: selectedSector.range.min.toString(),
-                max: selectedSector.range.max.toString(),
+            const startDate = format(dateRange[0], 'yyyy-MM-dd');
+            const endDate = format(addDays(dateRange[dateRange.length - 1], 1), 'yyyy-MM-dd');
+
+            console.log(`⚡ BATCH Loading ${selectedSector.name} (${dateRange.length} days)...`);
+
+            // UNA SOLA richiesta batch invece di centinaia!
+            const response = await fetch('/api/occupancy/batch?' + new URLSearchParams({
+                sector_min: selectedSector.range.min.toString(),
+                sector_max: selectedSector.range.max.toString(),
+                date_from: startDate,
+                date_to: endDate,
             }));
 
-            if (!pitchesResponse.ok) {
-                throw new Error('Failed to load pitches');
+            if (!response.ok) {
+                throw new Error('Failed to load occupancy data');
             }
 
-            const pitchesData = await pitchesResponse.json();
-            const pitches: Pitch[] = pitchesData.pitches || [];
+            const data = await response.json();
+            const pitches: Pitch[] = data.pitches || [];
+            const bookings = data.bookings || [];
 
-            // Step 2: For each pitch, check occupancy for each day
-            const pitchesWithOccupancy = await Promise.all(
-                pitches.map(async (pitch) => {
-                    const daysOccupancy = await Promise.all(
-                        dateRange.map(async (date) => {
-                            const dateStr = format(date, 'yyyy-MM-dd');
-                            const nextDay = format(addDays(date, 1), 'yyyy-MM-dd');
+            // Client-side processing: match bookings to pitch/date combinations
+            const pitchesWithOccupancy: PitchWithDays[] = pitches.map((pitch) => {
+                const daysOccupancy = dateRange.map((date) => {
+                    const dateStr = format(date, 'yyyy-MM-dd');
 
-                            const occupancyResponse = await fetch('/api/occupancy?' + new URLSearchParams({
-                                pitch_id: pitch.id,
-                                check_in: dateStr,
-                                check_out: nextDay,
-                            }));
+                    // Find booking for this pitch that overlaps this date
+                    const booking = bookings.find((b: any) => {
+                        if (b.pitch_id !== pitch.id) return false;
+                        if (!b.check_in || !b.check_out) return false;
 
-                            if (occupancyResponse.ok) {
-                                const data = await occupancyResponse.json();
-                                return {
-                                    date: dateStr,
-                                    isOccupied: data.is_occupied,
-                                    bookingInfo: data.booking ? {
-                                        customer_name: data.booking.customer_name,
-                                        guests_count: data.booking.guests_count,
-                                    } : undefined,
-                                };
-                            }
+                        try {
+                            const checkIn = parseISO(b.check_in);
+                            const checkOut = parseISO(b.check_out);
+                            const currentDate = parseISO(dateStr);
 
-                            return { date: dateStr, isOccupied: false };
-                        })
-                    );
+                            // Check if date is within booking range (inclusive start, exclusive end)
+                            return currentDate >= checkIn && currentDate < checkOut;
+                        } catch (e) {
+                            return false;
+                        }
+                    });
 
                     return {
-                        pitch,
-                        days: daysOccupancy,
+                        date: dateStr,
+                        isOccupied: !!booking,
+                        bookingInfo: booking ? {
+                            customer_name: booking.customer_name || 'N/A',
+                            guests_count: booking.guests_count || 0,
+                        } : undefined,
                     };
-                })
-            );
+                });
+
+                return { pitch, days: daysOccupancy };
+            });
+
+            const endTime = performance.now();
+            console.log(`✅ BATCH Loaded in ${Math.round(endTime - startTime)}ms: ${pitches.length} pitches, ${bookings.length} bookings`);
 
             setPitchesWithDays(pitchesWithOccupancy);
+            setCachedData(cacheKey, pitchesWithOccupancy);
+
         } catch (error) {
             console.error('Error loading sector occupancy:', error);
         } finally {
             setLoading(false);
         }
-    }, [selectedSector, dateRange]);
+    }, [selectedSector, dateRange, cacheKey]);
 
     useEffect(() => {
-        loadSectorOccupancy();
-    }, [loadSectorOccupancy]);
+        if (cacheKey) {
+            loadSectorOccupancy(false);
+        }
+    }, [cacheKey, loadSectorOccupancy]);
+
+    const handleRefresh = () => {
+        loadSectorOccupancy(true);
+    };
 
     const getCellColor = (isOccupied: boolean) => {
         return isOccupied
-            ? 'bg-red-100 hover:bg-red-200'
-            : 'bg-green-100 hover:bg-green-200';
+            ? 'bg-red-100 hover:bg-red-200 dark:bg-red-900/30 dark:hover:bg-red-900/50'
+            : 'bg-green-100 hover:bg-green-200 dark:bg-green-900/30 dark:hover:bg-green-900/50';
     };
 
     return (
         <Card className="w-full">
             <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                    <Grid className="h-5 w-5" />
-                    Vista Occupazione per Settore
+                <CardTitle className="flex items-center gap-2 justify-between">
+                    <div className="flex items-center gap-2">
+                        <Grid className="h-5 w-5" />
+                        Vista Occupazione per Settore
+                        <Badge variant="outline" className="text-xs gap-1">
+                            <Zap className="h-3 w-3" />
+                            Batch API
+                        </Badge>
+                    </div>
+                    <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={handleRefresh}
+                        disabled={loading}
+                    >
+                        <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+                        Ricarica
+                    </Button>
                 </CardTitle>
             </CardHeader>
             <CardContent>
-                {/* Selectors Row */}
                 <div className="flex flex-col md:flex-row gap-4 mb-4">
-                    {/* Sector Selector */}
                     <div className="flex-1">
                         <label className="text-sm font-medium mb-2 block">Settore</label>
                         <div className="flex flex-wrap gap-2">
@@ -140,13 +238,12 @@ export function SectorOccupancyViewer() {
                                     size="sm"
                                     onClick={() => setSelectedSector(sector)}
                                 >
-                                    {sector.name}
+                                    {sector.name} ({sector.range.min}-{sector.range.max})
                                 </Button>
                             ))}
                         </div>
                     </div>
 
-                    {/* Timeframe Selector */}
                     <div className="flex-1">
                         <label className="text-sm font-medium mb-2 block flex items-center gap-1">
                             <Calendar className="h-3 w-3" />
@@ -167,10 +264,22 @@ export function SectorOccupancyViewer() {
                     </div>
                 </div>
 
-                {/* Calendar Table */}
                 {loading ? (
                     <div className="flex items-center justify-center py-12">
-                        <div className="text-muted-foreground">Caricamento settore...</div>
+                        <div className="text-center">
+                            <RefreshCw className="h-8 w-8 animate-spin mx-auto mb-2 text-muted-foreground" />
+                            <div className="text-muted-foreground">Caricamento {selectedSector.name}...</div>
+                            <div className="text-xs text-muted-foreground mt-1">
+                                Ottimizzato con batch API
+                            </div>
+                        </div>
+                    </div>
+                ) : pitchesWithDays.length === 0 ? (
+                    <div className="flex items-center justify-center py-12 border rounded-md">
+                        <div className="text-center text-muted-foreground">
+                            <p className="font-medium">Nessuna piazzola trovata in questo settore</p>
+                            <p className="text-sm mt-1">Verifica che le piazzole siano state inserite nel database</p>
+                        </div>
                     </div>
                 ) : (
                     <div className="overflow-x-auto border rounded-md">
@@ -258,15 +367,14 @@ export function SectorOccupancyViewer() {
                     </div>
                 )}
 
-                {/* Legend */}
                 <div className="flex items-center justify-between mt-4">
                     <div className="flex items-center gap-4 text-xs text-muted-foreground">
                         <div className="flex items-center gap-2">
-                            <div className="w-4 h-4 bg-green-100 border rounded" />
+                            <div className="w-4 h-4 bg-green-100 dark:bg-green-900/30 border rounded" />
                             <span>Libera</span>
                         </div>
                         <div className="flex items-center gap-2">
-                            <div className="w-4 h-4 bg-red-100 border rounded flex items-center justify-center">
+                            <div className="w-4 h-4 bg-red-100 dark:bg-red-900/30 border rounded flex items-center justify-center">
                                 <div className="w-2 h-2 rounded-full bg-red-600" />
                             </div>
                             <span>Occupata</span>

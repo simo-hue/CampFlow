@@ -116,7 +116,7 @@ export function QuickStatsWidget() {
                 </CardHeader>
                 <CardContent>
                     <div className="text-3xl font-bold mb-2">
-                        {stats.current_occupancy} <span className="text-lg text-muted-foreground">/ 300</span>
+                        {stats.current_occupancy} <span className="text-lg text-muted-foreground">/ {stats.total_pitches}</span>
                     </div>
                     <Progress
                         value={stats.occupancy_percentage}

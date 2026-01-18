@@ -42,15 +42,28 @@ export async function GET() {
             console.error('Error fetching occupancy:', occupancyError);
         }
 
-        const TOTAL_PITCHES = 300;
+        // Get total pitches count from database
+        const { count: totalPitchesCount, error: pitchesError } = await supabaseAdmin
+            .from('pitches')
+            .select('*', { count: 'exact', head: true })
+            .in('status', ['available', 'maintenance', 'blocked']);
+
+        if (pitchesError) {
+            console.error('Error fetching total pitches:', pitchesError);
+        }
+
+        const totalPitches = totalPitchesCount || 0;
         const currentOccupancy = occupancyCount || 0;
-        const occupancyPercentage = Math.round((currentOccupancy / TOTAL_PITCHES) * 100);
+        const occupancyPercentage = totalPitches > 0
+            ? Math.round((currentOccupancy / totalPitches) * 100)
+            : 0;
 
         const stats: DashboardStats = {
             arrivals_today: arrivalsData || 0,
             departures_today: departuresData || 0,
             current_occupancy: currentOccupancy,
             occupancy_percentage: occupancyPercentage,
+            total_pitches: totalPitches,
         };
 
         return NextResponse.json(stats);

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase/server';
 import { calculatePrice } from '@/lib/pricing';
 import type { CreateBookingRequest } from '@/lib/types';
+import { invalidateOccupancyCache } from '@/components/dashboard/SectorOccupancyViewer';
 
 /**
  * POST /api/bookings
@@ -147,6 +148,11 @@ export async function POST(request: NextRequest) {
             success: true,
             booking,
             message: 'Prenotazione creata con successo',
+
+        // Invalida cache occupancy dopo nuova prenotazione
+        if (typeof window !== 'undefined') {
+            invalidateOccupancyCache();
+        }
         }, { status: 201 });
 
     } catch (error) {

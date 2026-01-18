@@ -13,6 +13,7 @@ export interface PitchAttributes {
     water?: boolean;
     sewer?: boolean;
     size_sqm?: number;
+    [key: string]: boolean | number | undefined;
 }
 
 export interface Pitch {
@@ -83,6 +84,7 @@ export interface DashboardStats {
     departures_today: number;
     current_occupancy: number;
     occupancy_percentage: number;
+    total_pitches: number;
 }
 
 export type GuestType = 'adult' | 'child' | 'infant';

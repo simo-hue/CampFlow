@@ -1,9 +1,8 @@
 import { QuickStatsWidget } from '@/components/dashboard/QuickStatsWidget';
 import { GlobalSearchBar } from '@/components/dashboard/GlobalSearchBar';
 import { AvailabilityModule } from '@/components/dashboard/AvailabilityModule';
-import { SectorOccupancyViewer } from '@/components/dashboard/SectorOccupancyViewer';
 import { TodayView } from '@/components/dashboard/TodayView';
-import { Settings } from 'lucide-react';
+import { Settings, Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 
@@ -20,6 +19,11 @@ export default function DashboardPage() {
             </div>
             <div className="flex items-center gap-2">
               <GlobalSearchBar />
+              <Link href="/occupancy">
+                <Button variant="ghost" size="icon" title="Vista Occupazione">
+                  <Calendar className="h-5 w-5" />
+                </Button>
+              </Link>
               <Link href="/settings">
                 <Button variant="ghost" size="icon" title="Impostazioni">
                   <Settings className="h-5 w-5" />
@@ -44,10 +48,6 @@ export default function DashboardPage() {
             <AvailabilityModule />
           </section>
 
-          {/* Sector Occupancy Viewer - Full Width */}
-          <section>
-            <SectorOccupancyViewer />
-          </section>
 
           {/* Today View at Bottom */}
           <section>
