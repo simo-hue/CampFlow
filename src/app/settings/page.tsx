@@ -100,7 +100,7 @@ export default function SettingsPage() {
                     <div className="space-y-6 w-full">
                         {/* Prezzo Persona */}
                         <div className="grid gap-2">
-                            <Label htmlFor="person-price">Prezzo Persona (€/giorno)</Label>
+                            <Label htmlFor="person-price">Persona (€/giorno)</Label>
                             <Input
                                 id="person-price"
                                 type="number"
@@ -116,7 +116,7 @@ export default function SettingsPage() {
 
                         {/* Prezzo Cane */}
                         <div className="grid gap-2">
-                            <Label htmlFor="dog-price">Prezzo Cane (€/giorno)</Label>
+                            <Label htmlFor="dog-price">Cane (€/giorno)</Label>
                             <Input
                                 id="dog-price"
                                 type="number"
@@ -132,7 +132,7 @@ export default function SettingsPage() {
 
                         {/* Prezzo Tenda */}
                         <div className="grid gap-2">
-                            <Label htmlFor="tent-price">Prezzo Tenda (€/giorno)</Label>
+                            <Label htmlFor="tent-price">Tenda (€/giorno)</Label>
                             <Input
                                 id="tent-price"
                                 type="number"
@@ -148,7 +148,7 @@ export default function SettingsPage() {
 
                         {/* Prezzo Piazzola */}
                         <div className="grid gap-2">
-                            <Label htmlFor="pitch-price">Prezzo Piazzola (€/giorno)</Label>
+                            <Label htmlFor="pitch-price">Piazzola (€/giorno)</Label>
                             <Input
                                 id="pitch-price"
                                 type="number"
