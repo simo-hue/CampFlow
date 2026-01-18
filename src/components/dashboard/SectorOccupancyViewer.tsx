@@ -34,6 +34,8 @@ const PITCH_TYPES: { id: PitchType; name: string; icon: any }[] = [
     { id: 'tenda', name: 'Tende', icon: Tent },
 ];
 
+// OTTIMIZZAZIONE: Cache sempre 30 giorni, poi slicing per visualizzazioni più corte
+const CACHE_WINDOW_DAYS = 30;
 const CACHE_KEY_PREFIX = 'occupancy_cache_';
 const CACHE_VERSION_KEY = 'occupancy_cache_version';
 
@@ -78,7 +80,7 @@ function setCachedData(key: string, data: PitchWithDays[]) {
             data,
         };
         localStorage.setItem(CACHE_KEY_PREFIX + key, JSON.stringify(cacheObject));
-        console.log('💾 Cache SAVED:', key);
+        console.log('💾 Cache SAVED:', key, '(', data[0]?.days.length, 'days )');
     } catch (error) {
         console.error('Error writing cache:', error);
     }
@@ -88,32 +90,53 @@ export function SectorOccupancyViewer() {
     const [selectedSector, setSelectedSector] = useState(SECTORS[0]);
     const [selectedTimeframe, setSelectedTimeframe] = useState(TIMEFRAMES[1]);
     const [selectedPitchType, setSelectedPitchType] = useState<PitchType>('piazzola');
-    const [pitchesWithDays, setPitchesWithDays] = useState<PitchWithDays[]>([]);
-    const [loading, setLoading] = useState(false);
-    const [dateRange, setDateRange] = useState<Date[]>([]);
 
-    useEffect(() => {
+    // Full 30-day data cached
+    const [fullDataCache, setFullDataCache] = useState<PitchWithDays[]>([]);
+    // Displayed data (sliced from full cache)
+    const [displayedData, setDisplayedData] = useState<PitchWithDays[]>([]);
+
+    const [loading, setLoading] = useState(false);
+
+    // Full 30-day date range for caching
+    const fullDateRange = useMemo(() => {
         const today = startOfDay(new Date());
-        const dates = Array.from({ length: selectedTimeframe.days }, (_, i) => addDays(today, i));
-        setDateRange(dates);
+        return Array.from({ length: CACHE_WINDOW_DAYS }, (_, i) => addDays(today, i));
+    }, []);
+
+    // Displayed date range based on selected timeframe
+    const displayDateRange = useMemo(() => {
+        const today = startOfDay(new Date());
+        return Array.from({ length: selectedTimeframe.days }, (_, i) => addDays(today, i));
     }, [selectedTimeframe]);
 
+    // Cache key based ONLY on sector + pitch type (NOT timeframe!)
     const cacheKey = useMemo(() => {
-        if (dateRange.length === 0) return '';
-        const startDate = format(dateRange[0], 'yyyy-MM-dd');
-        const endDate = format(dateRange[dateRange.length - 1], 'yyyy-MM-dd');
-        // Tende non hanno settori
+        const startDate = format(fullDateRange[0], 'yyyy-MM-dd');
         const sectorPart = selectedPitchType === 'tenda' ? 'all' : selectedSector.id;
-        return `${sectorPart}_${selectedTimeframe.id}_${selectedPitchType}_${startDate}_${endDate}`;
-    }, [selectedSector, selectedTimeframe, selectedPitchType, dateRange]);
+        return `${sectorPart}_${selectedPitchType}_${startDate}`;
+    }, [selectedSector, selectedPitchType, fullDateRange]);
+
+    // Slice full data to match selected timeframe
+    useEffect(() => {
+        if (fullDataCache.length === 0) return;
+
+        console.log(`✂️ Slicing ${fullDataCache[0]?.days.length || 0} days to ${selectedTimeframe.days} days`);
+
+        const sliced = fullDataCache.map(item => ({
+            pitch: item.pitch,
+            days: item.days.slice(0, selectedTimeframe.days)
+        }));
+
+        setDisplayedData(sliced);
+    }, [fullDataCache, selectedTimeframe]);
 
     const loadSectorOccupancy = useCallback(async (forceRefresh: boolean = false) => {
-        if (dateRange.length === 0) return;
-
+        // Check cache first
         if (!forceRefresh && cacheKey) {
             const cached = getCachedData(cacheKey);
             if (cached) {
-                setPitchesWithDays(cached);
+                setFullDataCache(cached);
                 return;
             }
         }
@@ -122,13 +145,11 @@ export function SectorOccupancyViewer() {
         const startTime = performance.now();
 
         try {
-            const startDate = format(dateRange[0], 'yyyy-MM-dd');
-            const endDate = format(addDays(dateRange[dateRange.length - 1], 1), 'yyyy-MM-dd');
+            const startDate = format(fullDateRange[0], 'yyyy-MM-dd');
+            const endDate = format(addDays(fullDateRange[fullDateRange.length - 1], 1), 'yyyy-MM-dd');
 
-            console.log(`⚡ BATCH Loading ${selectedPitchType === 'tenda' ? 'Tende' : selectedSector.name} - ${selectedPitchType} (${dateRange.length} days)...`);
+            console.log(`⚡ BATCH Loading ${selectedPitchType === 'tenda' ? 'Tende' : selectedSector.name} - ${selectedPitchType} (${CACHE_WINDOW_DAYS} days FULL WINDOW)...`);
 
-            // Per le tende, carichiamo tutto (non hanno settori)
-            // Per le piazzole, usiamo i range del settore
             const params: any = {
                 date_from: startDate,
                 date_to: endDate,
@@ -146,14 +167,15 @@ export function SectorOccupancyViewer() {
             }
 
             const data = await response.json();
-            const allPitches: Pitch[] = data.pitches || [];
+            const pitches: Pitch[] = data.pitches || [];
             const bookings = data.bookings || [];
 
             // Filter by pitch type
-            const pitches = allPitches.filter(p => p.type === selectedPitchType);
+            const filteredPitches = pitches.filter(p => p.type === selectedPitchType);
 
-            const pitchesWithOccupancy: PitchWithDays[] = pitches.map((pitch) => {
-                const daysOccupancy = dateRange.map((date) => {
+            // Build FULL 30-day occupancy for each pitch
+            const pitchesWithOccupancy: PitchWithDays[] = filteredPitches.map((pitch) => {
+                const daysOccupancy = fullDateRange.map((date) => {
                     const dateStr = format(date, 'yyyy-MM-dd');
 
                     const booking = bookings.find((b: any) => {
@@ -185,9 +207,9 @@ export function SectorOccupancyViewer() {
             });
 
             const endTime = performance.now();
-            console.log(`✅ BATCH Loaded in ${Math.round(endTime - startTime)}ms: ${pitches.length} ${selectedPitchType}, ${bookings.length} bookings`);
+            console.log(`✅ BATCH Loaded ${CACHE_WINDOW_DAYS} days in ${Math.round(endTime - startTime)}ms: ${filteredPitches.length} ${selectedPitchType}, ${bookings.length} bookings`);
 
-            setPitchesWithDays(pitchesWithOccupancy);
+            setFullDataCache(pitchesWithOccupancy);
             setCachedData(cacheKey, pitchesWithOccupancy);
 
         } catch (error) {
@@ -195,8 +217,9 @@ export function SectorOccupancyViewer() {
         } finally {
             setLoading(false);
         }
-    }, [selectedSector, selectedPitchType, dateRange, cacheKey]);
+    }, [selectedSector, selectedPitchType, fullDateRange, cacheKey]);
 
+    // Load full data when cache key changes
     useEffect(() => {
         if (cacheKey) {
             loadSectorOccupancy(false);
@@ -209,86 +232,90 @@ export function SectorOccupancyViewer() {
 
     const getCellColor = (isOccupied: boolean) => {
         return isOccupied
-            ? 'bg-red-100 hover:bg-red-200 dark:bg-red-900/30 dark:hover:bg-red-900/50'
-            : 'bg-green-100 hover:bg-green-200 dark:bg-green-900/30 dark:hover:bg-green-900/50';
+            ? 'bg-red-100 hover:bg-red-200 dark:bg-red-900/50 dark:hover:bg-red-800/60'
+            : 'bg-green-100 hover:bg-green-200 dark:bg-green-700/40 dark:hover:bg-green-600/50';
     };
 
     return (
         <div className="h-full flex flex-col bg-background">
             {/* Controls Bar - Sticky */}
             <div className="bg-card border-b px-6 py-4 space-y-4 sticky top-0 z-40 shadow-sm">
-
-
-                <div className="flex items-center justify-between gap-4"><div className={`flex-1 grid grid-cols-1 gap-4 ${selectedPitchType === 'piazzola' ? 'lg:grid-cols-3' : 'lg:grid-cols-2'}`}>
-                    {/* Pitch Type Selector */}
-                    <div>
-                        <label className="text-sm font-medium mb-2 block">Tipo Struttura</label>
-                        <div className="flex gap-2">
-                            {PITCH_TYPES.map((type) => {
-                                const Icon = type.icon;
-                                return (
-                                    <Button
-                                        key={type.id}
-                                        variant={selectedPitchType === type.id ? 'default' : 'outline'}
-                                        size="sm"
-                                        onClick={() => setSelectedPitchType(type.id)}
-                                        className="flex-1"
-                                    >
-                                        <Icon className="h-4 w-4 mr-2" />
-                                        {type.name}
-                                    </Button>
-                                );
-                            })}
-
-                        </div>
-                    </div>
-
-                    {/* Sector Selector - Only for Piazzole */}
-                    {selectedPitchType === 'piazzola' && (
+                <div className="flex items-center justify-between gap-4">
+                    <div className={`flex-1 grid grid-cols-1 gap-4 ${selectedPitchType === 'piazzola' ? 'lg:grid-cols-3' : 'lg:grid-cols-2'}`}>
+                        {/* Pitch Type Selector */}
                         <div>
-                            <label className="text-sm font-medium mb-2 block">Settore</label>
+                            <label className="text-sm font-medium mb-2 block">Tipo Struttura</label>
+                            <div className="flex gap-2">
+                                {PITCH_TYPES.map((type) => {
+                                    const Icon = type.icon;
+                                    return (
+                                        <Button
+                                            key={type.id}
+                                            variant={selectedPitchType === type.id ? 'default' : 'outline'}
+                                            size="sm"
+                                            onClick={() => setSelectedPitchType(type.id)}
+                                            className="flex-1"
+                                        >
+                                            <Icon className="h-4 w-4 mr-2" />
+                                            {type.name}
+                                        </Button>
+                                    );
+                                })}
+                            </div>
+                        </div>
+
+                        {/* Sector Selector - Only for Piazzole */}
+                        {selectedPitchType === 'piazzola' && (
+                            <div>
+                                <label className="text-sm font-medium mb-2 block">Settore</label>
+                                <div className="flex flex-wrap gap-2">
+                                    {SECTORS.map((sector) => (
+                                        <Button
+                                            key={sector.id}
+                                            variant={selectedSector.id === sector.id ? 'default' : 'outline'}
+                                            size="sm"
+                                            onClick={() => setSelectedSector(sector)}
+                                        >
+                                            {sector.name}
+                                        </Button>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Timeframe Selector */}
+                        <div>
+                            <label className="text-sm font-medium mb-2 block flex items-center gap-1">
+                                <Calendar className="h-3 w-3" />
+                                Periodo
+                            </label>
                             <div className="flex flex-wrap gap-2">
-                                {SECTORS.map((sector) => (
+                                {TIMEFRAMES.map((timeframe) => (
                                     <Button
-                                        key={sector.id}
-                                        variant={selectedSector.id === sector.id ? 'default' : 'outline'}
+                                        key={timeframe.id}
+                                        variant={selectedTimeframe.id === timeframe.id ? 'default' : 'outline'}
                                         size="sm"
-                                        onClick={() => setSelectedSector(sector)}
+                                        onClick={() => setSelectedTimeframe(timeframe)}
                                     >
-                                        {sector.name}
+                                        {timeframe.name}
                                     </Button>
                                 ))}
                             </div>
                         </div>
-                    )}
+                    </div>
 
-                    {/* Timeframe Selector */}
-                    <div>
-                        <label className="text-sm font-medium mb-2 block flex items-center gap-1">
-                            <Calendar className="h-3 w-3" />
-                            Periodo
-                        </label>
-                        <div className="flex flex-wrap gap-2">
-                            {TIMEFRAMES.map((timeframe) => (
-                                <Button
-                                    key={timeframe.id}
-                                    variant={selectedTimeframe.id === timeframe.id ? 'default' : 'outline'}
-                                    size="sm"
-                                    onClick={() => setSelectedTimeframe(timeframe)}
-                                >
-                                    {timeframe.name}
-                                </Button>
-                            ))}
-                        </div>
-                    </div>
-                    </div>
+                    {/* Right side: Refresh Button */}
                     <div className="flex items-end pb-1">
-                        <Button size="sm" variant="outline" onClick={handleRefresh} disabled={loading}>
+                        <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={handleRefresh}
+                            disabled={loading}
+                        >
                             <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
                             Ricarica
                         </Button>
                     </div>
-
                 </div>
             </div>
 
@@ -297,13 +324,14 @@ export function SectorOccupancyViewer() {
                 {loading ? (
                     <div className="flex items-center justify-center h-96">
                         <div className="text-center">
+                            <RefreshCw className="h-12 w-12 animate-spin mx-auto mb-4 text-primary" />
                             <div className="text-lg font-medium">Caricamento {selectedSector.name}...</div>
                             <div className="text-sm text-muted-foreground mt-2">
-                                Ottimizzato con batch API
+                                Caricamento finestra completa {CACHE_WINDOW_DAYS} giorni...
                             </div>
                         </div>
                     </div>
-                ) : pitchesWithDays.length === 0 ? (
+                ) : displayedData.length === 0 ? (
                     <div className="flex items-center justify-center h-96 border-2 border-dashed rounded-lg">
                         <div className="text-center text-muted-foreground">
                             <Grid className="h-16 w-16 mx-auto mb-4 opacity-20" />
@@ -322,7 +350,7 @@ export function SectorOccupancyViewer() {
                                             <th className="sticky left-0 bg-muted/80 z-20 p-3 text-left font-bold border-r-2 min-w-[100px]">
                                                 {selectedPitchType === 'piazzola' ? 'Piazzola' : 'Tenda'}
                                             </th>
-                                            {dateRange.map((date) => {
+                                            {displayDateRange.map((date) => {
                                                 const dayFormat = selectedTimeframe.days === 3
                                                     ? format(date, 'EEEE', { locale: it })
                                                     : format(date, 'EEE', { locale: it });
@@ -354,7 +382,7 @@ export function SectorOccupancyViewer() {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {pitchesWithDays.map((item) => (
+                                        {displayedData.map((item) => (
                                             <tr key={item.pitch.id} className="hover:bg-muted/30 border-b transition-colors">
                                                 <td className="sticky left-0 bg-card z-10 p-3 font-bold border-r-2 text-base">
                                                     {item.pitch.number}
@@ -362,7 +390,7 @@ export function SectorOccupancyViewer() {
                                                 {item.days.map((day) => (
                                                     <td
                                                         key={day.date}
-                                                        className={`p-2 border-r transition-all ${getCellColor(day.isOccupied)}`}
+                                                        className={`p-2 border-r transition-all cursor-pointer ${getCellColor(day.isOccupied)}`}
                                                         onClick={() => {
                                                             if (day.isOccupied && day.bookingInfo) {
                                                                 alert(
@@ -396,23 +424,27 @@ export function SectorOccupancyViewer() {
                         <div className="flex items-center justify-between mt-6 px-2">
                             <div className="flex items-center gap-6 text-sm">
                                 <div className="flex items-center gap-2">
-                                    <div className="w-6 h-6 bg-green-100 dark:bg-green-900/30 border-2 rounded" />
+                                    <div className="w-6 h-6 bg-green-100 dark:bg-green-700/40 border-2 rounded" />
                                     <span className="font-medium">Libera</span>
                                 </div>
                                 <div className="flex items-center gap-2">
-                                    <div className="w-6 h-6 bg-red-100 dark:bg-red-900/30 border-2 rounded flex items-center justify-center">
+                                    <div className="w-6 h-6 bg-red-100 dark:bg-red-900/50 border-2 rounded flex items-center justify-center">
                                         <div className="w-3 h-3 rounded-full bg-red-600" />
                                     </div>
                                     <span className="font-medium">Occupata</span>
                                 </div>
                                 <div className="h-4 w-px bg-border" />
                                 <Badge variant="secondary">
-                                    {pitchesWithDays.length} {selectedPitchType === 'piazzola' ? 'piazzole' : 'tende'}
+                                    {displayedData.length} {selectedPitchType === 'piazzola' ? 'piazzole' : 'tende'}
+                                </Badge>
+                                <Badge variant="outline" className="gap-1">
+                                    <Zap className="h-3 w-3" />
+                                    Cache intelligente
                                 </Badge>
                             </div>
-                            {dateRange.length > 0 && (
+                            {displayDateRange.length > 0 && (
                                 <div className="text-sm text-muted-foreground font-medium">
-                                    Periodo: {format(dateRange[0], 'dd/MM/yyyy')} - {format(dateRange[dateRange.length - 1], 'dd/MM/yyyy')}
+                                    Periodo: {format(displayDateRange[0], 'dd/MM/yyyy')} - {format(displayDateRange[displayDateRange.length - 1], 'dd/MM/yyyy')}
                                 </div>
                             )}
                         </div>
