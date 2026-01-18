@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Grid, Calendar } from 'lucide-react';
 import type { Pitch } from '@/lib/types';
+import { SECTORS } from '@/lib/pitchUtils';
 import { addDays, format, startOfDay } from 'date-fns';
 import { it } from 'date-fns/locale';
 
@@ -22,15 +23,6 @@ interface PitchWithDays {
     pitch: Pitch;
     days: DayOccupancy[];
 }
-
-// 5 settori da 60 piazzole ciascuno
-const SECTORS = [
-    { id: 'sector-1', name: 'Settore 1', range: { min: 1, max: 60 } },
-    { id: 'sector-2', name: 'Settore 2', range: { min: 61, max: 120 } },
-    { id: 'sector-3', name: 'Settore 3', range: { min: 121, max: 180 } },
-    { id: 'sector-4', name: 'Settore 4', range: { min: 181, max: 240 } },
-    { id: 'sector-5', name: 'Settore 5', range: { min: 241, max: 300 } },
-];
 
 // Timeframe options
 const TIMEFRAMES = [

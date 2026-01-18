@@ -7,30 +7,26 @@
  * - Low Season (October - April): Discounted rates
  */
 
-type PitchType = 'standard' | 'comfort' | 'premium';
+import type { PitchType } from '@/lib/types';
 
 interface PricingRates {
-    standard: number;
-    comfort: number;
-    premium: number;
+    piazzola: number;
+    tenda: number;
 }
 
 const HIGH_SEASON_RATES: PricingRates = {
-    standard: 35,
-    comfort: 50,
-    premium: 75,
+    piazzola: 40,
+    tenda: 25,
 };
 
 const MID_SEASON_RATES: PricingRates = {
-    standard: 25,
-    comfort: 40,
-    premium: 60,
+    piazzola: 30,
+    tenda: 20,
 };
 
 const LOW_SEASON_RATES: PricingRates = {
-    standard: 20,
-    comfort: 30,
-    premium: 45,
+    piazzola: 20,
+    tenda: 15,
 };
 
 /**

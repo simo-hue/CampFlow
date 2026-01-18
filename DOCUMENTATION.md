@@ -354,6 +354,8 @@ CREATE POLICY "Staff can manage bookings"
 - ✅ Creata UI per CRUD completo piazzole (Add, Edit, Delete).
 - ✅ Implementato dialog per gestione attributi (ombra, luce, acqua, etc.).
 - ✅ Integrata logica di sdoppiamento (es. 10 -> 10a/10b) e unione piazzole.
+- ✅ Semplificata gestione tipi piazzola: solo "Piazzola" e "Tenda" (rimossi standard/comfort/premium) per richiesta utente.
+- ✅ Aggiunto selettore "Settore" in Gestione Campeggio per filtrare piazzole per range numerici (es. Settore 1: 1-60).
 
 
 ---

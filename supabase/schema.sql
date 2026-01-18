@@ -16,7 +16,7 @@ CREATE TABLE pitches (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   number VARCHAR(10) NOT NULL, -- Base number e.g. "001", "102"
   suffix VARCHAR(1) NOT NULL DEFAULT '' CHECK (suffix IN ('', 'a', 'b')),
-  type VARCHAR(50) NOT NULL CHECK (type IN ('standard', 'comfort', 'premium', 'piazzola', 'tenda')),
+  type VARCHAR(50) NOT NULL CHECK (type IN ('piazzola', 'tenda')),
   attributes JSONB NOT NULL DEFAULT '{}', 
   -- Example attributes: {"shade": true, "electricity": true, "water": true, "size_sqm": 80}
   status VARCHAR(20) NOT NULL DEFAULT 'available' CHECK (status IN ('available', 'maintenance', 'blocked')),
@@ -162,26 +162,26 @@ CREATE TRIGGER update_booking_guests_updated_at
 -- SEED DATA: Sample Pitches
 -- =====================================================
 INSERT INTO pitches (number, suffix, type, attributes) VALUES
-  -- Standard pitches (1-100)
-  ('001', '', 'standard', '{"shade": true, "electricity": true, "water": false, "size_sqm": 60}'),
-  ('002', '', 'standard', '{"shade": false, "electricity": true, "water": false, "size_sqm": 60}'),
-  ('003', '', 'standard', '{"shade": true, "electricity": true, "water": false, "size_sqm": 60}'),
-  ('004', '', 'standard', '{"shade": false, "electricity": true, "water": false, "size_sqm": 60}'),
-  ('005', '', 'standard', '{"shade": true, "electricity": true, "water": false, "size_sqm": 60}'),
+  -- Piazzole (1-100)
+  ('001', '', 'piazzola', '{"shade": true, "electricity": true, "water": false, "size_sqm": 60}'),
+  ('002', '', 'piazzola', '{"shade": false, "electricity": true, "water": false, "size_sqm": 60}'),
+  ('003', '', 'piazzola', '{"shade": true, "electricity": true, "water": false, "size_sqm": 60}'),
+  ('004', '', 'piazzola', '{"shade": false, "electricity": true, "water": false, "size_sqm": 60}'),
+  ('005', '', 'piazzola', '{"shade": true, "electricity": true, "water": false, "size_sqm": 60}'),
   
-  -- Comfort pitches (101-200)
-  ('101', '', 'comfort', '{"shade": true, "electricity": true, "water": true, "size_sqm": 80}'),
-  ('102', '', 'comfort', '{"shade": true, "electricity": true, "water": true, "size_sqm": 80}'),
-  ('103', '', 'comfort', '{"shade": false, "electricity": true, "water": true, "size_sqm": 80}'),
-  ('104', '', 'comfort', '{"shade": true, "electricity": true, "water": true, "size_sqm": 80}'),
-  ('105', '', 'comfort', '{"shade": true, "electricity": true, "water": true, "size_sqm": 80}'),
+  -- Tende (101-200)
+  ('101', '', 'tenda', '{"shade": true, "electricity": true, "water": true, "size_sqm": 80}'),
+  ('102', '', 'tenda', '{"shade": true, "electricity": true, "water": true, "size_sqm": 80}'),
+  ('103', '', 'tenda', '{"shade": false, "electricity": true, "water": true, "size_sqm": 80}'),
+  ('104', '', 'tenda', '{"shade": true, "electricity": true, "water": true, "size_sqm": 80}'),
+  ('105', '', 'tenda', '{"shade": true, "electricity": true, "water": true, "size_sqm": 80}'),
   
-  -- Premium pitches (201-300)
-  ('201', '', 'premium', '{"shade": true, "electricity": true, "water": true, "size_sqm": 100, "sewer": true}'),
-  ('202', '', 'premium', '{"shade": true, "electricity": true, "water": true, "size_sqm": 100, "sewer": true}'),
-  ('203', '', 'premium', '{"shade": true, "electricity": true, "water": true, "size_sqm": 100, "sewer": true}'),
-  ('204', '', 'premium', '{"shade": false, "electricity": true, "water": true, "size_sqm": 100, "sewer": true}'),
-  ('205', '', 'premium', '{"shade": true, "electricity": true, "water": true, "size_sqm": 100, "sewer": true}');
+  -- Altre Piazzole (201-300)
+  ('201', '', 'piazzola', '{"shade": true, "electricity": true, "water": true, "size_sqm": 100, "sewer": true}'),
+  ('202', '', 'piazzola', '{"shade": true, "electricity": true, "water": true, "size_sqm": 100, "sewer": true}'),
+  ('203', '', 'piazzola', '{"shade": true, "electricity": true, "water": true, "size_sqm": 100, "sewer": true}'),
+  ('204', '', 'piazzola', '{"shade": false, "electricity": true, "water": true, "size_sqm": 100, "sewer": true}'),
+  ('205', '', 'piazzola', '{"shade": true, "electricity": true, "water": true, "size_sqm": 100, "sewer": true}');
 
 -- NOTE: In production, you'll need to insert all 300 pitches.
 -- Use a script or generate them programmatically.

@@ -2,7 +2,7 @@
  * TypeScript type definitions for CampFlow PMS
  */
 
-export type PitchType = 'standard' | 'comfort' | 'premium' | 'piazzola' | 'tenda';
+export type PitchType = 'piazzola' | 'tenda';
 export type PitchStatus = 'available' | 'maintenance' | 'blocked';
 export type BookingStatus = 'confirmed' | 'checked_in' | 'checked_out' | 'cancelled';
 export type PitchSuffix = '' | 'a' | 'b';

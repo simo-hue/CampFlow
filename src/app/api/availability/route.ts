@@ -51,9 +51,9 @@ export async function GET(request: NextRequest) {
 
         // Add pitch type filter if provided
         if (pitchType) {
-            if (!['standard', 'comfort', 'premium'].includes(pitchType)) {
+            if (!['piazzola', 'tenda'].includes(pitchType)) {
                 return NextResponse.json(
-                    { error: 'Invalid pitch_type. Must be: standard, comfort, or premium' },
+                    { error: 'Invalid pitch_type. Must be: piazzola or tenda' },
                     { status: 400 }
                 );
             }

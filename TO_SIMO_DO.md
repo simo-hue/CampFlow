@@ -6,6 +6,12 @@
 > Questa chiave è richiesta da `src/lib/supabase/server.ts` per l'accesso amministrativo al DB.
 
 
+> **🎨 AGGIORNAMENTO ore 18:45**: Aggiunto filtro "Settore" nel pannello "Gestione Campeggio".
+> - Permette di filtrare piazzole per Settore 1-5 (es. 1-60, 61-120, ecc.)
+> - Utile per gestire grandi quantità di dati.
+
+> **🎨 AGGIORNAMENTO ore 18:30**: Migliorata UX pannello "Gestione Campeggio" con spaziatura ottimizzata nei filtri.
+
 > **⚡ AGGIORNAMENTO 18/01/2026 ore 17:47**: Aggiunta tabella `booking_guests` per dettagli ospiti.
 > - Workflow: Prenotazione → solo referente | Check-in → dettagli tutti gli ospiti
 > - Campi: nome, data/luogo nascita, indirizzo, documento, nazionalità, tipo ospite
@@ -196,40 +202,40 @@ curl -X POST http://localhost:3000/api/bookings \
 Attualmente lo schema include solo 15 piazzole di esempio. Per inserire tutte le 300:
 
 ```sql
--- Script per generare piazzole Standard (1-100)
+-- Script per generare Piazzole (1-100)
 DO $$
 BEGIN
   FOR i IN 6..100 LOOP
     INSERT INTO pitches (number, type, attributes)
     VALUES (
       LPAD(i::TEXT, 3, '0'),
-      'standard',
+      'piazzola',
       '{"shade": ' || (RANDOM() > 0.5)::TEXT || ', "electricity": true, "water": false, "size_sqm": 60}'
     );
   END LOOP;
 END $$;
 
--- Comfort (101-200)
+-- Tende (101-200)
 DO $$
 BEGIN
   FOR i IN 106..200 LOOP
     INSERT INTO pitches (number, type, attributes)
     VALUES (
       LPAD(i::TEXT, 3, '0'),
-      'comfort',
+      'tenda',
       '{"shade": ' || (RANDOM() > 0.5)::TEXT || ', "electricity": true, "water": true, "size_sqm": 80}'
     );
   END LOOP;
 END $$;
 
--- Premium (201-300)
+-- Altre Piazzole (201-300)
 DO $$
 BEGIN
   FOR i IN 206..300 LOOP
     INSERT INTO pitches (number, type, attributes)
     VALUES (
       LPAD(i::TEXT, 3, '0'),
-      'premium',
+      'piazzola',
       '{"shade": true, "electricity": true, "water": true, "sewer": true, "size_sqm": 100}'
     );
   END LOOP;

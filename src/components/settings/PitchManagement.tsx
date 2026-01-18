@@ -23,7 +23,7 @@ import {
     RefreshCw
 } from 'lucide-react';
 import type { Pitch, CreatePitchRequest, UpdatePitchRequest } from '@/lib/types';
-import { getPitchDisplayNumber, canSplitPitch, getSiblingPitch } from '@/lib/pitchUtils';
+import { getPitchDisplayNumber, canSplitPitch, getSiblingPitch, SECTORS, getPitchSector } from '@/lib/pitchUtils';
 import { PitchDialog } from './PitchDialog';
 
 export function PitchManagement() {
@@ -31,6 +31,7 @@ export function PitchManagement() {
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [typeFilter, setTypeFilter] = useState<string>('all');
+    const [sectorFilter, setSectorFilter] = useState<string>('all');
 
     // Dialog State
     const [dialogOpen, setDialogOpen] = useState(false);
@@ -177,14 +178,16 @@ export function PitchManagement() {
         const matchesSearch = searchTerm === '' ||
             getPitchDisplayNumber(pitch).toLowerCase().includes(searchTerm.toLowerCase());
         const matchesType = typeFilter === 'all' || pitch.type === typeFilter;
-        return matchesSearch && matchesType;
+
+        // Filter by sector
+        const sector = getPitchSector(pitch.number);
+        const matchesSector = sectorFilter === 'all' || (sector && sector.id === sectorFilter);
+
+        return matchesSearch && matchesType && matchesSector;
     });
 
     const getTypeColor = (type: string) => {
         switch (type) {
-            case 'standard': return 'bg-gray-500';
-            case 'comfort': return 'bg-blue-500';
-            case 'premium': return 'bg-purple-500';
             case 'piazzola': return 'bg-green-500';
             case 'tenda': return 'bg-orange-500';
             default: return 'bg-gray-500';
@@ -203,7 +206,7 @@ export function PitchManagement() {
                     </Button>
                     <Button size="sm" onClick={handleAdd}>
                         <Plus className="h-4 w-4 mr-2" />
-                        Aggiungi Piazzola
+                        Aggiungi
                     </Button>
                 </div>
             </div>
@@ -222,6 +225,25 @@ export function PitchManagement() {
                         />
                     </div>
                 </div>
+
+                {/* Sector Filter */}
+                <div className="w-48 space-y-2">
+                    <Label>Settore</Label>
+                    <select
+                        value={sectorFilter}
+                        onChange={(e) => setSectorFilter(e.target.value)}
+                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                    >
+                        <option value="all">Tutti</option>
+                        {SECTORS.map((sector) => (
+                            <option key={sector.id} value={sector.id}>
+                                {sector.name} ({sector.range.min}-{sector.range.max})
+                            </option>
+                        ))}
+                    </select>
+                </div>
+
+                {/* Type Filter */}
                 <div className="w-48 space-y-2">
                     <Label>Tipo</Label>
                     <select
@@ -230,9 +252,6 @@ export function PitchManagement() {
                         className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                     >
                         <option value="all">Tutti</option>
-                        <option value="standard">Standard</option>
-                        <option value="comfort">Comfort</option>
-                        <option value="premium">Premium</option>
                         <option value="piazzola">Piazzola</option>
                         <option value="tenda">Tenda</option>
                     </select>

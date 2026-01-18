@@ -1,5 +1,13 @@
 import type { Pitch } from './types';
 
+export const SECTORS = [
+    { id: 'sector-1', name: 'Settore 1', range: { min: 1, max: 60 } },
+    { id: 'sector-2', name: 'Settore 2', range: { min: 61, max: 120 } },
+    { id: 'sector-3', name: 'Settore 3', range: { min: 121, max: 180 } },
+    { id: 'sector-4', name: 'Settore 4', range: { min: 181, max: 240 } },
+    { id: 'sector-5', name: 'Settore 5', range: { min: 241, max: 300 } },
+];
+
 /**
  * Helper function to display pitch number with suffix
  * @param pitch Pitch object
@@ -62,4 +70,15 @@ export function canMergePitches(pitchA: Pitch, pitchB: Pitch): boolean {
         ((pitchA.suffix === 'a' && pitchB.suffix === 'b') ||
             (pitchA.suffix === 'b' && pitchB.suffix === 'a'))
     );
+}
+
+/**
+ * Get sector for a given pitch number
+ * @param pitchNumber Pitch number string (e.g. "001")
+ * @returns Sector object or undefined
+ */
+export function getPitchSector(pitchNumber: string) {
+    const num = parseInt(pitchNumber, 10);
+    if (isNaN(num)) return undefined;
+    return SECTORS.find(s => num >= s.range.min && num <= s.range.max);
 }

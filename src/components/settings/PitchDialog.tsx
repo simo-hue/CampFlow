@@ -21,9 +21,6 @@ interface PitchDialogProps {
 }
 
 const PITCH_TYPES: { value: PitchType; label: string }[] = [
-    { value: 'standard', label: 'Standard' },
-    { value: 'comfort', label: 'Comfort' },
-    { value: 'premium', label: 'Premium' },
     { value: 'piazzola', label: 'Piazzola' },
     { value: 'tenda', label: 'Tenda' },
 ];
@@ -40,7 +37,7 @@ export function PitchDialog({ open, onOpenChange, onSubmit, initialData }: Pitch
 
     // Form state
     const [number, setNumber] = useState('');
-    const [type, setType] = useState<PitchType>('standard');
+    const [type, setType] = useState<PitchType>('piazzola');
     const [status, setStatus] = useState<PitchStatus>('available');
 
     // Attributes
@@ -64,7 +61,7 @@ export function PitchDialog({ open, onOpenChange, onSubmit, initialData }: Pitch
                 setSizeSqm(initialData.attributes.size_sqm || 60);
             } else {
                 setNumber('');
-                setType('standard');
+                setType('piazzola');
                 setStatus('available');
                 setShade(false);
                 setElectricity(true);
