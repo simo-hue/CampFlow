@@ -219,7 +219,7 @@ export function SectorOccupancyViewer() {
             <div className="bg-card border-b px-6 py-4 space-y-4 sticky top-0 z-40 shadow-sm">
 
 
-                <div className="flex items-center justify-between gap-4"><div className={`flex-1 grid grid-cols-1 gap-4 ${selectedPitchType === 'piazzola' ? 'lg:grid-cols-3' : 'lg:grid-cols-2'}`}>
+                <div className={`grid grid-cols-1 gap-4 ${selectedPitchType === 'piazzola' ? 'lg:grid-cols-3' : 'lg:grid-cols-2'}`}>
                     {/* Pitch Type Selector */}
                     <div>
                         <label className="text-sm font-medium mb-2 block">Tipo Struttura</label>
@@ -281,14 +281,18 @@ export function SectorOccupancyViewer() {
                             ))}
                         </div>
                     </div>
-                    </div>
-                    <div className="flex items-end pb-1">
-                        <Button size="sm" variant="outline" onClick={handleRefresh} disabled={loading}>
+
+                    <div className="flex items-center justify-between">
+                        <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={handleRefresh}
+                            disabled={loading}
+                        >
                             <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
                             Ricarica
                         </Button>
                     </div>
-
                 </div>
             </div>
 
@@ -297,6 +301,7 @@ export function SectorOccupancyViewer() {
                 {loading ? (
                     <div className="flex items-center justify-center h-96">
                         <div className="text-center">
+                            <RefreshCw className="h-12 w-12 animate-spin mx-auto mb-4 text-primary" />
                             <div className="text-lg font-medium">Caricamento {selectedSector.name}...</div>
                             <div className="text-sm text-muted-foreground mt-2">
                                 Ottimizzato con batch API

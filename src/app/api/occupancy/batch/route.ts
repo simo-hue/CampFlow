@@ -8,10 +8,12 @@ import { supabaseAdmin } from '@/lib/supabase/server';
  * invece di centinaia di richieste individuali
  * 
  * Query params:
- * - sector_min: numero minimo piazzola (es. 1)
- * - sector_max: numero massimo piazzola (es. 25)
+ * - sector_min: (optional) numero minimo piazzola (es. 1) 
+ * - sector_max: (optional) numero massimo piazzola (es. 25)
  * - date_from: YYYY-MM-DD (es. 2026-01-18)
  * - date_to: YYYY-MM-DD (es. 2026-01-25)
+ * 
+ * Note: sector params are optional for tents which don't belong to sectors
  * 
  * Returns: { pitches: [...], bookings: [...] }
  */
@@ -23,23 +25,29 @@ export async function GET(request: NextRequest) {
         const dateFrom = searchParams.get('date_from');
         const dateTo = searchParams.get('date_to');
 
-        if (!sectorMin || !sectorMax || !dateFrom || !dateTo) {
+        if (!dateFrom || !dateTo) {
             return NextResponse.json(
-                { error: 'sector_min, sector_max, date_from, and date_to are required' },
+                { error: 'date_from and date_to are required' },
                 { status: 400 }
             );
         }
 
-        const min = parseInt(sectorMin);
-        const max = parseInt(sectorMax);
-
-        // Query 1: Get all pitches in sector (molto veloce)
-        const { data: pitches, error: pitchesError } = await supabaseAdmin
+        // Query 1: Get pitches (with optional sector filtering)
+        let pitchQuery = supabaseAdmin
             .from('pitches')
             .select('*')
-            .gte('number', min.toString().padStart(3, '0'))
-            .lte('number', max.toString().padStart(3, '0'))
             .order('number');
+
+        // Apply sector filter only if provided (for piazzole)
+        if (sectorMin && sectorMax) {
+            const min = parseInt(sectorMin);
+            const max = parseInt(sectorMax);
+            pitchQuery = pitchQuery
+                .gte('number', min.toString().padStart(3, '0'))
+                .lte('number', max.toString().padStart(3, '0'));
+        }
+
+        const { data: pitches, error: pitchesError } = await pitchQuery;
 
         if (pitchesError) {
             console.error('Error fetching pitches:', pitchesError);
