@@ -44,7 +44,8 @@ export async function GET(request: NextRequest) {
             .from('pitches')
             .select('*')
             .in('number', pitchNumbers)
-            .order('number');
+            .order('number')
+            .order('suffix');
 
         if (error) {
             console.error('Error fetching sector pitches:', error);

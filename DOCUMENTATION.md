@@ -343,6 +343,19 @@ CREATE POLICY "Staff can manage bookings"
 - ✅ Dashboard components completi (5 widgets)
 - ✅ API routes: /availability, /stats, /bookings
 
+### 2026-01-18 - Fix: Configurazione Environment
+- ⚠️ Identificata necessità di `SUPABASE_SERVICE_ROLE_KEY` per operazioni server-side amministrative (es. caricamento piazzole).
+
+### 2026-01-18 - UI Update: Dark Mode
+- ✅ Impostato tema "Dark" come predefinito tramite `next-themes`.
+- ✅ Aggiunto `ThemeProvider` con `suppressHydrationWarning` per evitare flash.
+
+### 2026-01-18 - Feature: Gestione Campeggio Completa
+- ✅ Creata UI per CRUD completo piazzole (Add, Edit, Delete).
+- ✅ Implementato dialog per gestione attributi (ombra, luce, acqua, etc.).
+- ✅ Integrata logica di sdoppiamento (es. 10 -> 10a/10b) e unione piazzole.
+
+
 ---
 
 **Documento vivo**: Aggiornare questo file ad ogni scelta implementativa significativa.

@@ -3,7 +3,9 @@ import { GlobalSearchBar } from '@/components/dashboard/GlobalSearchBar';
 import { AvailabilityModule } from '@/components/dashboard/AvailabilityModule';
 import { SectorOccupancyViewer } from '@/components/dashboard/SectorOccupancyViewer';
 import { TodayView } from '@/components/dashboard/TodayView';
-import { SettingsDialog } from '@/components/SettingsDialog';
+import { Settings } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
 
 export default function DashboardPage() {
   return (
@@ -18,7 +20,11 @@ export default function DashboardPage() {
             </div>
             <div className="flex items-center gap-2">
               <GlobalSearchBar />
-              <SettingsDialog />
+              <Link href="/settings">
+                <Button variant="ghost" size="icon" title="Impostazioni">
+                  <Settings className="h-5 w-5" />
+                </Button>
+              </Link>
             </div>
           </div>
         </div>

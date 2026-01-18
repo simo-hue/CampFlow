@@ -1,5 +1,11 @@
 # CampFlow - Azioni Manuali da Completare
 
+> **⚠️ AZIONE CRITICA RICHIESTA: Chiave API Mancante**
+> Il sistema non riesce a caricare le piazzole perché manca la `SUPABASE_SERVICE_ROLE_KEY` nelle variabili d'ambiente.
+> **Azione**: Aggiungi `SUPABASE_SERVICE_ROLE_KEY=...` nel tuo file `.env.local` (o dove definisci le env vars per `npm run dev`).
+> Questa chiave è richiesta da `src/lib/supabase/server.ts` per l'accesso amministrativo al DB.
+
+
 > **⚡ AGGIORNAMENTO 18/01/2026 ore 17:47**: Aggiunta tabella `booking_guests` per dettagli ospiti.
 > - Workflow: Prenotazione → solo referente | Check-in → dettagli tutti gli ospiti
 > - Campi: nome, data/luogo nascita, indirizzo, documento, nazionalità, tipo ospite

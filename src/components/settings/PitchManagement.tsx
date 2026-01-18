@@ -22,14 +22,19 @@ import {
     Search,
     RefreshCw
 } from 'lucide-react';
-import type { Pitch } from '@/lib/types';
+import type { Pitch, CreatePitchRequest, UpdatePitchRequest } from '@/lib/types';
 import { getPitchDisplayNumber, canSplitPitch, getSiblingPitch } from '@/lib/pitchUtils';
+import { PitchDialog } from './PitchDialog';
 
 export function PitchManagement() {
     const [pitches, setPitches] = useState<Pitch[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [typeFilter, setTypeFilter] = useState<string>('all');
+
+    // Dialog State
+    const [dialogOpen, setDialogOpen] = useState(false);
+    const [editingPitch, setEditingPitch] = useState<Pitch | null>(null);
 
     useEffect(() => {
         loadPitches();
@@ -47,6 +52,48 @@ export function PitchManagement() {
             console.error('Error loading pitches:', error);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleAdd = () => {
+        setEditingPitch(null);
+        setDialogOpen(true);
+    };
+
+    const handleEdit = (pitch: Pitch) => {
+        setEditingPitch(pitch);
+        setDialogOpen(true);
+    };
+
+    const handleSave = async (data: CreatePitchRequest | UpdatePitchRequest) => {
+        try {
+            let response;
+            if (editingPitch) {
+                // Update
+                response = await fetch(`/api/pitches?id=${editingPitch.id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data),
+                });
+            } else {
+                // Create
+                response = await fetch('/api/pitches', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data),
+                });
+            }
+
+            if (response.ok) {
+                await loadPitches();
+                return;
+            } else {
+                const error = await response.json();
+                alert(`Errore: ${error.error}`);
+            }
+        } catch (error) {
+            console.error('Error saving pitch:', error);
+            alert('Errore durante il salvataggio');
         }
     };
 
@@ -154,7 +201,7 @@ export function PitchManagement() {
                         <RefreshCw className="h-4 w-4 mr-2" />
                         Ricarica
                     </Button>
-                    <Button size="sm">
+                    <Button size="sm" onClick={handleAdd}>
                         <Plus className="h-4 w-4 mr-2" />
                         Aggiungi Piazzola
                     </Button>
@@ -163,7 +210,7 @@ export function PitchManagement() {
 
             {/* Filters */}
             <div className="flex gap-4">
-                <div className="flex-1">
+                <div className="flex-1 space-y-2">
                     <Label>Cerca</Label>
                     <div className="relative">
                         <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -175,7 +222,7 @@ export function PitchManagement() {
                         />
                     </div>
                 </div>
-                <div className="w-48">
+                <div className="w-48 space-y-2">
                     <Label>Tipo</Label>
                     <select
                         value={typeFilter}
@@ -230,14 +277,16 @@ export function PitchManagement() {
                                         </TableCell>
                                         <TableCell>
                                             <Badge variant={pitch.status === 'available' ? 'default' : 'secondary'}>
-                                                {pitch.status}
+                                                {pitch.status === 'available' ? 'Disponibile' :
+                                                    pitch.status === 'maintenance' ? 'Manutenzione' : 'Bloccata'}
                                             </Badge>
                                         </TableCell>
                                         <TableCell className="text-sm text-muted-foreground">
                                             {Object.entries(pitch.attributes)
-                                                .filter(([_, value]) => value === true)
+                                                .filter(([key, value]) => value === true && key !== 'size_sqm')
                                                 .map(([key]) => key)
-                                                .join(', ') || 'Nessuna'}
+                                                .join(', ') || '-'}
+                                            {pitch.attributes.size_sqm ? ` ${pitch.attributes.size_sqm}mq` : ''}
                                         </TableCell>
                                         <TableCell className="text-right">
                                             <div className="flex justify-end gap-1">
@@ -245,6 +294,7 @@ export function PitchManagement() {
                                                     size="sm"
                                                     variant="ghost"
                                                     title="Modifica"
+                                                    onClick={() => handleEdit(pitch)}
                                                 >
                                                     <Pencil className="h-3 w-3" />
                                                 </Button>
@@ -296,6 +346,13 @@ export function PitchManagement() {
                 <span>Singole: {filteredPitches.filter(p => p.suffix === '').length}</span>
                 <span>Doppie: {filteredPitches.filter(p => p.suffix !== '').length / 2}</span>
             </div>
+
+            <PitchDialog
+                open={dialogOpen}
+                onOpenChange={setDialogOpen}
+                onSubmit={handleSave}
+                initialData={editingPitch}
+            />
         </div>
     );
 }
