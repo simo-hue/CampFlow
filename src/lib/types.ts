@@ -2,9 +2,10 @@
  * TypeScript type definitions for CampFlow PMS
  */
 
-export type PitchType = 'standard' | 'comfort' | 'premium';
+export type PitchType = 'standard' | 'comfort' | 'premium' | 'piazzola' | 'tenda';
 export type PitchStatus = 'available' | 'maintenance' | 'blocked';
 export type BookingStatus = 'confirmed' | 'checked_in' | 'checked_out' | 'cancelled';
+export type PitchSuffix = '' | 'a' | 'b';
 
 export interface PitchAttributes {
     shade?: boolean;
@@ -16,7 +17,8 @@ export interface PitchAttributes {
 
 export interface Pitch {
     id: string;
-    number: string;
+    number: string; // Base number e.g. "001"
+    suffix: PitchSuffix; // '', 'a', or 'b'
     type: PitchType;
     attributes: PitchAttributes;
     status: PitchStatus;
@@ -82,3 +84,59 @@ export interface DashboardStats {
     current_occupancy: number;
     occupancy_percentage: number;
 }
+
+export type GuestType = 'adult' | 'child' | 'infant';
+
+export interface BookingGuest {
+    id: string;
+    booking_id: string;
+    full_name: string;
+    birth_date?: string; // YYYY-MM-DD
+    birth_place?: string;
+    address?: string;
+    document_type?: string; // 'carta_identita' | 'passaporto' | 'patente'
+    document_number?: string;
+    nationality?: string;
+    guest_type: GuestType;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface CreateGuestRequest {
+    booking_id: string;
+    full_name: string;
+    birth_date?: string;
+    birth_place?: string;
+    address?: string;
+    document_type?: string;
+    document_number?: string;
+    nationality?: string;
+    guest_type: GuestType;
+}
+
+// Pitch management types
+export interface CreatePitchRequest {
+    number: string;
+    suffix?: PitchSuffix;
+    type: PitchType;
+    attributes?: PitchAttributes;
+    create_double?: boolean; // If true, creates both 'a' and 'b' variants
+}
+
+export interface UpdatePitchRequest {
+    type?: PitchType;
+    attributes?: PitchAttributes;
+    status?: PitchStatus;
+}
+
+export interface SplitPitchRequest {
+    pitch_id: string; // ID of the single pitch to split
+}
+
+export interface MergePitchRequest {
+    pitch_a_id: string;
+    pitch_b_id: string;
+}
+
+// Helper function type for displaying pitch number
+export type PitchDisplayNumber = (pitch: Pitch) => string; // Returns "001" or "001a"

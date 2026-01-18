@@ -1,6 +1,10 @@
 # CampFlow - Azioni Manuali da Completare
 
-> **⚡ AGGIORNAMENTO 18/01/2026 ore 17:39**: Sistema prenotazioni ora usa solo DATE (nessuna precisione oraria).
+> **⚡ AGGIORNAMENTO 18/01/2026 ore 17:47**: Aggiunta tabella `booking_guests` per dettagli ospiti.
+> - Workflow: Prenotazione → solo referente | Check-in → dettagli tutti gli ospiti
+> - Campi: nome, data/luogo nascita, indirizzo, documento, nazionalità, tipo ospite
+
+> **🗓️ AGGIORNAMENTO ore 17:39**: Sistema prenotazioni ora usa solo DATE (nessuna precisione oraria).
 > - Database: `DATERANGE` invece di `TSRANGE`
 > - Tutte le prenotazioni a livello giornaliero
 > Vedi documentazione per dettagli.

@@ -10,16 +10,21 @@ CREATE EXTENSION IF NOT EXISTS btree_gist;
 -- =====================================================
 -- TABLE: pitches
 -- Stores information about each campsite pitch
+-- Supports single pitches (suffix='') and split pitches (suffix='a'/'b')
 -- =====================================================
 CREATE TABLE pitches (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  number VARCHAR(10) UNIQUE NOT NULL,
-  type VARCHAR(50) NOT NULL CHECK (type IN ('standard', 'comfort', 'premium')),
+  number VARCHAR(10) NOT NULL, -- Base number e.g. "001", "102"
+  suffix VARCHAR(1) NOT NULL DEFAULT '' CHECK (suffix IN ('', 'a', 'b')),
+  type VARCHAR(50) NOT NULL CHECK (type IN ('standard', 'comfort', 'premium', 'piazzola', 'tenda')),
   attributes JSONB NOT NULL DEFAULT '{}', 
   -- Example attributes: {"shade": true, "electricity": true, "water": true, "size_sqm": 80}
   status VARCHAR(20) NOT NULL DEFAULT 'available' CHECK (status IN ('available', 'maintenance', 'blocked')),
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  
+  -- Unique constraint on number + suffix combination
+  CONSTRAINT pitches_number_suffix_key UNIQUE (number, suffix)
 );
 
 -- =====================================================
@@ -70,6 +75,37 @@ EXCLUDE USING GIST (
 ) WHERE (status NOT IN ('cancelled'));
 
 -- =====================================================
+-- TABLE: booking_guests
+-- Individual guest details (filled during check-in)
+-- =====================================================
+CREATE TABLE booking_guests (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  booking_id UUID NOT NULL REFERENCES bookings(id) ON DELETE CASCADE,
+  
+  -- Dati anagrafici persona
+  full_name VARCHAR(255) NOT NULL,
+  birth_date DATE,
+  birth_place VARCHAR(255),
+  address TEXT,
+  
+  -- Documento identità
+  document_type VARCHAR(50), -- carta_identita, passaporto, patente, etc
+  document_number VARCHAR(100),
+  nationality VARCHAR(100),
+  
+  -- Tipo ospite
+  guest_type VARCHAR(20) NOT NULL DEFAULT 'adult' 
+    CHECK (guest_type IN ('adult', 'child', 'infant')),
+  
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- Indici per booking_guests
+CREATE INDEX idx_booking_guests_booking ON booking_guests(booking_id);
+CREATE INDEX idx_booking_guests_type ON booking_guests(guest_type);
+
+-- =====================================================
 -- INDEXES for Performance Optimization
 -- =====================================================
 
@@ -117,30 +153,35 @@ CREATE TRIGGER update_bookings_updated_at
   FOR EACH ROW 
   EXECUTE FUNCTION update_updated_at_column();
 
+CREATE TRIGGER update_booking_guests_updated_at 
+  BEFORE UPDATE ON booking_guests 
+  FOR EACH ROW 
+  EXECUTE FUNCTION update_updated_at_column();
+
 -- =====================================================
 -- SEED DATA: Sample Pitches
 -- =====================================================
-INSERT INTO pitches (number, type, attributes) VALUES
+INSERT INTO pitches (number, suffix, type, attributes) VALUES
   -- Standard pitches (1-100)
-  ('001', 'standard', '{"shade": true, "electricity": true, "water": false, "size_sqm": 60}'),
-  ('002', 'standard', '{"shade": false, "electricity": true, "water": false, "size_sqm": 60}'),
-  ('003', 'standard', '{"shade": true, "electricity": true, "water": false, "size_sqm": 60}'),
-  ('004', 'standard', '{"shade": false, "electricity": true, "water": false, "size_sqm": 60}'),
-  ('005', 'standard', '{"shade": true, "electricity": true, "water": false, "size_sqm": 60}'),
+  ('001', '', 'standard', '{"shade": true, "electricity": true, "water": false, "size_sqm": 60}'),
+  ('002', '', 'standard', '{"shade": false, "electricity": true, "water": false, "size_sqm": 60}'),
+  ('003', '', 'standard', '{"shade": true, "electricity": true, "water": false, "size_sqm": 60}'),
+  ('004', '', 'standard', '{"shade": false, "electricity": true, "water": false, "size_sqm": 60}'),
+  ('005', '', 'standard', '{"shade": true, "electricity": true, "water": false, "size_sqm": 60}'),
   
   -- Comfort pitches (101-200)
-  ('101', 'comfort', '{"shade": true, "electricity": true, "water": true, "size_sqm": 80}'),
-  ('102', 'comfort', '{"shade": true, "electricity": true, "water": true, "size_sqm": 80}'),
-  ('103', 'comfort', '{"shade": false, "electricity": true, "water": true, "size_sqm": 80}'),
-  ('104', 'comfort', '{"shade": true, "electricity": true, "water": true, "size_sqm": 80}'),
-  ('105', 'comfort', '{"shade": true, "electricity": true, "water": true, "size_sqm": 80}'),
+  ('101', '', 'comfort', '{"shade": true, "electricity": true, "water": true, "size_sqm": 80}'),
+  ('102', '', 'comfort', '{"shade": true, "electricity": true, "water": true, "size_sqm": 80}'),
+  ('103', '', 'comfort', '{"shade": false, "electricity": true, "water": true, "size_sqm": 80}'),
+  ('104', '', 'comfort', '{"shade": true, "electricity": true, "water": true, "size_sqm": 80}'),
+  ('105', '', 'comfort', '{"shade": true, "electricity": true, "water": true, "size_sqm": 80}'),
   
   -- Premium pitches (201-300)
-  ('201', 'premium', '{"shade": true, "electricity": true, "water": true, "size_sqm": 100, "sewer": true}'),
-  ('202', 'premium', '{"shade": true, "electricity": true, "water": true, "size_sqm": 100, "sewer": true}'),
-  ('203', 'premium', '{"shade": true, "electricity": true, "water": true, "size_sqm": 100, "sewer": true}'),
-  ('204', 'premium', '{"shade": false, "electricity": true, "water": true, "size_sqm": 100, "sewer": true}'),
-  ('205', 'premium', '{"shade": true, "electricity": true, "water": true, "size_sqm": 100, "sewer": true}');
+  ('201', '', 'premium', '{"shade": true, "electricity": true, "water": true, "size_sqm": 100, "sewer": true}'),
+  ('202', '', 'premium', '{"shade": true, "electricity": true, "water": true, "size_sqm": 100, "sewer": true}'),
+  ('203', '', 'premium', '{"shade": true, "electricity": true, "water": true, "size_sqm": 100, "sewer": true}'),
+  ('204', '', 'premium', '{"shade": false, "electricity": true, "water": true, "size_sqm": 100, "sewer": true}'),
+  ('205', '', 'premium', '{"shade": true, "electricity": true, "water": true, "size_sqm": 100, "sewer": true}');
 
 -- NOTE: In production, you'll need to insert all 300 pitches.
 -- Use a script or generate them programmatically.
@@ -178,5 +219,6 @@ $$ LANGUAGE plpgsql STABLE;
 COMMENT ON TABLE pitches IS 'Campsite pitches with JSONB attributes for flexibility';
 COMMENT ON TABLE customers IS 'Customer records for reservation management';
 COMMENT ON TABLE bookings IS 'Reservations using DATERANGE with anti-overbooking constraint';
+COMMENT ON TABLE booking_guests IS 'Individual guest details recorded during check-in';
 COMMENT ON COLUMN bookings.booking_period IS 'DATERANGE type ensures efficient date range queries and prevents overlaps via GIST exclusion';
 COMMENT ON CONSTRAINT prevent_overbooking ON bookings IS 'GIST exclusion constraint that physically prevents double-booking at database level';

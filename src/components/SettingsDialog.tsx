@@ -15,6 +15,7 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Settings } from 'lucide-react';
+import { PitchManagement } from '@/components/settings/PitchManagement';
 
 interface PricingSettings {
     person_price_per_day: number;
@@ -101,9 +102,10 @@ export function SettingsDialog() {
                 </DialogHeader>
 
                 <Tabs defaultValue="appearance" className="mt-4">
-                    <TabsList className="grid w-full grid-cols-2">
+                    <TabsList className="grid w-full grid-cols-3">
                         <TabsTrigger value="appearance">Aspetto</TabsTrigger>
                         <TabsTrigger value="pricing">Prezzi</TabsTrigger>
+                        <TabsTrigger value="campeggio">Campeggio</TabsTrigger>
                     </TabsList>
 
                     {/* Aspetto Tab */}
@@ -209,6 +211,11 @@ export function SettingsDialog() {
                                 </p>
                             </div>
                         </div>
+                    </TabsContent>
+
+                    {/* Campeggio Tab */}
+                    <TabsContent value="campeggio" className="mt-4">
+                        <PitchManagement />
                     </TabsContent>
                 </Tabs>
 
