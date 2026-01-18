@@ -34,40 +34,27 @@ const PITCH_STATUSES: { value: PitchStatus; label: string }[] = [
 export function PitchDialog({ open, onOpenChange, onSubmit, initialData }: PitchDialogProps) {
     const isEditing = !!initialData;
     const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
     // Form state
     const [number, setNumber] = useState('');
     const [type, setType] = useState<PitchType>('piazzola');
     const [status, setStatus] = useState<PitchStatus>('available');
-
-    // Attributes
-    const [shade, setShade] = useState(false);
-    const [electricity, setElectricity] = useState(false);
-    const [water, setWater] = useState(false);
-    const [sewer, setSewer] = useState(false);
-    const [sizeSqm, setSizeSqm] = useState(60);
+    const [createDouble, setCreateDouble] = useState(false);
 
     // Reset or populate form
     useEffect(() => {
         if (open) {
+            setError(null);
             if (initialData) {
                 setNumber(initialData.number);
                 setType(initialData.type);
                 setStatus(initialData.status);
-                setShade(initialData.attributes.shade || false);
-                setElectricity(initialData.attributes.electricity || false);
-                setWater(initialData.attributes.water || false);
-                setSewer(initialData.attributes.sewer || false);
-                setSizeSqm(initialData.attributes.size_sqm || 60);
             } else {
                 setNumber('');
                 setType('piazzola');
                 setStatus('available');
-                setShade(false);
-                setElectricity(true);
-                setWater(false);
-                setSewer(false);
-                setSizeSqm(60);
+                setCreateDouble(false);
             }
         }
     }, [open, initialData]);
@@ -75,15 +62,11 @@ export function PitchDialog({ open, onOpenChange, onSubmit, initialData }: Pitch
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
+        setError(null);
 
         try {
-            const attributes: PitchAttributes = {
-                shade,
-                electricity,
-                water,
-                sewer,
-                size_sqm: sizeSqm,
-            };
+            // Attributes are no longer used as per user request
+            const attributes: PitchAttributes = {};
 
             if (isEditing) {
                 await onSubmit({
@@ -96,12 +79,19 @@ export function PitchDialog({ open, onOpenChange, onSubmit, initialData }: Pitch
                     number,
                     type,
                     attributes,
-                    create_double: false, // Default to single, splitting is separate action
+                    create_double: createDouble,
                 } as CreatePitchRequest);
             }
             onOpenChange(false);
-        } catch (error) {
-            console.error('Error submitting form:', error);
+        } catch (err: any) {
+            console.error('Error submitting form:', err);
+            // If the error object has a message (from API response thrown by caller), display it.
+            // Assuming onSubmit might throw an Error with the message.
+            if (err instanceof Error) {
+                setError(err.message);
+            } else {
+                setError('Si è verificato un errore. Riprova.');
+            }
         } finally {
             setLoading(false);
         }
@@ -120,21 +110,44 @@ export function PitchDialog({ open, onOpenChange, onSubmit, initialData }: Pitch
                 </DialogHeader>
 
                 <form onSubmit={handleSubmit} className="space-y-4 py-4">
-                    {!isEditing && (
-                        <div className="grid grid-cols-4 items-center gap-4">
-                            <Label htmlFor="number" className="text-right">
-                                Numero
-                            </Label>
-                            <Input
-                                id="number"
-                                value={number}
-                                onChange={(e) => setNumber(e.target.value)}
-                                className="col-span-3"
-                                placeholder="es. 001"
-                                required
-                                maxLength={10}
-                            />
+                    {error && (
+                        <div className="bg-destructive/15 text-destructive text-sm p-3 rounded-md">
+                            {error}
                         </div>
+                    )}
+                    {!isEditing && (
+                        <>
+                            <div className="grid grid-cols-4 items-center gap-4">
+                                <Label htmlFor="number" className="text-right">
+                                    Numero
+                                </Label>
+                                <Input
+                                    id="number"
+                                    value={number}
+                                    onChange={(e) => setNumber(e.target.value.replace(/\D/g, ''))}
+                                    className="col-span-3"
+                                    placeholder="es. 001"
+                                    required
+                                    maxLength={10}
+                                />
+                            </div>
+
+                            <div className="grid grid-cols-4 items-center gap-4">
+                                <Label htmlFor="createDouble" className="text-right">
+                                    Doppia
+                                </Label>
+                                <div className="col-span-3 flex items-center space-x-2">
+                                    <Switch
+                                        id="createDouble"
+                                        checked={createDouble}
+                                        onCheckedChange={setCreateDouble}
+                                    />
+                                    <Label htmlFor="createDouble" className="font-normal text-muted-foreground">
+                                        Crea {number}a e {number}b
+                                    </Label>
+                                </div>
+                            </div>
+                        </>
                     )}
 
                     <div className="grid grid-cols-4 items-center gap-4">
@@ -174,53 +187,17 @@ export function PitchDialog({ open, onOpenChange, onSubmit, initialData }: Pitch
                             </select>
                         </div>
                     )}
-
-                    <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="size" className="text-right">
-                            Mq
-                        </Label>
-                        <Input
-                            id="size"
-                            type="number"
-                            value={sizeSqm}
-                            onChange={(e) => setSizeSqm(Number(e.target.value))}
-                            className="col-span-3"
-                            min={1}
-                        />
-                    </div>
-
-                    <div className="space-y-2">
-                        <Label>Caratteristiche</Label>
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="flex items-center space-x-2">
-                                <Switch id="shade" checked={shade} onCheckedChange={setShade} />
-                                <Label htmlFor="shade">Ombreggiata</Label>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                                <Switch id="electricity" checked={electricity} onCheckedChange={setElectricity} />
-                                <Label htmlFor="electricity">Elettricità</Label>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                                <Switch id="water" checked={water} onCheckedChange={setWater} />
-                                <Label htmlFor="water">Acqua</Label>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                                <Switch id="sewer" checked={sewer} onCheckedChange={setSewer} />
-                                <Label htmlFor="sewer">Scarico</Label>
-                            </div>
-                        </div>
-                    </div>
-
-                    <DialogFooter>
-                        <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-                            Annulla
-                        </Button>
-                        <Button type="submit" disabled={loading}>
-                            {loading ? 'Salvataggio...' : 'Salva'}
-                        </Button>
-                    </DialogFooter>
                 </form>
-            </DialogContent>
-        </Dialog>
+
+                <DialogFooter>
+                    <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+                        Annulla
+                    </Button>
+                    <Button type="submit" disabled={loading}>
+                        {loading ? 'Salvataggio...' : 'Salva'}
+                    </Button>
+                </DialogFooter>
+            </DialogContent >
+        </Dialog >
     );
 }

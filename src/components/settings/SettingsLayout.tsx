@@ -89,13 +89,6 @@ export function SettingsLayout({ children, activeSection, onSectionChange }: Set
                                 );
                             })}
                         </nav>
-
-                        {/* Info Box */}
-                        <div className="mt-6 p-4 rounded-lg bg-muted">
-                            <p className="text-sm text-muted-foreground">
-                                💡 Le modifiche vengono salvate automaticamente
-                            </p>
-                        </div>
                     </aside>
 
                     {/* Content Area */}

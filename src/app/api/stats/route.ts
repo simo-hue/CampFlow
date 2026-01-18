@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase/server';
 import type { DashboardStats } from '@/lib/types';
+import { getTodayItaly } from '@/lib/utils';
 
 /**
  * GET /api/stats
@@ -12,7 +13,7 @@ import type { DashboardStats } from '@/lib/types';
  */
 export async function GET() {
     try {
-        const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+        const today = getTodayItaly(); // YYYY-MM-DD in Italy
 
         // Get arrivals today: bookings where lower(booking_period)::date = today
         const { data: arrivalsData, error: arrivalsError } = await supabaseAdmin
@@ -30,12 +31,12 @@ export async function GET() {
             console.error('Error fetching departures:', departuresError);
         }
 
-        // Get current occupancy: active bookings where booking_period contains NOW()
+        // Get current occupancy: active bookings where booking_period contains today
         const { count: occupancyCount, error: occupancyError } = await supabaseAdmin
             .from('bookings')
             .select('*', { count: 'exact', head: true })
             .in('status', ['confirmed', 'checked_in'])
-            .contains('booking_period', new Date().toISOString());
+            .contains('booking_period', today);
 
         if (occupancyError) {
             console.error('Error fetching occupancy:', occupancyError);

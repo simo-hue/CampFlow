@@ -1,14 +1,15 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase/server';
+import { getTodayItaly } from '@/lib/utils';
 
 /**
  * GET /api/today
  * 
- * Returns arrivals and departures for today
+ * Returns arrivals and departures for today (Italy time)
  */
 export async function GET() {
     try {
-        const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+        const today = getTodayItaly(); // YYYY-MM-DD in Italy
 
         // Get arrivals (bookings starting today)
         const { data: arrivals, error: arrivalsError } = await supabaseAdmin

@@ -6,6 +6,8 @@ import { PitchManagement } from '@/components/settings/PitchManagement';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
+import { Button } from '@/components/ui/button';
+import { Save, Check } from 'lucide-react';
 
 interface PricingSettings {
     person_price_per_day: number;
@@ -23,6 +25,7 @@ const DEFAULT_PRICING: PricingSettings = {
 
 export default function SettingsPage() {
     const [activeSection, setActiveSection] = useState('campeggio');
+    const [isSaved, setIsSaved] = useState(false);
 
     // Dark mode state
     const [darkMode, setDarkMode] = useState(() => {
@@ -54,14 +57,19 @@ export default function SettingsPage() {
         localStorage.setItem('darkMode', darkMode.toString());
     }, [darkMode]);
 
-    // Auto-save pricing
-    useEffect(() => {
-        localStorage.setItem('pricing', JSON.stringify(pricing));
-    }, [pricing]);
+    // Manual Save Pricing
+    const savePricing = () => {
+        if (typeof window !== 'undefined') {
+            localStorage.setItem('pricing', JSON.stringify(pricing));
+            setIsSaved(true);
+            setTimeout(() => setIsSaved(false), 2000);
+        }
+    };
 
     const updatePricing = (field: keyof PricingSettings, value: string) => {
         const numValue = parseFloat(value) || 0;
         setPricing((prev) => ({ ...prev, [field]: numValue }));
+        setIsSaved(false);
     };
 
     return (
@@ -89,7 +97,7 @@ export default function SettingsPage() {
                         </p>
                     </div>
 
-                    <div className="space-y-6 max-w-2xl">
+                    <div className="space-y-6 w-full">
                         {/* Prezzo Persona */}
                         <div className="grid gap-2">
                             <Label htmlFor="person-price">Prezzo Persona (€/giorno)</Label>
@@ -165,6 +173,23 @@ export default function SettingsPage() {
                                 </strong>
                             </p>
                         </div>
+
+                        {/* Save Button */}
+                        <div className="flex justify-end pt-4">
+                            <Button onClick={savePricing} className="w-full sm:w-auto" disabled={isSaved}>
+                                {isSaved ? (
+                                    <>
+                                        <Check className="mr-2 h-4 w-4" />
+                                        Modifiche Salvate
+                                    </>
+                                ) : (
+                                    <>
+                                        <Save className="mr-2 h-4 w-4" />
+                                        Salva Modifiche
+                                    </>
+                                )}
+                            </Button>
+                        </div>
                     </div>
                 </div>
             )}
@@ -179,7 +204,7 @@ export default function SettingsPage() {
                         </p>
                     </div>
 
-                    <div className="max-w-2xl">
+                    <div className="w-full">
                         <div className="flex items-center justify-between p-4 border rounded-lg">
                             <div className="space-y-0.5">
                                 <Label htmlFor="dark-mode" className="text-base font-medium">

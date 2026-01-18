@@ -358,6 +358,37 @@ CREATE POLICY "Staff can manage bookings"
 - ✅ Aggiunto selettore "Settore" in Gestione Campeggio per filtrare piazzole per range numerici (es. Settore 1: 1-60).
 
 
+### 2026-01-18 - Fix: Timezone Italia
+- ✅ Forzato l'uso di 'Europe/Rome' per tutte le date server-side (Today, Stats).
+- ✅ Risolto problema disallineamento UTC (prenotazioni "ieri" o "domani" errate).
+- ✅ Introdotto helper `getTodayItaly()` in `lib/utils` per centralizzare la logica.
+
+### 2026-01-18 - Simplification: Pitch Management
+- ✅ Rimosso tutti gli attributi piazzola (mq, shade, water, etc.) da UI e DB.
+- ✅ Aggiunto switch "Crea doppia (a/b)" direttamente nel dialog di creazione.
+- ✅ Form creazione ridotto ai minimi termini: Numero + Tipo.
+
+### 2026-01-18 - Schema Update
+- ✅ Aggiornato `supabase/schema.sql` per riflettere le modifiche UI.
+- ✅ Rimossi attributi di esempio nel seed data (ora `{}`).
+- ✅ Rimossi attributi di esempio nel seed data (ora `{}`).
+- ✅ Verificata presenza tabella `booking_guests` nello schema.
+
+### 2026-01-18 - Validation Update
+- ✅ Implementato controllo lato server per duplicati Piazzola (Numero + suffisso).
+- ✅ Aggiunta validazione regex per garantire che il numero sia un intero.
+- ✅ Gestione errore UI nel dialog di creazione.
+- ✅ **Fix Input**: Il campo "Numero" ora accetta solo cifre (blocco input client-side).
+
+### 2026-01-18 - Feature: Save Button Pricing
+- ✅ Aggiunto pulsante "Salva Modifiche" nel pannello Prezzi.
+- ✅ Rimosso salvataggio automatico (auto-save) per evitare scritture.
+- ✅ Feedback visivo "Modifiche Salvate" temporaneo.
+
+### 2026-01-18 - UI Update: Full Width Settings
+- ✅ Espansi pannelli "Prezzi" e "Aspetto" per usare tutta la larghezza disponibile.
+- ✅ Migliorata leggibilità su schermi larghi.
+
 ---
 
 **Documento vivo**: Aggiornare questo file ad ogni scelta implementativa significativa.

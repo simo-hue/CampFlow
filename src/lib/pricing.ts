@@ -33,7 +33,7 @@ const LOW_SEASON_RATES: PricingRates = {
  * Determines if a date falls in high season (June-August)
  */
 function isHighSeason(date: Date): boolean {
-    const month = date.getMonth(); // 0-indexed
+    const month = date.getUTCMonth(); // 0-indexed
     return month >= 5 && month <= 7; // June (5) - August (7)
 }
 
@@ -41,7 +41,7 @@ function isHighSeason(date: Date): boolean {
  * Determines if a date falls in mid season (May, September)
  */
 function isMidSeason(date: Date): boolean {
-    const month = date.getMonth();
+    const month = date.getUTCMonth();
     return month === 4 || month === 8; // May (4) or September (8)
 }
 

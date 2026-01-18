@@ -1,5 +1,16 @@
 # CampFlow - Azioni Manuali da Completare
 
+
+> **🧹 PULIZIA DB**: Le caratteristiche della piazzole (mq, ombra, ecc.) sono state rimosse dalla UI.
+> Le nuove piazzole avranno attributi vuoti. Per pulire quelle vecchie, puoi eseguire questo SQL:
+> `UPDATE pitches SET attributes = '{}'::jsonb;`
+
+> **🕒 AGGIORNAMENTO ore 18:55**: Fix Timezone Italia
+> - Implementato `getTodayItaly()` in `lib/utils.ts` per forzare la data server-side su 'Europe/Rome'.
+> - Aggiornati endpoint `/api/today` e `/api/stats` per usare la data italiana corretta invece di UTC.
+> - Questo risolve il problema delle "prenotazioni sfalsate di un giorno" (es. 1AM UTC vs 1AM IT).
+> - **Azione**: Verifica che la data mostrata nella dashboard sia corretta anche dopo la mezzanotte.
+
 > **⚠️ AZIONE CRITICA RICHIESTA: Chiave API Mancante**
 > Il sistema non riesce a caricare le piazzole perché manca la `SUPABASE_SERVICE_ROLE_KEY` nelle variabili d'ambiente.
 > **Azione**: Aggiungi `SUPABASE_SERVICE_ROLE_KEY=...` nel tuo file `.env.local` (o dove definisci le env vars per `npm run dev`).

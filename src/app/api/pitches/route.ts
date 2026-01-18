@@ -51,18 +51,44 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
         }
 
-        // Check if pitch already exists
-        const { data: existing } = await supabaseAdmin
-            .from('pitches')
-            .select('id')
-            .eq('number', number)
-            .eq('suffix', suffix);
-
-        if (existing && existing.length > 0) {
+        // Validate number is integer (digits only)
+        if (!/^\d+$/.test(number)) {
             return NextResponse.json(
-                { error: `Pitch ${number}${suffix} already exists` },
-                { status: 409 }
+                { error: 'Il numero della piazzola deve essere un numero intero' },
+                { status: 400 }
             );
+        }
+
+        // Check availability logic
+        if (create_double) {
+            // Check if 10a or 10b already exist
+            const { data: existing } = await supabaseAdmin
+                .from('pitches')
+                .select('number, suffix')
+                .eq('number', number)
+                .in('suffix', ['a', 'b']);
+
+            if (existing && existing.length > 0) {
+                return NextResponse.json(
+                    { error: `Le piazzole ${number}a/${number}b esistono già` },
+                    { status: 409 }
+                );
+            }
+        } else {
+            // Check if pitch already exists (exact number + suffix match)
+            const { data: existing } = await supabaseAdmin
+                .from('pitches')
+                .select('id')
+                .eq('number', number)
+                .eq('suffix', suffix);
+
+            if (existing && existing.length > 0) {
+                const fullNumber = suffix ? `${number}${suffix}` : number;
+                return NextResponse.json(
+                    { error: `La piazzola ${fullNumber} esiste già` },
+                    { status: 409 }
+                );
+            }
         }
 
         if (create_double) {
