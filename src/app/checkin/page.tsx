@@ -310,43 +310,46 @@ function CheckInDialog({ open, onOpenChange, booking, onClose, onSuccess }: {
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-[95vw] max-w-[95vw] w-full h-[95vh] flex flex-col p-6 gap-0">
-                <DialogHeader className="flex-none mb-4">
-                    <DialogTitle className="text-3xl flex items-center gap-2">
-                        Check-in: {booking.customer?.first_name} {booking.customer?.last_name}
-                    </DialogTitle>
-                    <DialogDescription className="text-lg">
-                        Completa i dati dell'ospite e conferma il check-in.
-                    </DialogDescription>
+            <DialogContent className="sm:max-w-[95vw] max-w-[95vw] w-full max-h-[95vh] flex flex-col p-6 gap-0">
+                <DialogHeader className="flex-none mb-6">
+                    <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+                        <div>
+                            <DialogTitle className="text-3xl flex items-center gap-2">
+                                Check-in: {booking.customer?.first_name} {booking.customer?.last_name}
+                            </DialogTitle>
+                            <DialogDescription className="text-lg mt-1">
+                                Completa i dati dell'ospite e conferma il check-in.
+                            </DialogDescription>
+                        </div>
+
+                        <div className="flex flex-wrap items-center gap-3 bg-muted/30 p-2.5 rounded-lg border text-sm shadow-sm mt-8 mr-6 md:mr-0">
+                            <div className="flex items-center gap-2">
+                                <Calendar className="w-4 h-4 text-muted-foreground" />
+                                <span className="font-medium text-foreground">
+                                    {format(start, 'd MMM', { locale: it })} - {format(end, 'd MMM yyyy', { locale: it })}
+                                </span>
+                            </div>
+                            <div className="w-px h-4 bg-border hidden sm:block"></div>
+                            <div className="flex items-center gap-2">
+                                <span className="bg-primary/10 text-primary px-2 py-0.5 rounded text-xs font-bold uppercase tracking-wider">
+                                    Piazzola {booking.pitch?.number}
+                                </span>
+                            </div>
+                            <div className="w-px h-4 bg-border hidden sm:block"></div>
+                            <div className="flex items-center gap-2">
+                                <Users className="w-4 h-4 text-muted-foreground" />
+                                <span>{booking.guests_count} Ospiti</span>
+                            </div>
+                        </div>
+                    </div>
                 </DialogHeader>
 
                 <div className="flex-1 overflow-y-auto pr-2 -mr-2">
-                    {/* Info Summary Strip */}
-                    <div className="flex flex-wrap gap-4 p-4 bg-muted/30 rounded-lg border text-sm mb-6">
-                        <div className="flex items-center gap-2">
-                            <Calendar className="w-4 h-4 text-muted-foreground" />
-                            <span className="font-medium text-foreground">
-                                {format(start, 'd MMM', { locale: it })} - {format(end, 'd MMM yyyy', { locale: it })}
-                            </span>
-                        </div>
-                        <div className="w-px h-auto bg-border mx-2 hidden sm:block"></div>
-                        <div className="flex items-center gap-2">
-                            <span className="bg-primary/10 text-primary px-2 py-0.5 rounded text-xs font-bold uppercase tracking-wider">
-                                Piazzola {booking.pitch?.number}
-                            </span>
-                        </div>
-                        <div className="w-px h-auto bg-border mx-2 hidden sm:block"></div>
-                        <div className="flex items-center gap-2">
-                            <Users className="w-4 h-4 text-muted-foreground" />
-                            <span>{booking.guests_count} Ospiti</span>
-                        </div>
-                    </div>
-
                     <div className="grid md:grid-cols-2 gap-8 pb-4">
                         <div className="space-y-8">
                             {/* Dati di Nascita */}
-                            <div className="space-y-4">
-                                <div className="flex items-center gap-2 text-primary font-semibold border-b pb-2 border-l-4 border-l-primary pl-2 bg-primary/5">
+                            <div className="space-y-4 bg-primary/5 p-4 rounded-xl border border-primary/10">
+                                <div className="flex items-center gap-2 text-primary font-semibold border-b pb-2 border-l-4 border-l-primary pl-2">
                                     <UserCheck className="w-5 h-5" />
                                     <h3 className="text-lg">Dati di Nascita</h3>
                                 </div>
@@ -428,8 +431,8 @@ function CheckInDialog({ open, onOpenChange, booking, onClose, onSuccess }: {
                             </div>
 
                             {/* Residenza */}
-                            <div className="space-y-4">
-                                <div className="flex items-center gap-2 text-primary font-semibold border-b pb-2 border-l-4 border-l-green-600 pl-2 bg-green-50 dark:bg-green-950/20">
+                            <div className="space-y-4 bg-green-50/50 dark:bg-green-900/10 p-4 rounded-xl border border-green-100 dark:border-green-900/20">
+                                <div className="flex items-center gap-2 text-green-700 dark:text-green-500 font-semibold border-b pb-2 border-l-4 border-l-green-600 pl-2">
                                     <UserCheck className="w-5 h-5 text-green-600" />
                                     <h3 className="text-lg">Residenza</h3>
                                 </div>
@@ -503,8 +506,8 @@ function CheckInDialog({ open, onOpenChange, booking, onClose, onSuccess }: {
 
                         <div className="space-y-8">
                             {/* Documento d'Identità */}
-                            <div className="space-y-4">
-                                <div className="flex items-center gap-2 text-primary font-semibold border-b pb-2 border-l-4 border-l-amber-500 pl-2 bg-amber-50 dark:bg-amber-950/20">
+                            <div className="space-y-4 bg-amber-50/50 dark:bg-amber-900/10 p-4 rounded-xl border border-amber-100 dark:border-amber-900/20">
+                                <div className="flex items-center gap-2 text-amber-700 dark:text-amber-500 font-semibold border-b pb-2 border-l-4 border-l-amber-500 pl-2">
                                     <UserCheck className="w-5 h-5 text-amber-600" />
                                     <h3 className="text-lg">Documento d'Identità</h3>
                                 </div>
@@ -624,6 +627,6 @@ function CheckInDialog({ open, onOpenChange, booking, onClose, onSuccess }: {
                     </div>
                 </DialogFooter>
             </DialogContent>
-        </Dialog>
+        </Dialog >
     );
 }
