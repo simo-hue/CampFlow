@@ -36,11 +36,6 @@ La tabella `customers` è stata estesa per supportare le richieste della Pubblic
   - `document_issue_date`, `document_issue_place` (Comune/Ente), `document_issue_country`
 
 ### 2.2 Creazione Prenotazione
-Il modale di creazione prenotazione permette ora di inserire tutti i dettagli del "Capo Gruppo" (intestatario).
-- Validazione campi obbligatori base (Nome, Cognome).
-- Sezioni espandibili per dettagli aggiuntivi (opzionali in fase di bozza, ma consigliati).
-
-### 2.2 Creazione Prenotazione
 Il modale di creazione ora include:
 - **Autocomplete Clienti**: Una barra di ricerca permette di trovare rapidamente clienti esistenti per nome, telefono o email.
 - **Validazione Strict**: Previene la sovrascrittura accidentale di clienti esistenti quando si inseriscono nuovi ospiti con lo stesso numero di telefono.
@@ -51,6 +46,19 @@ Il modale di creazione ora include:
   - Se tutti e tre coincidono, usa il cliente esistente. 
   - Se il telefono coincide ma il nome differisce, crea un **NUOVO** cliente (per gestire omonimie o familiari con stesso cellulare).
   - Se viene fornito `customer_id` (da Autocomplete), quel cliente viene usato e i suoi dati secondari (email, indirizzo) vengono aggiornati senza alterare il nome.
+
+### 2.3 Pagina Clienti (Lista e Dettaglio)
+**Stato**: Refactoring UI (2026-01-19)
+**Nuova Implementazione**:
+- **Lista Clienti (`/customers`)**: 
+  - Visualizza tutti i clienti con ricerca rapida per nome/email/telefono.
+  - Ricerca ottimizzata con debounce.
+- **Dettaglio Cliente (`/customers/[id]`)**: 
+  - **Layout Responsive Split-View**:
+      - **Sinistra (Profile)**: Pannello completo con Dati Personali, Residenza, Documenti e Statistiche (sempre visibili).
+      - **Destra (History)**: Storico prenotazioni scrollabile.
+  - **Editing Completo**: La modalità modifica sblocca tutti i campi nel pannello sinistro.
+  - **Statistiche Integrate**: Card per Spesa Totale e Numero Prenotazioni in evidenza.
 
 ## 3. Arrivals and Departures UI Refactor
 ### Date: 2026-01-19
@@ -65,11 +73,6 @@ Il modale di creazione ora include:
   - Mirrored the Arrivals page layout improvements.
   - Applied Blue theme consistent with "Departure" status.
   - Same responsive and list-based improvements.
-
-### Files Modified
-- `src/components/shared/GuestCard.tsx`
-- `src/app/arrivals/page.tsx`
-- `src/app/departures/page.tsx`
 
 ## 4. Statistics Dashboard
 **Stato**: Implementato (2026-01-19)
@@ -110,4 +113,3 @@ La pagina di Check-in è stata ridisegnata per migliorare l'usabilità.
             - CAP (Residenza)
             - Normalizza il nome del Comune.
         - Fonte Dati: Database JSON integrato con tutti i comuni italiani (`src/lib/data/comuni.json`).
-

@@ -1,5 +1,8 @@
 'use client';
 
+import { useQueryClient } from '@tanstack/react-query';
+import { BookingCreationModal } from './BookingCreationModal';
+
 import { useState } from 'react';
 import { useAvailability } from '@/hooks/useAvailability';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -29,6 +32,12 @@ export function AvailabilityModule() {
     const [checkInOpen, setCheckInOpen] = useState(false);
     const [checkOutOpen, setCheckOutOpen] = useState(false);
 
+    // Modal state
+    const [showBookingModal, setShowBookingModal] = useState(false);
+    const [selectedPitch, setSelectedPitch] = useState<Pitch | null>(null);
+
+    const queryClient = useQueryClient();
+
     // React Query Hook
     const { data: results, isLoading: loading, error: queryError } = useAvailability(checkInDate, checkOutDate);
     const error = queryError instanceof Error ? queryError.message : null;
@@ -51,6 +60,17 @@ export function AvailabilityModule() {
         if (pitchType === 'all') return true;
         return p.type === pitchType;
     }) || [];
+
+    const handleBookingClick = (pitch: Pitch) => {
+        setSelectedPitch(pitch);
+        setShowBookingModal(true);
+    };
+
+    const handleBookingSuccess = () => {
+        queryClient.invalidateQueries({ queryKey: ['availability'] });
+        setShowBookingModal(false);
+        setSelectedPitch(null);
+    };
 
     return (
         <Card>
@@ -198,10 +218,7 @@ export function AvailabilityModule() {
                                                 <TableCell className="text-right">
                                                     <Button
                                                         size="sm"
-                                                        onClick={() => {
-                                                            // TODO: Open booking modal
-                                                            console.log('Book pitch:', pitch.id);
-                                                        }}
+                                                        onClick={() => handleBookingClick(pitch)}
                                                     >
                                                         Prenota
                                                     </Button>
@@ -215,6 +232,20 @@ export function AvailabilityModule() {
                     </div>
                 )}
             </CardContent>
+
+            {/* Booking Modal */}
+            {selectedPitch && checkInDate && checkOutDate && (
+                <BookingCreationModal
+                    open={showBookingModal}
+                    onClose={() => setShowBookingModal(false)}
+                    pitchNumber={selectedPitch.number}
+                    pitchId={selectedPitch.id}
+                    pitchType={selectedPitch.type as any} // Cast if needed, or ensure PitchType is compatible
+                    checkIn={format(checkInDate, 'yyyy-MM-dd')}
+                    checkOut={format(checkOutDate, 'yyyy-MM-dd')}
+                    onSuccess={handleBookingSuccess}
+                />
+            )}
         </Card>
     );
 }

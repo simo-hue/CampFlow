@@ -32,3 +32,10 @@
     - Seleziona un comune. Verifica che il campo "Provincia" si compili automaticamente con la sigla corretta.
     - Cambia "Stato Nascita" in "Francia". Verifica che il campo Comune diventi un input normale senza suggerimenti.
     - Ripeti per "Residenza": Selezionando un comune, verifica che Provincia e CAP vengano compilati.
+
+### Customer Management
+9. **Test Lista Clienti**: Vai su `/customers`. Verifica che compaia la lista. Prova a cercare un cliente.
+10. **Test Dettaglio Cliente**: Clicca su "Dettagli" di un cliente.
+    - Modifica i dati personali e salva.
+    - Verifica che lo storico prenotazioni sia corretto.
+    - Prova il toggle "Questura" (Inviato) su una prenotazione e verifica che lo stato persista ricaricando la pagina.

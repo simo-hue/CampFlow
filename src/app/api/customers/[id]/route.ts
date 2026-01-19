@@ -1,5 +1,51 @@
-import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase/server';
+import { NextRequest, NextResponse } from 'next/server';
+
+export async function GET(
+    request: NextRequest,
+    { params }: { params: Promise<{ id: string }> }
+) {
+    const { id } = await params;
+
+    try {
+        // 1. Fetch Customer Details
+        const { data: customer, error: customerError } = await supabaseAdmin
+            .from('customers')
+            .select('*')
+            .eq('id', id)
+            .single();
+
+        if (customerError || !customer) {
+            return NextResponse.json({ error: 'Customer not found' }, { status: 404 });
+        }
+
+        // 2. Fetch Customer Bookings with related Pitch info
+        const { data: bookings, error: bookingsError } = await supabaseAdmin
+            .from('bookings')
+            .select(`
+                *,
+                pitch:pitches(name, number, type),
+                guests:booking_guests(count)
+            `)
+            .eq('customer_id', id)
+            .order('created_at', { ascending: false });
+
+        if (bookingsError) {
+            console.error('Error fetching bookings:', bookingsError);
+            // We return the customer even if bookings fail, just with empty bookings
+        }
+
+        return NextResponse.json({
+            customer,
+            bookings: bookings || []
+        });
+
+    } catch (error) {
+        console.error('Customer GET error:', error);
+        return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    }
+}
+
 
 export async function PATCH(
     request: NextRequest,
