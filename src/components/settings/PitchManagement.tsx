@@ -147,6 +147,26 @@ export function PitchManagement() {
                     </div>
                 </div>
 
+                {/* Type Filter */}
+                <div className="w-48 space-y-2">
+                    <Label>Tipo</Label>
+                    <select
+                        value={typeFilter}
+                        onChange={(e) => {
+                            const newType = e.target.value;
+                            setTypeFilter(newType);
+                            if (newType === 'tenda') {
+                                setSectorFilter('all');
+                            }
+                        }}
+                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                    >
+                        <option value="all">Tutti</option>
+                        <option value="piazzola">Piazzola</option>
+                        <option value="tenda">Tenda</option>
+                    </select>
+                </div>
+
                 {/* Sector Filter */}
                 {typeFilter !== 'tenda' && (
                     <div className="w-48 space-y-2">
@@ -165,20 +185,6 @@ export function PitchManagement() {
                         </select>
                     </div>
                 )}
-
-                {/* Type Filter */}
-                <div className="w-48 space-y-2">
-                    <Label>Tipo</Label>
-                    <select
-                        value={typeFilter}
-                        onChange={(e) => setTypeFilter(e.target.value)}
-                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                    >
-                        <option value="all">Tutti</option>
-                        <option value="piazzola">Piazzola</option>
-                        <option value="tenda">Tenda</option>
-                    </select>
-                </div>
             </div>
 
             {/* Table */}
