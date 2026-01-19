@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase/server';
-import type { PrismaSeason, PriceCalculation, PriceBreakdownDay, PitchType } from '@/lib/types';
+import type { PriceCalculation, PriceBreakdownDay, PitchType } from '@/lib/types';
 import { parseISO, addDays, differenceInDays, format } from 'date-fns';
 
 /**
@@ -15,6 +15,19 @@ export async function GET(request: Request) {
         const checkIn = searchParams.get('checkIn');
         const checkOut = searchParams.get('checkOut');
         const pitchType = searchParams.get('pitchType') as PitchType;
+
+        const guestsStr = searchParams.get('guests');
+        const dogsStr = searchParams.get('dogs');
+        const guestPriceStr = searchParams.get('guestPrice');
+        const dogPriceStr = searchParams.get('dogPrice');
+
+        const guestsCount = guestsStr ? parseInt(guestsStr) : 0;
+        const dogsCount = dogsStr ? parseInt(dogsStr) : 0;
+        const guestPrice = guestPriceStr ? parseFloat(guestPriceStr) : 0;
+        const dogPrice = dogPriceStr ? parseFloat(dogPriceStr) : 0;
+
+        // Calculate daily extra cost
+        const dailyExtraCost = (guestsCount * guestPrice) + (dogsCount * dogPrice);
 
         // Validation
         if (!checkIn || !checkOut || !pitchType) {
@@ -64,15 +77,16 @@ export async function GET(request: Request) {
         if (!seasons || seasons.length === 0) {
             // Fallback to default pricing if no seasons configured
             const defaultRate = pitchType === 'piazzola' ? 25 : 18;
-            const totalPrice = defaultRate * days;
+            const finalDailyRate = defaultRate + dailyExtraCost;
+            const totalPrice = finalDailyRate * days;
 
             return NextResponse.json({
                 totalPrice,
                 days,
-                averageRate: defaultRate,
+                averageRate: finalDailyRate,
                 breakdown: Array.from({ length: days }, (_, i) => ({
                     date: format(addDays(startDate, i), 'yyyy-MM-dd'),
-                    rate: defaultRate,
+                    rate: finalDailyRate,
                     seasonName: 'Tariffa Standard',
                     seasonColor: '#3b82f6'
                 }))
@@ -91,28 +105,32 @@ export async function GET(request: Request) {
             const applicableSeason = findSeasonForDate(currentDateStr, seasons);
 
             if (applicableSeason) {
-                const rate = pitchType === 'piazzola'
+                const baseRate = pitchType === 'piazzola'
                     ? applicableSeason.piazzola_price_per_day
                     : applicableSeason.tenda_price_per_day;
 
+                const finalRate = baseRate + dailyExtraCost;
+
                 breakdown.push({
                     date: currentDateStr,
-                    rate,
+                    rate: finalRate,
                     seasonName: applicableSeason.name,
                     seasonColor: applicableSeason.color
                 });
 
-                totalPrice += rate;
+                totalPrice += finalRate;
             } else {
                 // Fallback rate if no season covers this date
                 const fallbackRate = pitchType === 'piazzola' ? 25 : 18;
+                const finalRate = fallbackRate + dailyExtraCost;
+
                 breakdown.push({
                     date: currentDateStr,
-                    rate: fallbackRate,
+                    rate: finalRate,
                     seasonName: 'Tariffa Standard',
                     seasonColor: '#6b7280'
                 });
-                totalPrice += fallbackRate;
+                totalPrice += finalRate;
             }
         }
 

@@ -6,14 +6,7 @@ import Link from 'next/link';
 export default function InfoPage() {
     return (
         <div className="container mx-auto px-4 py-8 max-w-3xl">
-            <div className="mb-6">
-                <Link href="/">
-                    <Button variant="ghost" className="pl-0 gap-2">
-                        <ArrowLeft className="h-4 w-4" />
-                        Torna alla Dashboard
-                    </Button>
-                </Link>
-            </div>
+
 
             <Card className="border-t-4 border-t-primary shadow-lg">
                 <CardHeader>

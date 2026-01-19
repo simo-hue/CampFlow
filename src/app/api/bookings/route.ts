@@ -59,54 +59,100 @@ export async function POST(request: NextRequest) {
         // Calculate total price
         const totalPrice = calculatePrice(body.check_in, body.check_out, pitch.type);
 
-        // Step 1: Create or find customer
+        // Step 1: Resolve Customer
         let customerId: string;
 
-        // Try to find existing customer by phone
-        const { data: existingCustomer } = await supabaseAdmin
-            .from('customers')
-            .select('id')
-            .eq('phone', body.customer.phone)
-            .single();
+        // A) If customer_id is provided explicitly (from Autocomplete)
+        if (body.customer_id) {
+            customerId = body.customer_id;
 
-        if (existingCustomer) {
-            customerId = existingCustomer.id;
-
-            // Update customer info if provided
-            await supabaseAdmin
+            // Verify existence
+            const { data: existing, error: existError } = await supabaseAdmin
                 .from('customers')
-                .update({
-                    first_name: body.customer.first_name,
-                    last_name: body.customer.last_name,
-                    email: body.customer.email,
-                    address: body.customer.address,
-                    notes: body.customer.notes,
-                })
-                .eq('id', customerId);
-        } else {
-            // Create new customer
-            const { data: newCustomer, error: customerError } = await supabaseAdmin
-                .from('customers')
-                .insert({
-                    first_name: body.customer.first_name,
-                    last_name: body.customer.last_name,
-                    email: body.customer.email,
-                    phone: body.customer.phone,
-                    address: body.customer.address,
-                    notes: body.customer.notes,
-                })
                 .select('id')
+                .eq('id', customerId)
                 .single();
 
-            if (customerError || !newCustomer) {
-                console.error('Error creating customer:', customerError);
+            if (existError || !existing) {
                 return NextResponse.json(
-                    { error: 'Errore durante la creazione del cliente' },
-                    { status: 500 }
+                    { error: 'Cliente selezionato non trovato' },
+                    { status: 404 }
                 );
             }
 
-            customerId = newCustomer.id;
+            // Update auxiliary details if provided (non-destructive)
+            if (body.customer) {
+                await supabaseAdmin
+                    .from('customers')
+                    .update({
+                        email: body.customer.email,
+                        address: body.customer.address,
+                        notes: body.customer.notes,
+                        // We do NOT update names here to preserve integrity of the selected record
+                    })
+                    .eq('id', customerId);
+            }
+
+        } else {
+            // B) No ID provided -> Try to find by STRICT MATCH (Phone + First Name + Last Name)
+            // This prevents overwriting different people who coincidentally share a phone matches
+
+            // Clean inputs for comparison
+            const targetPhone = body.customer.phone.trim();
+            const targetFirst = body.customer.first_name.trim();
+            const targetLast = body.customer.last_name.trim();
+
+            const { data: candidates } = await supabaseAdmin
+                .from('customers')
+                .select('id, first_name, last_name, phone')
+                .eq('phone', targetPhone); // Filter by phone first (indexed)
+
+            const exactMatch = candidates?.find(c =>
+                c.first_name.toLowerCase() === targetFirst.toLowerCase() &&
+                c.last_name.toLowerCase() === targetLast.toLowerCase()
+            );
+
+            if (exactMatch) {
+                console.log(`✅ Found existing customer: ${exactMatch.first_name} ${exactMatch.last_name} (${exactMatch.id})`);
+                customerId = exactMatch.id;
+
+                // Optional: Update email/notes if changed
+                await supabaseAdmin
+                    .from('customers')
+                    .update({
+                        email: body.customer.email,
+                        address: body.customer.address,
+                        notes: body.customer.notes,
+                    })
+                    .eq('id', customerId);
+
+            } else {
+                console.log(`🆕 Creating NEW customer for: ${targetFirst} ${targetLast} (Phone: ${targetPhone})`);
+
+                // Create new customer
+                const { data: newCustomer, error: customerError } = await supabaseAdmin
+                    .from('customers')
+                    .insert({
+                        first_name: targetFirst,
+                        last_name: targetLast,
+                        email: body.customer.email,
+                        phone: targetPhone,
+                        address: body.customer.address,
+                        notes: body.customer.notes,
+                    })
+                    .select('id')
+                    .single();
+
+                if (customerError || !newCustomer) {
+                    console.error('Error creating customer:', customerError);
+                    return NextResponse.json(
+                        { error: 'Errore durante la creazione del cliente' },
+                        { status: 500 }
+                    );
+                }
+
+                customerId = newCustomer.id;
+            }
         }
 
         // 3. Crea la prenotazione usando daterange
@@ -146,6 +192,25 @@ export async function POST(request: NextRequest) {
             );
         }
 
+        // 4. Insert initial guests (names only)
+        if (body.guest_names && body.guest_names.length > 0) {
+            const guestsToInsert = body.guest_names.map(name => ({
+                booking_id: booking.id,
+                full_name: name,
+                guest_type: 'adult' // Default, can be updated at check-in
+            }));
+
+            const { error: guestsError } = await supabaseAdmin
+                .from('booking_guests')
+                .insert(guestsToInsert);
+
+            if (guestsError) {
+                console.error('Error inserting guests:', guestsError);
+                // Non-critical: we continue even if guest names fail (user can add them at check-in)
+            }
+        }
+
+
         return NextResponse.json({
             id: booking.id,
             success: true,
@@ -180,7 +245,8 @@ export async function GET(request: NextRequest) {
             .select(`
         *,
         pitch:pitches(*),
-        customer:customers(*)
+        customer:customers(*),
+        guests:booking_guests(*)
       `)
             .order('created_at', { ascending: false });
 

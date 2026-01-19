@@ -21,3 +21,5 @@
 2. Inserisci un nuovo cliente compilando ANCHE i campi documento e nascita.
 3. Salva la prenotazione.
 4. Verifica nel database che i dati siano stati salvati correttamente nella tabella `customers`.
+5. **Test Strict Matching**: Crea una nuova prenotazione con lo STESSO numero di telefono di un cliente esistente, ma con Nome/Cognome DIVERSI. Verifica che venga creato un NUOVO cliente e non sovrascritto il vecchio.
+6. **Test Autocomplete**: Nella creazione prenotazione, inizia a scrivere il nome di un cliente esistente. Selezionalo dal menu. Verifica che i campi si autocompilino. Cambia il nome e salva. Verifica il comportamento atteso.

@@ -40,7 +40,14 @@ Il modale di creazione prenotazione permette ora di inserire tutti i dettagli de
 - Validazione campi obbligatori base (Nome, Cognome).
 - Sezioni espandibili per dettagli aggiuntivi (opzionali in fase di bozza, ma consigliati).
 
-### 2.3 API Endpoints
+### 2.2 Creazione Prenotazione
+Il modale di creazione ora include:
+- **Autocomplete Clienti**: Una barra di ricerca permette di trovare rapidamente clienti esistenti per nome, telefono o email.
+- **Validazione Strict**: Previene la sovrascrittura accidentale di clienti esistenti quando si inseriscono nuovi ospiti con lo stesso numero di telefono.
 - **GET /api/customers**: Ricerca per nome, cognome, email o telefono.
 - **POST /api/customers**: Creazione cliente con supporto per tutti i nuovi campi.
-- **POST /api/bookings**: Supporta creazione atomica Cliente + Prenotazione. Se il cliente esiste (match per telefono), i suoi dati vengono aggiornati.
+- **POST /api/bookings**: Supporta creazione atomica Cliente + Prenotazione. 
+  - **Logica Strict Matching**: Se non viene fornito un ID cliente esplicito, il sistema cerca un match per **Telefono + Nome + Cognome**. 
+  - Se tutti e tre coincidono, usa il cliente esistente. 
+  - Se il telefono coincide ma il nome differisce, crea un **NUOVO** cliente (per gestire omonimie o familiari con stesso cellulare).
+  - Se viene fornito `customer_id` (da Autocomplete), quel cliente viene usato e i suoi dati secondari (email, indirizzo) vengono aggiornati senza alterare il nome.

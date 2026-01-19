@@ -122,38 +122,45 @@ export interface AvailabilityQuery {
     pitch_type?: PitchType;
 }
 
+export interface CreateCustomerRequest {
+    first_name: string;
+    last_name: string;
+    email?: string;
+    phone: string;
+    address?: string;
+    notes?: string;
+
+    // Detailed info for check-in
+    birth_date?: string;
+    birth_country?: string;
+    birth_city?: string;
+    birth_province?: string;
+    citizenship?: string;
+    gender?: 'M' | 'F' | 'Other';
+    residence_country?: string;
+    residence_province?: string;
+    residence_city?: string;
+    residence_zip?: string;
+    document_type?: string;
+    document_number?: string;
+    document_issue_country?: string; // missing in previous
+    document_issue_city?: string;
+    document_issue_date?: string;
+    document_issuer?: string;
+}
+
 export interface CreateBookingRequest {
     pitch_id: string;
-    customer: {
-        first_name: string;
-        last_name: string;
-        email?: string;
-        phone: string;
-        address?: string;
-        notes?: string;
-        // Detailed info
-        birth_date?: string;
-        birth_country?: string;
-        birth_city?: string;
-        birth_province?: string;
-        citizenship?: string;
-        gender?: 'M' | 'F' | 'Other';
-        residence_country?: string;
-        residence_province?: string;
-        residence_city?: string;
-        residence_zip?: string;
-        document_type?: string;
-        document_number?: string;
-        document_issue_country?: string;
-        document_issue_city?: string;
-        document_issue_date?: string;
-        document_issuer?: string;
-    };
+    customer: CreateCustomerRequest;
+
     check_in: string; // YYYY-MM-DD
     check_out: string; // YYYY-MM-DD
+
     guests_count: number;
-    dogs_count: number;
-    notes?: string;
+    guest_names?: string[]; // Optional: names collected at booking
+    dogs_count?: number;    // Optional: number of dogs
+
+    notes?: string | null;
 }
 
 export interface DashboardStats {

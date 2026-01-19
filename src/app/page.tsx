@@ -9,35 +9,7 @@ import Link from 'next/link';
 export default function DashboardPage() {
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b bg-card">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold">CampFlow</h1>
-              <p className="text-sm text-muted-foreground">Property Management System</p>
-            </div>
-            <div className="flex items-center gap-2">
-              <GlobalSearchBar />
-              <Link href="/occupancy">
-                <Button variant="ghost" size="icon" title="Vista Occupazione">
-                  <Calendar className="h-5 w-5" />
-                </Button>
-              </Link>
-              <Link href="/settings">
-                <Button variant="ghost" size="icon" title="Impostazioni">
-                  <Settings className="h-5 w-5" />
-                </Button>
-              </Link>
-              <Link href="/info">
-                <Button variant="ghost" size="icon" title="Informazioni Campeggio">
-                  <Info className="h-5 w-5" />
-                </Button>
-              </Link>
-            </div>
-          </div>
-        </div>
-      </header>
+
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-6">

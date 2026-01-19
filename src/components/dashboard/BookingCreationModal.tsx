@@ -11,6 +11,7 @@ import { Calendar, Users, FileText, Loader2, Check, Dog, Plus, X, Euro } from 'l
 import { calculateNights, formatDateLong } from '@/lib/dateUtils';
 import type { PitchType, PriceBreakdownDay } from '@/lib/types';
 import { invalidateOccupancyCache } from './SectorOccupancyViewer';
+import { CustomerAutocomplete } from './CustomerAutocomplete';
 import { toast } from "sonner";
 
 interface BookingCreationModalProps {
@@ -18,7 +19,7 @@ interface BookingCreationModalProps {
     onClose: () => void;
     pitchNumber: string;
     pitchId: string;
-    pitchType: PitchType; // NEW
+    pitchType: PitchType;
     checkIn: string;
     checkOut: string;
     onSuccess: () => void;
@@ -29,7 +30,7 @@ export function BookingCreationModal({
     onClose,
     pitchNumber,
     pitchId,
-    pitchType, // NEW
+    pitchType,
     checkIn,
     checkOut,
     onSuccess,
@@ -39,46 +40,39 @@ export function BookingCreationModal({
     const [customerEmail, setCustomerEmail] = useState('');
     const [customerPhone, setCustomerPhone] = useState('');
     const [guestsCount, setGuestsCount] = useState(2);
-    const [guestNames, setGuestNames] = useState<string[]>(['']); // At least one guest
+    const [guestNames, setGuestNames] = useState<string[]>(['']);
     const [dogsCount, setDogsCount] = useState(0);
     const [notes, setNotes] = useState('');
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
 
-    // Detailed Customer Info State
-    const [birthDate, setBirthDate] = useState('');
-    const [birthCountry, setBirthCountry] = useState('');
-    const [birthCity, setBirthCity] = useState('');
-    const [birthProvince, setBirthProvince] = useState('');
-    const [citizenship, setCitizenship] = useState('');
-    const [gender, setGender] = useState('M'); // Default to M
-
-    const [residenceAddress, setResidenceAddress] = useState(''); // Street/Number
-    const [residenceCity, setResidenceCity] = useState('');
-    const [residenceProvince, setResidenceProvince] = useState('');
-    const [residenceCountry, setResidenceCountry] = useState('Italia');
-    const [residenceZip, setResidenceZip] = useState('');
-
-    const [docType, setDocType] = useState('carta_identita');
-    const [docNumber, setDocNumber] = useState('');
-    const [docIssueCity, setDocIssueCity] = useState('');
-    const [docIssueCountry, setDocIssueCountry] = useState('Italia');
-    const [docIssueDate, setDocIssueDate] = useState('');
-    const [docIssuer, setDocIssuer] = useState('');
-
+    // Autocomplete State
+    const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(null);
 
     const nights = calculateNights(checkIn, checkOut);
     const [totalPrice, setTotalPrice] = useState(0);
     const [priceBreakdown, setPriceBreakdown] = useState<PriceBreakdownDay[]>([]);
     const [loadingPrice, setLoadingPrice] = useState(false);
 
-    // Fetch price from API whenever dates or pitch type change
+    // Fetch price from API whenever dates, pitch type, or counts change
     useEffect(() => {
         const fetchPrice = async () => {
             setLoadingPrice(true);
             try {
+                let personPrice = 10;
+                let dogPrice = 5;
+
+                if (typeof window !== 'undefined') {
+                    const savedPricing = localStorage.getItem('pricing');
+                    if (savedPricing) {
+                        const parsed = JSON.parse(savedPricing);
+                        personPrice = parsed.person_price_per_day ?? 10;
+                        dogPrice = parsed.dog_price_per_day ?? 5;
+                    }
+                }
+
                 const res = await fetch(
-                    `/api/pricing/calculate?checkIn=${checkIn}&checkOut=${checkOut}&pitchType=${pitchType}`
+                    `/api/pricing/calculate?checkIn=${checkIn}&checkOut=${checkOut}&pitchType=${pitchType}&guests=${guestsCount}&dogs=${dogsCount}&guestPrice=${personPrice}&dogPrice=${dogPrice}`
                 );
 
                 if (!res.ok) throw new Error("Failed to calculate price");
@@ -91,7 +85,6 @@ export function BookingCreationModal({
                 toast.error("Errore calcolo prezzo", {
                     description: "Usando tariffa predefinita"
                 });
-                // Fallback price
                 const fallbackRate = pitchType === "piazzola" ? 25 : 18;
                 const days = nights > 0 ? nights : 1;
                 setTotalPrice(fallbackRate * days);
@@ -101,109 +94,72 @@ export function BookingCreationModal({
         };
 
         fetchPrice();
-    }, [checkIn, checkOut, pitchType, nights]);
+    }, [checkIn, checkOut, pitchType, nights, guestsCount, dogsCount]);
+
+    const handleCustomerSelect = (customer: any) => {
+        setSelectedCustomerId(customer.id);
+        setFirstName(customer.first_name);
+        setLastName(customer.last_name);
+        setCustomerEmail(customer.email || '');
+        setCustomerPhone(customer.phone);
+        toast.success("Dati cliente caricati");
+    };
+
+    const handleManualEdit = (field: 'first' | 'last', value: string) => {
+        if (field === 'first') setFirstName(value);
+        if (field === 'last') setLastName(value);
+
+        if (selectedCustomerId) {
+            setSelectedCustomerId(null);
+        }
+    };
 
     const handleCreateBooking = async () => {
-        if (!firstName.trim() || !lastName.trim()) {
-            toast.error('Dati mancanti', { description: 'Inserisci nome e cognome del cliente' });
+        if (!firstName.trim()) {
+            toast.error('Dati mancanti', { description: 'Il nome del cliente è obbligatorio' });
+            return;
+        }
+        if (!lastName.trim()) {
+            toast.error('Dati mancanti', { description: 'Il cognome del cliente è obbligatorio' });
+            return;
+        }
+        if (!customerPhone.trim()) {
+            toast.error('Dati mancanti', { description: 'Il numero di telefono è obbligatorio' });
+            return;
+        }
+        if (guestsCount < 1) {
+            toast.error('Errore dati', { description: 'Il numero di ospiti deve essere almeno 1' });
             return;
         }
 
         setLoading(true);
 
         try {
-            // Step 1: Create or find customer
-            let customerId: string;
+            const payload = {
+                pitch_id: pitchId,
+                check_in: checkIn,
+                check_out: checkOut,
+                guests_count: guestsCount,
+                dogs_count: dogsCount,
+                notes: notes,
+                customer: {
+                    first_name: firstName,
+                    last_name: lastName,
+                    email: customerEmail || null,
+                    phone: customerPhone,
+                    notes: notes
+                },
+                guest_names: guestNames.filter(name => name.trim())
+            };
 
-            if (customerEmail) {
-                const searchRes = await fetch(`/api/search?q=${encodeURIComponent(customerEmail)}&type=customers`);
-                const searchData = await searchRes.json();
-
-                if (searchData.customers?.length > 0) {
-                    customerId = searchData.customers[0].id;
-                } else {
-                    const customerRes = await fetch('/api/customers', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            first_name: firstName,
-                            last_name: lastName,
-                            email: customerEmail || null,
-                            phone: customerPhone || null,
-                            // Detailed fields
-                            birth_date: birthDate || null,
-                            birth_country: birthCountry || null,
-                            birth_city: birthCity || null,
-                            birth_province: birthProvince || null,
-                            citizenship: citizenship || null,
-                            gender: gender,
-                            address: residenceAddress || null,
-                            residence_city: residenceCity || null,
-                            residence_province: residenceProvince || null,
-                            residence_country: residenceCountry || null,
-                            residence_zip: residenceZip || null,
-                            document_type: docType || null,
-                            document_number: docNumber || null,
-                            document_issue_city: docIssueCity || null,
-                            document_issue_country: docIssueCountry || null,
-                            document_issue_date: docIssueDate || null,
-                            document_issuer: docIssuer || null,
-                        }),
-                    });
-
-                    if (!customerRes.ok) throw new Error('Failed to create customer');
-                    const customerData = await customerRes.json();
-                    customerId = customerData.id;
-                }
-            } else {
-                const customerRes = await fetch('/api/customers', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        first_name: firstName,
-                        last_name: lastName,
-                        email: null,
-                        phone: customerPhone || null,
-                        // Detailed fields (same as above)
-                        birth_date: birthDate || null,
-                        birth_country: birthCountry || null,
-                        birth_city: birthCity || null,
-                        birth_province: birthProvince || null,
-                        citizenship: citizenship || null,
-                        gender: gender,
-                        address: residenceAddress || null,
-                        residence_city: residenceCity || null,
-                        residence_province: residenceProvince || null,
-                        residence_country: residenceCountry || null,
-                        residence_zip: residenceZip || null,
-                        document_type: docType || null,
-                        document_number: docNumber || null,
-                        document_issue_city: docIssueCity || null,
-                        document_issue_country: docIssueCountry || null,
-                        document_issue_date: docIssueDate || null,
-                        document_issuer: docIssuer || null,
-                    }),
-                });
-
-                if (!customerRes.ok) throw new Error('Failed to create customer');
-                const customerData = await customerRes.json();
-                customerId = customerData.id;
+            if (selectedCustomerId) {
+                (payload as any).customer_id = selectedCustomerId;
             }
 
-            // Step 2: Create booking
             const bookingRes = await fetch('/api/bookings', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    customer_id: customerId,
-                    pitch_id: pitchId,
-                    check_in: checkIn,
-                    check_out: checkOut,
-                    guests_count: guestsCount,
-                    dogs_count: dogsCount,
-                    guest_names: guestNames.filter(name => name.trim()), // Only non-empty names
-                    notes: notes || null,
-                }),
+                body: JSON.stringify(payload),
             });
 
             if (!bookingRes.ok) {
@@ -218,7 +174,8 @@ export function BookingCreationModal({
                 onSuccess();
                 onClose();
                 resetForm();
-            }, 1500);
+                setSelectedCustomerId(null);
+            }, 1000);
 
         } catch (error) {
             console.error('Error creating booking:', error);
@@ -237,33 +194,14 @@ export function BookingCreationModal({
         setGuestNames(['']);
         setDogsCount(0);
         setNotes('');
-        setNotes('');
         setSuccess(false);
-
-        // Reset details
-        setBirthDate('');
-        setBirthCountry('');
-        setBirthCity('');
-        setBirthProvince('');
-        setCitizenship('');
-        setGender('M');
-        setResidenceAddress('');
-        setResidenceCity('');
-        setResidenceProvince('');
-        setResidenceCountry('Italia');
-        setResidenceZip('');
-        setDocType('carta_identita');
-        setDocNumber('');
-        setDocIssueCity('');
-        setDocIssueCountry('Italia');
-        setDocIssueDate('');
-        setDocIssuer('');
     };
 
     const handleClose = () => {
         if (!loading) {
             onClose();
             resetForm();
+            setSelectedCustomerId(null);
         }
     };
 
@@ -315,20 +253,39 @@ export function BookingCreationModal({
                     </div>
                 ) : (
                     <div className="space-y-4 py-4">
-                        {/* Customer Name */}
+                        <div className="space-y-2">
+                            <Label>Cerca o Inserisci Cliente</Label>
+                            <CustomerAutocomplete
+                                onSelect={handleCustomerSelect}
+                                onClear={() => setSelectedCustomerId(null)}
+                                selectedCustomerId={selectedCustomerId || undefined}
+                            />
+                        </div>
+
+                        <div className="relative">
+                            <div className="absolute inset-0 flex items-center">
+                                <span className="w-full border-t" />
+                            </div>
+                            <div className="relative flex justify-center text-xs uppercase">
+                                <span className="bg-background px-2 text-muted-foreground">
+                                    Dettagli Anagrafici
+                                </span>
+                            </div>
+                        </div>
+
                         <div className="space-y-2">
                             <Label>Cliente *</Label>
                             <div className="grid grid-cols-2 gap-2">
                                 <Input
                                     placeholder="Nome"
                                     value={firstName}
-                                    onChange={(e) => setFirstName(e.target.value)}
+                                    onChange={(e) => handleManualEdit('first', e.target.value)}
                                     disabled={loading}
                                 />
                                 <Input
                                     placeholder="Cognome"
                                     value={lastName}
-                                    onChange={(e) => setLastName(e.target.value)}
+                                    onChange={(e) => handleManualEdit('last', e.target.value)}
                                     disabled={loading}
                                 />
                             </div>
@@ -360,75 +317,6 @@ export function BookingCreationModal({
                             </div>
                         </div>
 
-                        {/* --- NEW SECTIONS --- */}
-                        <div className="border rounded-md p-3 space-y-3 bg-slate-50 dark:bg-slate-900/50">
-                            <h4 className="font-semibold text-sm flex items-center gap-2">
-                                <span className="w-1 h-4 bg-blue-500 rounded-full"></span>
-                                Dati di Nascita
-                            </h4>
-                            <div className="grid grid-cols-2 gap-2">
-                                <Input placeholder="Data Nascita" type="date" value={birthDate} onChange={e => setBirthDate(e.target.value)} disabled={loading} />
-                                <select className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                                    value={gender} onChange={e => setGender(e.target.value)} disabled={loading}
-                                >
-                                    <option value="M">Maschio</option>
-                                    <option value="F">Femmina</option>
-                                    <option value="Other">Altro</option>
-                                </select>
-                            </div>
-                            <div className="grid grid-cols-2 gap-2">
-                                <Input placeholder="Stato Nascita" value={birthCountry} onChange={e => setBirthCountry(e.target.value)} disabled={loading} />
-                                <Input placeholder="Provincia (Sigla)" maxLength={2} value={birthProvince} onChange={e => setBirthProvince(e.target.value.toUpperCase())} disabled={loading} />
-                            </div>
-                            <div className="grid grid-cols-2 gap-2">
-                                <Input placeholder="Comune Nascita" value={birthCity} onChange={e => setBirthCity(e.target.value)} disabled={loading} />
-                                <Input placeholder="Cittadinanza" value={citizenship} onChange={e => setCitizenship(e.target.value)} disabled={loading} />
-                            </div>
-                        </div>
-
-                        <div className="border rounded-md p-3 space-y-3 bg-slate-50 dark:bg-slate-900/50">
-                            <h4 className="font-semibold text-sm flex items-center gap-2">
-                                <span className="w-1 h-4 bg-green-500 rounded-full"></span>
-                                Residenza
-                            </h4>
-                            <Input placeholder="Indirizzo (Via/Piazza, Civico)" value={residenceAddress} onChange={e => setResidenceAddress(e.target.value)} disabled={loading} />
-                            <div className="grid grid-cols-2 gap-2">
-                                <Input placeholder="Comune" value={residenceCity} onChange={e => setResidenceCity(e.target.value)} disabled={loading} />
-                                <Input placeholder="CAP" value={residenceZip} onChange={e => setResidenceZip(e.target.value)} disabled={loading} />
-                            </div>
-                            <div className="grid grid-cols-2 gap-2">
-                                <Input placeholder="Provincia" maxLength={2} value={residenceProvince} onChange={e => setResidenceProvince(e.target.value.toUpperCase())} disabled={loading} />
-                                <Input placeholder="Stato" value={residenceCountry} onChange={e => setResidenceCountry(e.target.value)} disabled={loading} />
-                            </div>
-                        </div>
-
-                        <div className="border rounded-md p-3 space-y-3 bg-slate-50 dark:bg-slate-900/50">
-                            <h4 className="font-semibold text-sm flex items-center gap-2">
-                                <span className="w-1 h-4 bg-yellow-500 rounded-full"></span>
-                                Documento d'Identità
-                            </h4>
-                            <div className="grid grid-cols-2 gap-2">
-                                <select className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                                    value={docType} onChange={e => setDocType(e.target.value)} disabled={loading}
-                                >
-                                    <option value="carta_identita">Carta d'Identità</option>
-                                    <option value="passaporto">Passaporto</option>
-                                    <option value="patente">Patente</option>
-                                    <option value="altro">Altro</option>
-                                </select>
-                                <Input placeholder="Numero Documento" value={docNumber} onChange={e => setDocNumber(e.target.value)} disabled={loading} />
-                            </div>
-                            <div className="grid grid-cols-2 gap-2">
-                                <Input placeholder="Data Rilascio" type="date" value={docIssueDate} onChange={e => setDocIssueDate(e.target.value)} disabled={loading} />
-                                <Input placeholder="Ente Rilascio" value={docIssuer} onChange={e => setDocIssuer(e.target.value)} disabled={loading} />
-                            </div>
-                            <div className="grid grid-cols-2 gap-2">
-                                <Input placeholder="Comune Rilascio" value={docIssueCity} onChange={e => setDocIssueCity(e.target.value)} disabled={loading} />
-                                <Input placeholder="Stato Rilascio" value={docIssueCountry} onChange={e => setDocIssueCountry(e.target.value)} disabled={loading} />
-                            </div>
-                        </div>
-
-                        {/* Guests Count and Dogs */}
                         <div className="grid grid-cols-2 gap-3">
                             <div className="space-y-2">
                                 <Label htmlFor="guests" className="flex items-center gap-2">
@@ -463,7 +351,6 @@ export function BookingCreationModal({
                             </div>
                         </div>
 
-                        {/* Guest Names (Optional) */}
                         <div className="space-y-2">
                             <div className="flex items-center justify-between">
                                 <Label className="text-sm text-muted-foreground">
@@ -507,7 +394,6 @@ export function BookingCreationModal({
                             </div>
                         </div>
 
-                        {/* Notes */}
                         <div className="space-y-2">
                             <Label htmlFor="notes" className="flex items-center gap-2">
                                 <FileText className="h-4 w-4" />
@@ -525,19 +411,24 @@ export function BookingCreationModal({
                     </div>
                 )}
 
-
-                {/* Total Price Display */}
                 {!success && (
                     <div className="pt-4 border-t">
-                        <div className="flex items-center justify-between p-4 bg-blue-50 dark:bg-blue-950/30 rounded-lg">
-                            <div className="flex items-center gap-2">
-                                <Euro className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                                <span className="font-semibold text-lg">Totale</span>
+                        <div className="flex justify-between items-center p-4 bg-blue-50 dark:bg-blue-950/30 rounded-lg">
+                            <div className="flex flex-col gap-1">
+                                <div className="flex items-center gap-2">
+                                    <Euro className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                                    <span className="font-semibold text-lg">Totale Stimato</span>
+                                </div>
+                                {priceBreakdown.length > 0 && priceBreakdown[0].seasonName && (
+                                    <p className="text-xs text-muted-foreground font-medium ml-7">
+                                        Stagione: {priceBreakdown[0].seasonName}
+                                    </p>
+                                )}
                             </div>
                             <div className="text-right">
-                                <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                                    €{totalPrice.toFixed(2)}
-                                </div>
+                                <span className="font-bold text-2xl text-blue-600 dark:text-blue-400">
+                                    € {totalPrice.toFixed(2)}
+                                </span>
                                 <div className="text-xs text-muted-foreground">
                                     {nights === 0 ? "1 giorno" : `${nights} ${nights === 1 ? "notte" : "notti"}`}
                                 </div>

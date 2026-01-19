@@ -2,22 +2,29 @@ import { parseISO, differenceInDays, format, addDays } from 'date-fns';
 import { it } from 'date-fns/locale';
 
 /**
+ * Helper: Parse YYYY-MM-DD string as UTC midnight Date to avoid timezone shifts
+ */
+function parseAsUTC(dateStr: string): Date {
+    const [year, month, day] = dateStr.split('-').map(Number);
+    return new Date(Date.UTC(year, month - 1, day));
+}
+
+/**
  * Check if a date is within a range (inclusive)
  */
 export function isDateInRange(date: string, start: string, end: string): boolean {
-    const d = parseISO(date);
-    const s = parseISO(start);
-    const e = parseISO(end);
-    return d >= s && d <= e;
+    return date >= start && date <= end; // String comparison is safe for YYYY-MM-DD
 }
 
 /**
  * Calculate number of nights between two dates
+ * Uses UTC to ensure consistent result regardless of DST or Timezone
  */
 export function calculateNights(checkIn: string, checkOut: string): number {
-    const start = parseISO(checkIn);
-    const end = parseISO(checkOut);
-    return differenceInDays(end, start);
+    const start = parseAsUTC(checkIn);
+    const end = parseAsUTC(checkOut);
+    const diffTime = end.getTime() - start.getTime();
+    return Math.round(diffTime / (1000 * 60 * 60 * 24));
 }
 
 /**
@@ -31,6 +38,11 @@ export function normalizeSelectionDates(
         ? { checkIn: start, checkOut: end }
         : { checkIn: end, checkOut: start };
 }
+
+
+
+// Revert formatDateShort/Long to use parseISO for DISPLAY, as that's correct for "YYYY-MM-DD" -> "That Day Local".
+// The issue was likely DIFFERENCE calculation crossing DST or timezone boundaries when using mismatched types.
 
 /**
  * Format date for display (es. "Lun 20/01")
@@ -50,12 +62,9 @@ export function formatDateLong(dateStr: string): string {
  * Get all dates between start and end (inclusive)
  */
 export function getDatesInRange(start: string, end: string): string[] {
-    const normalized = normalizeSelectionDates(start, end);
-    const startDate = parseISO(normalized.checkIn);
-    const endDate = parseISO(normalized.checkOut);
-    const nights = differenceInDays(endDate, startDate);
-
-    return Array.from({ length: nights + 1 }, (_, i) =>
+    const days = calculateNights(start, end);
+    const startDate = parseISO(start); // Use ISO for AddDays loop which is also safe locally
+    return Array.from({ length: days + 1 }, (_, i) =>
         format(addDays(startDate, i), 'yyyy-MM-dd')
     );
 }
