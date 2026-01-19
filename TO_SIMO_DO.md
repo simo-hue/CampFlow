@@ -134,6 +134,13 @@ Dopo la migrazione, testa:
 
 
 
+5. **Verifica Caching Impostazioni**:
+   - Apri le Impostazioni (tab "Campeggio" o "Prezzi").
+   - Naviga verso la Dashboard o un'altra pagina.
+   - Torna alle Impostazioni.
+   - Verifica che il caricamento sia istantaneo (senza spinner/loading state) perché i dati sono presi dalla cache.
+   - Prova a modificare una piazzola o stagione e verifica che la lista si aggiorni immediatamente.
+
 ---
 
 ## ⚠️ Note Importanti

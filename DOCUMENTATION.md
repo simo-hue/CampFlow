@@ -397,6 +397,14 @@ CREATE POLICY "Staff can manage bookings"
 - ✅ Migliorata leggibilità su schermi larghi.
 
 ---
+### 2026-01-19 - Intelligent Caching (Settings)
+- ✅ Implementato **TanStack Query (React Query)** per la gestione dello stato server.
+- ✅ Configurato `QueryProvider` con `staleTime` aggressivo (24 ore) per le impostazioni (Piazzole, Stagioni).
+- ✅ Obiettivo: Ridurre a zero le chiamate DB per dati "quasi statici" quando l'utente naviga tra le pagine.
+- ✅ Refactoring di `PitchManagement` e `SeasonalPricingManager` per usare custom hooks (`usePitches`, `useSeasons`).
+- ✅ Gestione ottimistica/invalidation per le mutazioni (Create/Update/Delete aggiornano subito la UI).
+
+---
 
 ### 2026-01-19 - Arrivals & Departures Refactor
 - ✅ Create due nuove pagine `/arrivals` e `/departures` accessibili dalla dashboard.

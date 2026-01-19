@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -27,9 +27,20 @@ import { getPitchDisplayNumber, canSplitPitch, getSiblingPitch, SECTORS, getPitc
 import { PitchDialog } from './PitchDialog';
 import { toast } from "sonner";
 
+// ... imports
+import { usePitches } from '@/hooks/usePitches';
+
 export function PitchManagement() {
-    const [pitches, setPitches] = useState<Pitch[]>([]);
-    const [loading, setLoading] = useState(true);
+    const {
+        pitches,
+        isLoading: loading,
+        createPitch,
+        updatePitch,
+        deletePitch,
+        splitPitch,
+        mergePitches
+    } = usePitches();
+
     const [searchTerm, setSearchTerm] = useState('');
     const [typeFilter, setTypeFilter] = useState<string>('all');
     const [sectorFilter, setSectorFilter] = useState<string>('all');
@@ -37,27 +48,6 @@ export function PitchManagement() {
     // Dialog State
     const [dialogOpen, setDialogOpen] = useState(false);
     const [editingPitch, setEditingPitch] = useState<Pitch | null>(null);
-
-    useEffect(() => {
-        loadPitches();
-    }, []);
-
-    const loadPitches = async () => {
-        setLoading(true);
-        try {
-            const response = await fetch('/api/pitches');
-            if (response.ok) {
-                const data = await response.json();
-                setPitches(data.pitches || []);
-            }
-        } catch (error) {
-            console.error('Error loading pitches:', error);
-        
-            toast.error("Errore imprevisto", { description: error instanceof Error ? error.message : "Riprova più tardi" });
-        } finally {
-            setLoading(false);
-        }
-    };
 
     const handleAdd = () => {
         setEditingPitch(null);
@@ -71,35 +61,20 @@ export function PitchManagement() {
 
     const handleSave = async (data: CreatePitchRequest | UpdatePitchRequest) => {
         try {
-            let response;
             if (editingPitch) {
                 // Update
-                response = await fetch(`/api/pitches?id=${editingPitch.id}`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data),
+                await updatePitch.mutateAsync({
+                    id: editingPitch.id,
+                    data: data as UpdatePitchRequest
                 });
             } else {
                 // Create
-                response = await fetch('/api/pitches', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data),
-                });
+                await createPitch.mutateAsync(data as CreatePitchRequest);
             }
-
-            if (response.ok) {
-                await loadPitches();
-                return;
-            } else {
-                const error = await response.json();
-                toast.error(`Errore: ${error.error}`);
-            }
+            setDialogOpen(false);
         } catch (error) {
             console.error('Error saving pitch:', error);
-            toast.error('Errore durante il salvataggio');
-        
-            toast.error("Errore imprevisto", { description: error instanceof Error ? error.message : "Riprova più tardi" });
+            // Toast handled in hook
         }
     };
 
@@ -107,82 +82,21 @@ export function PitchManagement() {
         if (!confirm(`Vuoi sdoppiare la piazzola ${getPitchDisplayNumber(pitch)} in ${pitch.number}a e ${pitch.number}b?`)) {
             return;
         }
-
-        try {
-            const response = await fetch('/api/pitches/split', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ pitch_id: pitch.id }),
-            });
-
-            if (response.ok) {
-                await loadPitches();
-                toast.success('Piazzola sdoppiata!', { description: 'La piazzola è stata sdoppiata con successo' });
-            } else {
-                const error = await response.json();
-                toast.error(`Errore: ${error.error}`);
-            }
-        } catch (error) {
-            console.error('Error splitting pitch:', error);
-            toast.error('Errore durante lo sdoppiamento');
-        
-            toast.error("Errore imprevisto", { description: error instanceof Error ? error.message : "Riprova più tardi" });
-        }
+        await splitPitch.mutateAsync(pitch.id);
     };
 
     const handleMerge = async (pitchA: Pitch, pitchB: Pitch) => {
         if (!confirm(`Vuoi unire ${getPitchDisplayNumber(pitchA)} e ${getPitchDisplayNumber(pitchB)} in una singola piazzola ${pitchA.number}?`)) {
             return;
         }
-
-        try {
-            const response = await fetch('/api/pitches/merge', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    pitch_a_id: pitchA.id,
-                    pitch_b_id: pitchB.id,
-                }),
-            });
-
-            if (response.ok) {
-                await loadPitches();
-                toast.success('Piazzole unite!', { description: 'Le piazzole sono state unite con successo' });
-            } else {
-                const error = await response.json();
-                toast.error(`Errore: ${error.error}`);
-            }
-        } catch (error) {
-            console.error('Error merging pitches:', error);
-            alert('Errore durante l\'unione');
-        
-            toast.error("Errore imprevisto", { description: error instanceof Error ? error.message : "Riprova più tardi" });
-        }
+        await mergePitches.mutateAsync({ pitchAId: pitchA.id, pitchBId: pitchB.id });
     };
 
     const handleDelete = async (pitch: Pitch) => {
         if (!confirm(`Sei sicuro di voler eliminare la piazzola ${getPitchDisplayNumber(pitch)}?`)) {
             return;
         }
-
-        try {
-            const response = await fetch(`/api/pitches?id=${pitch.id}`, {
-                method: 'DELETE',
-            });
-
-            if (response.ok) {
-                await loadPitches();
-                toast.success('Piazzola eliminata!', { description: 'La piazzola è stata rimossa' });
-            } else {
-                const error = await response.json();
-                toast.error(`Errore: ${error.error}`);
-            }
-        } catch (error) {
-            console.error('Error deleting pitch:', error);
-            alert('Errore durante l\'eliminazione');
-        
-            toast.error("Errore imprevisto", { description: error instanceof Error ? error.message : "Riprova più tardi" });
-        }
+        await deletePitch.mutateAsync(pitch.id);
     };
 
     const filteredPitches = pitches.filter(pitch => {
@@ -211,10 +125,6 @@ export function PitchManagement() {
             <div className="flex items-center justify-between">
                 <h3 className="text-lg font-semibold">Gestione Piazzole e Tende</h3>
                 <div className="flex gap-2">
-                    <Button size="sm" variant="outline" onClick={loadPitches}>
-                        <RefreshCw className="h-4 w-4 mr-2" />
-                        Ricarica
-                    </Button>
                     <Button size="sm" onClick={handleAdd}>
                         <Plus className="h-4 w-4 mr-2" />
                         Aggiungi
@@ -238,21 +148,23 @@ export function PitchManagement() {
                 </div>
 
                 {/* Sector Filter */}
-                <div className="w-48 space-y-2">
-                    <Label>Settore</Label>
-                    <select
-                        value={sectorFilter}
-                        onChange={(e) => setSectorFilter(e.target.value)}
-                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                    >
-                        <option value="all">Tutti</option>
-                        {SECTORS.map((sector) => (
-                            <option key={sector.id} value={sector.id}>
-                                {sector.name} ({sector.range.min}-{sector.range.max})
-                            </option>
-                        ))}
-                    </select>
-                </div>
+                {typeFilter !== 'tenda' && (
+                    <div className="w-48 space-y-2">
+                        <Label>Settore</Label>
+                        <select
+                            value={sectorFilter}
+                            onChange={(e) => setSectorFilter(e.target.value)}
+                            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                        >
+                            <option value="all">Tutti</option>
+                            {SECTORS.map((sector) => (
+                                <option key={sector.id} value={sector.id}>
+                                    {sector.name} ({sector.range.min}-{sector.range.max})
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                )}
 
                 {/* Type Filter */}
                 <div className="w-48 space-y-2">

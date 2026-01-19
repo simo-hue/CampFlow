@@ -1,44 +1,26 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Pencil, Trash2, RefreshCw, Calendar } from 'lucide-react';
+import { Plus, Pencil, Trash2, Calendar } from 'lucide-react';
 import type { PricingSeason } from '@/lib/types';
 import { SeasonDialog } from './SeasonDialog';
 import { toast } from 'sonner';
 import { format, parseISO } from 'date-fns';
 import { it } from 'date-fns/locale';
+import { useSeasons } from '@/hooks/useSeasons';
 
 export function SeasonalPricingManager() {
-    const [seasons, setSeasons] = useState<PricingSeason[]>([]);
-    const [loading, setLoading] = useState(true);
+    const {
+        seasons,
+        isLoading: loading,
+        saveSeason,
+        deleteSeason
+    } = useSeasons();
+
     const [dialogOpen, setDialogOpen] = useState(false);
     const [editingSeason, setEditingSeason] = useState<PricingSeason | null>(null);
-
-    useEffect(() => {
-        loadSeasons();
-    }, []);
-
-    const loadSeasons = async () => {
-        setLoading(true);
-        try {
-            const response = await fetch('/api/pricing/seasons');
-            if (response.ok) {
-                const data = await response.json();
-                setSeasons(data.seasons || []);
-            } else {
-                toast.error('Errore caricamento stagioni');
-            }
-        } catch (error) {
-            console.error('Error loading seasons:', error);
-            toast.error('Errore imprevisto', {
-                description: error instanceof Error ? error.message : 'Riprova più tardi'
-            });
-        } finally {
-            setLoading(false);
-        }
-    };
 
     const handleAdd = () => {
         setEditingSeason(null);
@@ -52,38 +34,14 @@ export function SeasonalPricingManager() {
 
     const handleSave = async (data: Partial<PricingSeason>) => {
         try {
-            let response;
-            if (editingSeason) {
-                // Update
-                response = await fetch(`/api/pricing/seasons?id=${editingSeason.id}`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data),
-                });
-            } else {
-                // Create
-                response = await fetch('/api/pricing/seasons', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data),
-                });
-            }
-
-            if (response.ok) {
-                await loadSeasons();
-                setDialogOpen(false);
-                toast.success(editingSeason ? 'Stagione aggiornata!' : 'Stagione creata!', {
-                    description: editingSeason ? 'Le modifiche sono state salvate' : 'Nuova stagione aggiunta al sistema'
-                });
-            } else {
-                const error = await response.json();
-                toast.error('Errore salvataggio', { description: error.error });
-            }
+            await saveSeason.mutateAsync({
+                id: editingSeason?.id,
+                data
+            });
+            setDialogOpen(false);
         } catch (error) {
             console.error('Error saving season:', error);
-            toast.error('Errore imprevisto', {
-                description: error instanceof Error ? error.message : 'Riprova più tardi'
-            });
+            // Toast handled in hook
         }
     };
 
@@ -92,26 +50,7 @@ export function SeasonalPricingManager() {
             return;
         }
 
-        try {
-            const response = await fetch(`/api/pricing/seasons?id=${season.id}`, {
-                method: 'DELETE',
-            });
-
-            if (response.ok) {
-                await loadSeasons();
-                toast.success('Stagione eliminata!', {
-                    description: 'La stagione è stata disattivata'
-                });
-            } else {
-                const error = await response.json();
-                toast.error('Errore eliminazione', { description: error.error });
-            }
-        } catch (error) {
-            console.error('Error deleting season:', error);
-            toast.error('Errore imprevisto', {
-                description: error instanceof Error ? error.message : 'Riprova più tardi'
-            });
-        }
+        await deleteSeason.mutateAsync(season.id);
     };
 
     const formatDateRange = (startDate: string, endDate: string) => {
@@ -141,10 +80,6 @@ export function SeasonalPricingManager() {
                     </p>
                 </div>
                 <div className="flex gap-2">
-                    <Button size="sm" variant="outline" onClick={loadSeasons} disabled={loading}>
-                        <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-                        Ricarica
-                    </Button>
                     <Button size="sm" onClick={handleAdd}>
                         <Plus className="h-4 w-4 mr-2" />
                         Nuova Stagione
@@ -264,7 +199,9 @@ export function SeasonalPricingManager() {
                             <div key={season.id} className="p-3 bg-muted/50 rounded text-sm opacity-60">
                                 <span className="font-medium">{season.name}</span>
                                 <span className="mx-2">•</span>
-                                <span>{formatDateRange(season.start_date, season.end_date)}</span>
+                                <span className="font-medium text-xs">
+                                    {formatDateRange(season.start_date, season.end_date)}
+                                </span>
                             </div>
                         ))}
                     </div>
