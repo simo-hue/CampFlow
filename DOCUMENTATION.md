@@ -398,4 +398,22 @@ CREATE POLICY "Staff can manage bookings"
 
 ---
 
+### 2026-01-19 - Arrivals & Departures Refactor
+- ✅ Create due nuove pagine `/arrivals` e `/departures` accessibili dalla dashboard.
+- ✅ Implementati componenti condivisi `GuestCard` e `DateToggle` per coerenza UI.
+- ✅ Supporto per visualizzazione "Oggi" e "Domani" con caricamento dinamico API.
+- ✅ UI unificata con indicatori visivi (Verde per Arrivi, Blu per Partenze).
+- ✅ Tipi TypeScript condivisi in `src/types/dashboard.ts`.
+
+### 2026-01-19 - QuickStats Navigation
+- ✅ Resi cliccabili i box "Arrivi Oggi" e "Partenze Oggi" nel `QuickStatsWidget`.
+- ✅ Collegati direttamente alle pagine `/arrivals` e `/departures`.
+- ✅ Aggiunto effetto hover per migliorare l'UX.
+
+### 2026-01-19 - Full Screen Layout & Search
+- ✅ Refactoring pagine `/arrivals` e `/departures` per utilizzo Full Screen (rimosso container limitato).
+- ✅ Implementato Header sticky con barra di ricerca client-side (filtro per nome o piazzola).
+- ✅ Layout a griglia responsiva per le card (da 1 a 4 colonne).
+- ✅ Migliorata UX con visualizzazione "Empty State" personalizzata.
+
 **Documento vivo**: Aggiornare questo file ad ogni scelta implementativa significativa.

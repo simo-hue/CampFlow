@@ -73,22 +73,23 @@ export function TodayView() {
                             <div key={i} className="h-16 bg-muted rounded animate-pulse" />
                         ))}
                     </div>
-                ) : !data || (data.total_arrivals === 0 && data.total_departures === 0) ? (
+                ) : !data ? (
                     <div className="text-center py-8 text-muted-foreground">
-                        <p>Nessun arrivo o partenza previsto per oggi</p>
+                        <p>Impossibile caricare i dati</p>
                     </div>
                 ) : (
                     <div className="space-y-6">
                         {/* Arrivals Section */}
-                        {data.total_arrivals > 0 && (
-                            <div>
-                                <Link href="/arrivals" className="flex items-center gap-2 hover:underline group">
-                                    <ArrowDownCircle className="h-4 w-4 text-green-600" />
-                                    <h3 className="font-semibold text-sm group-hover:text-green-700">
-                                        Arrivi ({data.total_arrivals})
-                                    </h3>
-                                    <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
-                                </Link>
+                        <div>
+                            <Link href="/arrivals" className="flex items-center gap-2 hover:underline group mb-2">
+                                <ArrowDownCircle className="h-4 w-4 text-green-600" />
+                                <h3 className="font-semibold text-sm group-hover:text-green-700">
+                                    Arrivi ({data.total_arrivals})
+                                </h3>
+                                <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                            </Link>
+
+                            {data.total_arrivals > 0 ? (
                                 <div className="space-y-2">
                                     {data.arrivals.map((arrival) => (
                                         <div
@@ -112,19 +113,24 @@ export function TodayView() {
                                         </div>
                                     ))}
                                 </div>
-                            </div>
-                        )}
+                            ) : (
+                                <p className="text-muted-foreground text-sm italic pl-6">
+                                    Nessun arrivo previsto per oggi
+                                </p>
+                            )}
+                        </div>
 
                         {/* Departures Section */}
-                        {data.total_departures > 0 && (
-                            <div>
-                                <Link href="/departures" className="flex items-center gap-2 hover:underline group">
-                                    <ArrowUpCircle className="h-4 w-4 text-blue-600" />
-                                    <h3 className="font-semibold text-sm group-hover:text-blue-700">
-                                        Partenze ({data.total_departures})
-                                    </h3>
-                                    <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
-                                </Link>
+                        <div>
+                            <Link href="/departures" className="flex items-center gap-2 hover:underline group mb-2">
+                                <ArrowUpCircle className="h-4 w-4 text-blue-600" />
+                                <h3 className="font-semibold text-sm group-hover:text-blue-700">
+                                    Partenze ({data.total_departures})
+                                </h3>
+                                <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                            </Link>
+
+                            {data.total_departures > 0 ? (
                                 <div className="space-y-2">
                                     {data.departures.map((departure) => (
                                         <div
@@ -148,8 +154,12 @@ export function TodayView() {
                                         </div>
                                     ))}
                                 </div>
-                            </div>
-                        )}
+                            ) : (
+                                <p className="text-muted-foreground text-sm italic pl-6">
+                                    Nessuna partenza prevista per oggi
+                                </p>
+                            )}
+                        </div>
                     </div>
                 )}
             </CardContent>

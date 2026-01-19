@@ -127,6 +127,11 @@ Dopo la migrazione, testa:
    - Ma dal 10 al 20 c'è "Ferragosto" (€50, priorità più alta)
    - Verifica che il 15 Agosto usi €50 e non €40
 
+4. **Layout Arrivi/Partenze**:
+   - Visitare `/arrivals` e `/departures`.
+   - Verificare layout full-screen e funzionamento barra di ricerca.
+
+
 ---
 
 ## ⚠️ Note Importanti

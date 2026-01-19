@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
+import Link from 'next/link';
 import type { DashboardStats } from '@/lib/types';
 
 export function QuickStatsWidget() {
@@ -75,34 +76,38 @@ export function QuickStatsWidget() {
     return (
         <div className="grid gap-4 md:grid-cols-3">
             {/* Arrivals Today */}
-            <Card className="border-l-4 border-l-green-500">
-                <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium text-muted-foreground">
-                        📥 Arrivi Oggi
-                    </CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <div className="text-3xl font-bold">{stats.arrivals_today}</div>
-                    <p className="text-xs text-muted-foreground mt-1">
-                        Check-in previsti
-                    </p>
-                </CardContent>
-            </Card>
+            <Link href="/arrivals" className="block transition-transform hover:scale-[1.02]">
+                <Card className="border-l-4 border-l-green-500 cursor-pointer h-full hover:bg-accent/5">
+                    <CardHeader className="pb-2">
+                        <CardTitle className="text-sm font-medium text-muted-foreground">
+                            📥 Arrivi Oggi
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-3xl font-bold">{stats.arrivals_today}</div>
+                        <p className="text-xs text-muted-foreground mt-1">
+                            Check-in previsti
+                        </p>
+                    </CardContent>
+                </Card>
+            </Link>
 
             {/* Departures Today */}
-            <Card className="border-l-4 border-l-blue-500">
-                <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium text-muted-foreground">
-                        📤 Partenze Oggi
-                    </CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <div className="text-3xl font-bold">{stats.departures_today}</div>
-                    <p className="text-xs text-muted-foreground mt-1">
-                        Check-out previsti
-                    </p>
-                </CardContent>
-            </Card>
+            <Link href="/departures" className="block transition-transform hover:scale-[1.02]">
+                <Card className="border-l-4 border-l-blue-500 cursor-pointer h-full hover:bg-accent/5">
+                    <CardHeader className="pb-2">
+                        <CardTitle className="text-sm font-medium text-muted-foreground">
+                            📤 Partenze Oggi
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-3xl font-bold">{stats.departures_today}</div>
+                        <p className="text-xs text-muted-foreground mt-1">
+                            Check-out previsti
+                        </p>
+                    </CardContent>
+                </Card>
+            </Link>
 
             {/* Current Occupancy */}
             <Card className="border-l-4 border-l-purple-500">

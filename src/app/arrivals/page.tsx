@@ -1,33 +1,22 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { CalendarCheck, ArrowLeft, ArrowRight, ArrowDownCircle } from 'lucide-react';
+import { CalendarCheck, ArrowLeft, ArrowDownCircle, Search } from 'lucide-react';
 import { format, addDays, isSameDay } from 'date-fns';
 import { it } from 'date-fns/locale';
 import { toast } from 'sonner';
 import Link from 'next/link';
-
-interface ArrivalEvent {
-    id: string;
-    pitch_id: string;
-    guests_count: number;
-    pitches: { number: string; type: string };
-    customers: { first_name: string; last_name: string };
-}
-
-interface ArrivalsData {
-    date: string;
-    arrivals: ArrivalEvent[];
-    total_arrivals: number;
-}
+import { DashboardData } from '@/types/dashboard';
+import { GuestCard } from '@/components/shared/GuestCard';
+import { DateToggle } from '@/components/shared/DateToggle';
+import { Input } from '@/components/ui/input';
 
 export default function ArrivalsPage() {
     const [date, setDate] = useState(new Date());
-    const [data, setData] = useState<ArrivalsData | null>(null);
+    const [data, setData] = useState<DashboardData | null>(null);
     const [loading, setLoading] = useState(true);
+    const [filter, setFilter] = useState('');
 
     useEffect(() => {
         loadArrivals();
@@ -56,104 +45,91 @@ export default function ArrivalsPage() {
     };
 
     const isToday = isSameDay(date, new Date());
+    const handleDateToggle = (type: 'today' | 'tomorrow') => {
+        setDate(type === 'today' ? new Date() : addDays(new Date(), 1));
+    };
+
+    const filteredArrivals = data?.arrivals.filter(arrival =>
+        arrival.customers.first_name.toLowerCase().includes(filter.toLowerCase()) ||
+        arrival.customers.last_name.toLowerCase().includes(filter.toLowerCase()) ||
+        arrival.pitches.number.includes(filter)
+    ) || [];
 
     return (
-        <div className="container mx-auto px-4 py-6 max-w-4xl">
-            <div className="flex items-center gap-4 mb-6">
-                <Link href="/">
-                    <Button variant="ghost" size="icon">
-                        <ArrowLeft className="h-5 w-5" />
-                    </Button>
-                </Link>
-                <div>
-                    <h1 className="text-2xl font-bold flex items-center gap-2">
-                        <ArrowDownCircle className="h-6 w-6 text-green-600" />
-                        Arrivi
-                    </h1>
-                    <p className="text-muted-foreground">
-                        Gestione check-in e nuovi ingressi
-                    </p>
-                </div>
-            </div>
-
-            <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-                    <div className="flex items-center gap-2">
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setDate(new Date())}
-                            className={isToday ? 'bg-primary/10 border-primary text-primary' : ''}
-                        >
-                            Oggi
-                        </Button>
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setDate(addDays(new Date(), 1))}
-                            className={isSameDay(date, addDays(new Date(), 1)) ? 'bg-primary/10 border-primary text-primary' : ''}
-                        >
-                            Domani
-                        </Button>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm font-medium">
-                        <CalendarCheck className="h-4 w-4 text-muted-foreground" />
-                        {format(date, 'EEEE d MMMM yyyy', { locale: it })}
-                    </div>
-                </CardHeader>
-                <CardContent>
-                    {loading ? (
-                        <div className="space-y-3 py-4">
-                            {[1, 2, 3].map(i => (
-                                <div key={i} className="h-16 bg-muted rounded animate-pulse" />
-                            ))}
-                        </div>
-                    ) : !data || data.total_arrivals === 0 ? (
-                        <div className="text-center py-12 border-2 border-dashed rounded-lg bg-muted/20">
-                            <ArrowDownCircle className="h-12 w-12 mx-auto text-green-200 mb-3" />
-                            <p className="text-muted-foreground font-medium">Nessun arrivo previsto per questa data</p>
-                            <p className="text-sm text-muted-foreground/60 mt-1">Nessuna prenotazione inizia il {format(date, 'd MMMM')}</p>
-                        </div>
-                    ) : (
-                        <div className="space-y-3">
-                            {data.arrivals.map((arrival) => (
-                                <div
-                                    key={arrival.id}
-                                    className="flex items-center justify-between p-4 border rounded-lg bg-card hover:bg-accent/50 transition-colors shadow-sm"
-                                >
-                                    <div className="flex items-center gap-4">
-                                        <div className="bg-green-100 dark:bg-green-900/30 p-2.5 rounded-full">
-                                            <span className="font-bold text-green-700 dark:text-green-300 text-lg">
-                                                {arrival.pitches.number}
-                                            </span>
-                                        </div>
-                                        <div>
-                                            <div className="font-semibold text-lg">
-                                                {arrival.customers.first_name} {arrival.customers.last_name}
-                                            </div>
-                                            <div className="flex items-center gap-2 text-sm text-muted-foreground mt-0.5">
-                                                <Badge variant="outline" className="font-normal">
-                                                    {arrival.pitches.type === 'piazzola' ? 'Piazzola' : 'Tenda'}
-                                                </Badge>
-                                                <span>•</span>
-                                                <span>{arrival.guests_count} ospiti</span>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <Button variant="default" className="bg-green-600 hover:bg-green-700">
-                                        Check-in
-                                    </Button>
-                                </div>
-                            ))}
-
-                            <div className="mt-6 pt-4 border-t text-sm text-muted-foreground text-center">
-                                Totale arrivi: <strong>{data.total_arrivals}</strong>
+        <div className="flex flex-col h-screen bg-background">
+            {/* Header Sticky */}
+            <header className="sticky top-0 z-10 border-b bg-card/80 backdrop-blur-sm shadow-sm">
+                <div className="container mx-auto px-4 py-4 max-w-7xl">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div className="flex items-center gap-4">
+                            <Link href="/">
+                                <Button variant="ghost" size="icon" className="h-10 w-10">
+                                    <ArrowLeft className="h-6 w-6" />
+                                </Button>
+                            </Link>
+                            <div>
+                                <h1 className="text-2xl font-bold flex items-center gap-2 text-foreground">
+                                    <ArrowDownCircle className="h-6 w-6 text-green-600" />
+                                    Arrivi
+                                </h1>
+                                <p className="text-sm text-muted-foreground hidden sm:block">
+                                    {format(date, 'EEEE d MMMM yyyy', { locale: it })}
+                                </p>
                             </div>
                         </div>
+
+                        <div className="flex items-center gap-3">
+                            <div className="relative w-full md:w-64">
+                                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                                <Input
+                                    placeholder="Cerca ospite o piazzola..."
+                                    className="pl-9"
+                                    value={filter}
+                                    onChange={(e) => setFilter(e.target.value)}
+                                />
+                            </div>
+                            <DateToggle isToday={isToday} onToggle={handleDateToggle} />
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            {/* Main Content Scrollable */}
+            <main className="flex-1 overflow-auto p-4 md:p-6 bg-muted/10">
+                <div className="container mx-auto max-w-7xl">
+                    {loading ? (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {[1, 2, 3, 4, 5, 6].map(i => (
+                                <div key={i} className="h-32 bg-muted rounded-xl animate-pulse" />
+                            ))}
+                        </div>
+                    ) : !data || filteredArrivals.length === 0 ? (
+                        <div className="flex flex-col items-center justify-center h-[50vh] text-center">
+                            <div className="bg-green-100 dark:bg-green-900/20 p-6 rounded-full mb-4">
+                                <ArrowDownCircle className="h-12 w-12 text-green-600 dark:text-green-400" />
+                            </div>
+                            <h2 className="text-xl font-semibold mb-2">Nessun arrivo trovato</h2>
+                            <p className="text-muted-foreground">
+                                {data?.total_arrivals === 0
+                                    ? `Nessuna prenotazione prevista per ${isToday ? 'oggi' : 'domani'}`
+                                    : "Nessun risultato corrisponde alla tua ricerca"}
+                            </p>
+                        </div>
+                    ) : (
+                        <>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                                {filteredArrivals.map((arrival) => (
+                                    <GuestCard key={arrival.id} event={arrival} type="arrival" />
+                                ))}
+                            </div>
+
+                            <div className="mt-8 text-center text-sm text-muted-foreground">
+                                Visualizzando {filteredArrivals.length} di {data.total_arrivals} arrivi
+                            </div>
+                        </>
                     )}
-                </CardContent>
-            </Card>
+                </div>
+            </main>
         </div>
     );
 }
