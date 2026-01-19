@@ -38,7 +38,13 @@ export function DemographicsChart({ data }: DemographicsChartProps) {
                                 ))}
                             </Pie>
                             <Tooltip
-                                contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                                contentStyle={{
+                                    backgroundColor: 'var(--color-card)',
+                                    color: 'var(--color-card-foreground)',
+                                    borderRadius: '8px',
+                                    border: '1px solid var(--color-border)',
+                                    boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
+                                }}
                             />
                             <Legend verticalAlign="bottom" height={36} />
                         </PieChart>

@@ -53,7 +53,13 @@ export function RevenueChart({ data }: RevenueChartProps) {
                             <Tooltip
                                 formatter={(value: any) => [`€${value}`, "Ricavi"]}
                                 labelFormatter={(label) => format(parseISO(label), "d MMMM yyyy")}
-                                contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                                contentStyle={{
+                                    backgroundColor: 'var(--color-card)',
+                                    color: 'var(--color-card-foreground)',
+                                    borderRadius: '8px',
+                                    border: '1px solid var(--color-border)',
+                                    boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
+                                }}
                             />
                             <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="var(--color-border)" />
                             <Area

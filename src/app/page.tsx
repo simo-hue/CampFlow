@@ -1,7 +1,7 @@
 import { QuickStatsWidget } from '@/components/dashboard/QuickStatsWidget';
 import { GlobalSearchBar } from '@/components/dashboard/GlobalSearchBar';
 import { AvailabilityModule } from '@/components/dashboard/AvailabilityModule';
-import { TodayView } from '@/components/dashboard/TodayView';
+import { WeeklyOccupancyWidget } from '@/components/dashboard/WeeklyOccupancyWidget';
 import { Settings, Calendar, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
@@ -20,9 +20,9 @@ export default function DashboardPage() {
             <QuickStatsWidget />
           </section>
 
-          {/* Today View at Bottom */}
+          {/* Weekly Occupancy Forecast */}
           <section>
-            <TodayView />
+            <WeeklyOccupancyWidget />
           </section>
 
           {/* Availability Query */}
