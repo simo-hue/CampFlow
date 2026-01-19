@@ -130,6 +130,8 @@ Dopo la migrazione, testa:
 4. **Layout Arrivi/Partenze**:
    - Visitare `/arrivals` e `/departures`.
    - Verificare layout full-screen e funzionamento barra di ricerca.
+   - Testare il toggle "Settimana" e verificare il raggruppamento per giorno.
+
 
 
 ---

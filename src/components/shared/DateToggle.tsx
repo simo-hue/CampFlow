@@ -1,28 +1,36 @@
 import { Button } from '@/components/ui/button';
 
 interface DateToggleProps {
-    isToday: boolean;
-    onToggle: (type: 'today' | 'tomorrow') => void;
+    currentView: 'today' | 'tomorrow' | 'week';
+    onToggle: (view: 'today' | 'tomorrow' | 'week') => void;
 }
 
-export function DateToggle({ isToday, onToggle }: DateToggleProps) {
+export function DateToggle({ currentView, onToggle }: DateToggleProps) {
     return (
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 p-1 bg-muted rounded-lg border">
             <Button
-                variant="outline"
+                variant={currentView === 'today' ? 'default' : 'ghost'}
                 size="sm"
                 onClick={() => onToggle('today')}
-                className={isToday ? 'bg-primary/10 border-primary text-primary' : ''}
+                className="h-8 transition-all"
             >
                 Oggi
             </Button>
             <Button
-                variant="outline"
+                variant={currentView === 'tomorrow' ? 'default' : 'ghost'}
                 size="sm"
                 onClick={() => onToggle('tomorrow')}
-                className={!isToday ? 'bg-primary/10 border-primary text-primary' : ''}
+                className="h-8 transition-all"
             >
                 Domani
+            </Button>
+            <Button
+                variant={currentView === 'week' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => onToggle('week')}
+                className="h-8 transition-all"
+            >
+                Settimana
             </Button>
         </div>
     );

@@ -12,17 +12,25 @@ import { addDays, format, parseISO, isValid } from 'date-fns';
 export async function GET(request: Request) {
     try {
         const { searchParams } = new URL(request.url);
-        const queryDate = searchParams.get('date');
+        const dateParam = searchParams.get('date');
+        const startDateParam = searchParams.get('startDate');
+        const endDateParam = searchParams.get('endDate');
 
-        // Use provided date or default to today (Italy time)
-        let targetDate = getTodayItaly();
-        if (queryDate && isValid(parseISO(queryDate))) {
-            targetDate = queryDate;
+        // Determine date range
+        let startTargetDate = getTodayItaly();
+        let endTargetDate = getTodayItaly();
+
+        if (startDateParam && isValid(parseISO(startDateParam))) {
+            startTargetDate = startDateParam;
+            endTargetDate = endDateParam && isValid(parseISO(endDateParam)) ? endDateParam : startDateParam;
+        } else if (dateParam && isValid(parseISO(dateParam))) {
+            startTargetDate = dateParam;
+            endTargetDate = dateParam;
         }
 
         const supabase = supabaseAdmin;
 
-        // Get arrivals (bookings starting on targetDate)
+        // Get arrivals (bookings starting within range)
         const { data: allArrivals, error: arrivalsError } = await supabase
             .from('bookings')
             .select(`
@@ -41,14 +49,15 @@ export async function GET(request: Request) {
             return NextResponse.json({ error: 'Failed to fetch arrivals' }, { status: 500 });
         }
 
-        // Filter arrivals to only those starting exactly on targetDate
-        // Format in DB is "[YYYY-MM-DD,YYYY-MM-DD)"
+        // Filter arrivals: start date falls within [startTargetDate, endTargetDate]
         const arrivals = allArrivals?.filter(booking => {
             const match = booking.booking_period?.match(/\[([^,]+),/);
-            return match && match[1] === targetDate;
+            if (!match) return false;
+            const arrivalDate = match[1];
+            return arrivalDate >= startTargetDate && arrivalDate <= endTargetDate;
         }) || [];
 
-        // Get departures (bookings ending on targetDate)
+        // Get departures (bookings ending within range)
         const { data: allDepartures, error: departuresError } = await supabase
             .from('bookings')
             .select(`
@@ -67,14 +76,18 @@ export async function GET(request: Request) {
             return NextResponse.json({ error: 'Failed to fetch departures' }, { status: 500 });
         }
 
-        // Filter departures to only those ending exactly on targetDate
+        // Filter departures: end date falls within [startTargetDate, endTargetDate]
         const departures = allDepartures?.filter(booking => {
             const match = booking.booking_period?.match(/,([^\)]+)\)/);
-            return match && match[1] === targetDate;
+            if (!match) return false;
+            const departureDate = match[1];
+            return departureDate >= startTargetDate && departureDate <= endTargetDate;
         }) || [];
 
         return NextResponse.json({
-            date: targetDate,
+            date: startTargetDate, // For backward compatibility
+            startDate: startTargetDate,
+            endDate: endTargetDate,
             arrivals,
             departures,
             total_arrivals: arrivals.length,

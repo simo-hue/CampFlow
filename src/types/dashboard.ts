@@ -2,6 +2,7 @@ export interface DashboardEvent {
     id: string;
     pitch_id: string;
     guests_count: number;
+    booking_period: string;
     pitches: {
         number: string;
         type: string;

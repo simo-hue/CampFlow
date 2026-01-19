@@ -9,7 +9,7 @@
 
 
 
-- Voglio che applichi il caching intelligente utilizzato nella visualizzazione delle prenotazioni anche per quanto riguarda le impostazioni nel tab campeggio visto che sono sempre quelle e non cambiano mai a meno che non sia io ( che proprio in quella pagina ) vado ad eliminarle/aggiungerle o modificarle. Per questo non serve interrogare il db ogni volta, anzi proprio quasi mai visto che sono statiche ( a meno di mie modifiche )
+- 
 
 - Voglio che fai una modifica grafica, ovvero nella home, riguardo la sezione "Cerca Piazzole Disponibili". Voglio che i risultati che compaiono una volta premuto il pulsante "Cerca" sia scrollabile al di fuori dal box che quindi il contenuto non venga limitato all'interno del box.
 

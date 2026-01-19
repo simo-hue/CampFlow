@@ -2,31 +2,46 @@
 
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { CalendarCheck, ArrowLeft, ArrowUpCircle, Search } from 'lucide-react';
-import { format, addDays, isSameDay } from 'date-fns';
+import { ArrowLeft, ArrowUpCircle, Search } from 'lucide-react';
+import { format, addDays, startOfDay } from 'date-fns';
 import { it } from 'date-fns/locale';
 import { toast } from 'sonner';
 import Link from 'next/link';
-import { DashboardData } from '@/types/dashboard';
+import { DashboardData, DashboardEvent } from '@/types/dashboard';
 import { GuestCard } from '@/components/shared/GuestCard';
 import { DateToggle } from '@/components/shared/DateToggle';
 import { Input } from '@/components/ui/input';
 
+type ViewType = 'today' | 'tomorrow' | 'week';
+
 export default function DeparturesPage() {
-    const [date, setDate] = useState(new Date());
+    const [view, setView] = useState<ViewType>('today');
     const [data, setData] = useState<DashboardData | null>(null);
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState('');
 
     useEffect(() => {
         loadDepartures();
-    }, [date]);
+    }, [view]);
 
     const loadDepartures = async () => {
         setLoading(true);
         try {
-            const dateStr = format(date, 'yyyy-MM-dd');
-            const response = await fetch(`/api/today?date=${dateStr}`);
+            const today = startOfDay(new Date());
+            let startDate = today;
+            let endDate = today;
+
+            if (view === 'tomorrow') {
+                startDate = addDays(today, 1);
+                endDate = startDate;
+            } else if (view === 'week') {
+                endDate = addDays(today, 6);
+            }
+
+            const startStr = format(startDate, 'yyyy-MM-dd');
+            const endStr = format(endDate, 'yyyy-MM-dd');
+
+            const response = await fetch(`/api/today?startDate=${startStr}&endDate=${endStr}`);
 
             if (response.ok) {
                 const result = await response.json();
@@ -44,9 +59,8 @@ export default function DeparturesPage() {
         }
     };
 
-    const isToday = isSameDay(date, new Date());
-    const handleDateToggle = (type: 'today' | 'tomorrow') => {
-        setDate(type === 'today' ? new Date() : addDays(new Date(), 1));
+    const handleViewToggle = (newView: ViewType) => {
+        setView(newView);
     };
 
     const filteredDepartures = data?.departures.filter(departure =>
@@ -54,6 +68,22 @@ export default function DeparturesPage() {
         departure.customers.last_name.toLowerCase().includes(filter.toLowerCase()) ||
         departure.pitches.number.includes(filter)
     ) || [];
+
+    // Group departures by date for Week view
+    const groupedDepartures: Record<string, DashboardEvent[]> = {};
+    if (view === 'week') {
+        filteredDepartures.forEach(departure => {
+            const dateMatch = departure.booking_period.match(/,([^\)]+)\)/);
+            const date = dateMatch ? dateMatch[1] : 'Sconosciuto';
+            if (!groupedDepartures[date]) {
+                groupedDepartures[date] = [];
+            }
+            groupedDepartures[date].push(departure);
+        });
+    }
+
+    // Sort dates for display
+    const sortedDates = Object.keys(groupedDepartures).sort();
 
     return (
         <div className="flex flex-col h-screen bg-background">
@@ -73,7 +103,10 @@ export default function DeparturesPage() {
                                     Partenze
                                 </h1>
                                 <p className="text-sm text-muted-foreground hidden sm:block">
-                                    {format(date, 'EEEE d MMMM yyyy', { locale: it })}
+                                    {view === 'week'
+                                        ? "Prossimi 7 giorni"
+                                        : format(view === 'tomorrow' ? addDays(new Date(), 1) : new Date(), 'EEEE d MMMM yyyy', { locale: it })
+                                    }
                                 </p>
                             </div>
                         </div>
@@ -83,12 +116,12 @@ export default function DeparturesPage() {
                                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                                 <Input
                                     placeholder="Cerca ospite o piazzola..."
-                                    className="pl-9"
+                                    className="pl-9 h-9"
                                     value={filter}
                                     onChange={(e) => setFilter(e.target.value)}
                                 />
                             </div>
-                            <DateToggle isToday={isToday} onToggle={handleDateToggle} />
+                            <DateToggle currentView={view} onToggle={handleViewToggle} />
                         </div>
                     </div>
                 </div>
@@ -111,17 +144,37 @@ export default function DeparturesPage() {
                             <h2 className="text-xl font-semibold mb-2">Nessuna partenza trovata</h2>
                             <p className="text-muted-foreground">
                                 {data?.total_departures === 0
-                                    ? `Nessuna prenotazione in scadenza per ${isToday ? 'oggi' : 'domani'}`
+                                    ? `Nessuna partenza prevista`
                                     : "Nessun risultato corrisponde alla tua ricerca"}
                             </p>
                         </div>
                     ) : (
                         <>
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                                {filteredDepartures.map((departure) => (
-                                    <GuestCard key={departure.id} event={departure} type="departure" />
-                                ))}
-                            </div>
+                            {view === 'week' ? (
+                                <div className="space-y-8">
+                                    {sortedDates.map(date => (
+                                        <div key={date}>
+                                            <h3 className="text-lg font-semibold mb-4 sticky top-0 bg-background/95 backdrop-blur py-2 px-1 border-b z-0">
+                                                {format(new Date(date), 'EEEE d MMMM', { locale: it })}
+                                                <span className="ml-2 text-sm font-normal text-muted-foreground">
+                                                    ({groupedDepartures[date].length})
+                                                </span>
+                                            </h3>
+                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                                                {groupedDepartures[date].map(departure => (
+                                                    <GuestCard key={departure.id} event={departure} type="departure" />
+                                                ))}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                                    {filteredDepartures.map((departure) => (
+                                        <GuestCard key={departure.id} event={departure} type="departure" />
+                                    ))}
+                                </div>
+                            )}
 
                             <div className="mt-8 text-center text-sm text-muted-foreground">
                                 Visualizzando {filteredDepartures.length} di {data.total_departures} partenze

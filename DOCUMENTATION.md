@@ -415,5 +415,7 @@ CREATE POLICY "Staff can manage bookings"
 - ✅ Implementato Header sticky con barra di ricerca client-side (filtro per nome o piazzola).
 - ✅ Layout a griglia responsiva per le card (da 1 a 4 colonne).
 - ✅ Migliorata UX con visualizzazione "Empty State" personalizzata.
+- ✅ Aggiunta vista **Settimanale** con raggruppamento per giorno.
+- ✅ Aggiornato endpoint `/api/today` per supportare date range.
 
 **Documento vivo**: Aggiornare questo file ad ogni scelta implementativa significativa.
