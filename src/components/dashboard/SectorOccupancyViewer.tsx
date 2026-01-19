@@ -5,8 +5,9 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
-import { Grid, Calendar, RefreshCw, Zap, Home, Tent, ChevronLeft, ChevronRight, ChevronsRight } from 'lucide-react';
+import { Grid, Calendar, RefreshCw, Zap, Home, Tent, ChevronLeft, ChevronRight, ChevronsRight, Plus } from 'lucide-react';
 import { BookingCreationModal } from './BookingCreationModal';
+import { BookingDetailsDialog } from './BookingDetailsDialog';
 import { isDateInRange } from '@/lib/dateUtils';
 import type { Pitch, PitchType } from '@/lib/types';
 import { SECTORS } from '@/lib/pitchUtils';
@@ -17,6 +18,7 @@ import { toast } from "sonner";
 interface DayOccupancy {
     date: string;
     isOccupied: boolean;
+    bookingId?: string;
     bookingInfo?: {
         customer_name: string;
         guests_count: number;
@@ -40,7 +42,7 @@ const PITCH_TYPES: { id: PitchType; name: string; icon: any }[] = [
 ];
 
 const CACHE_WINDOW_DAYS = 45; // Increased to allow smoother navigation buffering
-const CACHE_KEY_PREFIX = 'occupancy_cache_';
+const CACHE_KEY_PREFIX = 'occupancy_cache_v2_';
 const CACHE_VERSION_KEY = 'occupancy_cache_version';
 
 function getCacheVersion(): string {
@@ -111,6 +113,10 @@ export function SectorOccupancyViewer() {
         endDate: string;
     } | null>(null);
     const [showBookingModal, setShowBookingModal] = useState(false);
+
+    // Details Popup State
+    const [selectedBookingId, setSelectedBookingId] = useState<string | null>(null);
+    const [showDetailsModal, setShowDetailsModal] = useState(false);
 
     // --- Navigation Handlers ---
     const handleNext = () => setViewStartDate(curr => addDays(curr, selectedTimeframe.days));
@@ -183,6 +189,7 @@ export function SectorOccupancyViewer() {
                     return {
                         date: dateStr,
                         isOccupied: !!booking,
+                        bookingId: booking?.id,
                         bookingInfo: booking ? {
                             customer_name: booking.customer_name || 'Occupato',
                             guests_count: booking.guests_count || 0,
@@ -235,9 +242,16 @@ export function SectorOccupancyViewer() {
 
     // --- Interaction Logic (Drag + Click-Click) ---
 
-    // 1. Mouse Down: Start Drag or Prepare Click
-    const handleCellMouseDown = (pitch: Pitch, date: string, isOccupied: boolean) => {
-        if (isOccupied) return;
+    // 1. Mouse Down: Start Drag or Prepare Click (OR OPEN DETAILS if occupied)
+    const handleCellMouseDown = (pitch: Pitch, date: string, isOccupied: boolean, bookingId?: string) => {
+        if (isOccupied) {
+            if (bookingId) {
+                console.log("Opening details for booking:", bookingId);
+                setSelectedBookingId(bookingId);
+                setShowDetailsModal(true);
+            }
+            return;
+        }
 
         setIsDragging(true);
 
@@ -429,19 +443,19 @@ export function SectorOccupancyViewer() {
     const getCellClassName = (pitch: Pitch, date: string, isOccupied: boolean): string => {
         const selected = isCellSelected(pitch.id, date);
         const isDraft = draftStart?.pitchId === pitch.id && draftStart.date === date;
+
+        // Base background for free cells (lighter hover)
+        // For occupied cells, we rely on the inner "pill" for the main color, 
+        // but keep a subtle tint on the cell itself just in case.
         const baseColor = isOccupied
-            ? 'bg-red-500/15 hover:bg-red-500/25 dark:bg-red-500/20 dark:hover:bg-red-500/30'
-            : 'bg-green-500/0 hover:bg-green-500/20 dark:bg-green-500/15 dark:hover:bg-green-500/25';
+            ? '' // Unused effectively because content covers it, but kept for fallback
+            : 'hover:bg-muted/50 transition-colors duration-200';
 
-        if (selected) {
-            return `p-2 border-r bg-blue-500 text-white shadow-lg z-10 scale-105 transition-transform duration-150`;
-        }
+        // Reverting to previous logic but cleaner
+        if (selected) return 'p-0 border-r border-b relative bg-blue-500/20';
+        if (isDraft) return 'p-0 border-r border-b relative bg-blue-500/40 animate-pulse';
 
-        if (isDraft) {
-            return `p-2 border-r bg-blue-300 dark:bg-blue-700 animate-pulse`;
-        }
-
-        return `${baseColor} transition-colors duration-200 ${isOccupied ? 'cursor-not-allowed opacity-80' : 'cursor-pointer'}`;
+        return `p-0 border-r border-b relative h-[50px] ${isOccupied ? '' : baseColor}`;
     };
 
     return (
@@ -606,18 +620,34 @@ export function SectorOccupancyViewer() {
                                     {item.days.map(day => (
                                         <td
                                             key={day.date}
-                                            className={`border-b border-r relative h-[50px] ${getCellClassName(item.pitch, day.date, day.isOccupied)}`}
-                                            onMouseDown={() => handleCellMouseDown(item.pitch, day.date, day.isOccupied)}
+                                            className={getCellClassName(item.pitch, day.date, day.isOccupied)}
+                                            onMouseDown={() => handleCellMouseDown(item.pitch, day.date, day.isOccupied, day.bookingId)}
                                             onMouseEnter={() => handleCellMouseEnter(item.pitch, day.date, day.isOccupied)}
                                             onMouseUp={() => handleMouseUp(item.pitch, day.date)}
                                         >
-                                            {day.isOccupied && (
-                                                <div className="absolute inset-0 m-1 bg-red-500/10 rounded border border-red-200 flex items-center justify-center">
+                                            {/* SELECTION OVERLAY */}
+                                            {isCellSelected(item.pitch.id, day.date) && (
+                                                <div className="absolute inset-0 bg-blue-600/20 z-10 pointer-events-none border-2 border-blue-500" />
+                                            )}
+
+                                            {/* BOOKING PILL */}
+                                            {day.isOccupied ? (
+                                                <div className="absolute inset-x-[1px] inset-y-[1px] rounded-md bg-gradient-to-br from-rose-500 to-rose-600 dark:from-rose-600 dark:to-rose-700 shadow-sm border border-rose-400/50 flex items-center justify-center overflow-hidden hover:brightness-110 transition-all cursor-pointer group-hover:shadow-md z-0">
                                                     {selectedTimeframe.days < 10 && (
-                                                        <span className="text-[10px] font-medium text-red-900 truncate px-1">
-                                                            {day.bookingInfo?.customer_name}
-                                                        </span>
+                                                        <div className="flex flex-col items-center justify-center w-full px-1">
+                                                            <span className="text-[10px] font-bold text-white drop-shadow-sm truncate w-full text-center leading-tight">
+                                                                {day.bookingInfo?.customer_name}
+                                                            </span>
+                                                            <span className="text-[9px] text-rose-100/90 hidden sm:block">
+                                                                {day.bookingInfo?.guests_count} Ospiti
+                                                            </span>
+                                                        </div>
                                                     )}
+                                                </div>
+                                            ) : (
+                                                // FREE CELL CONTENT (Optional: dots or empty)
+                                                <div className="absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 pointer-events-none">
+                                                    <Plus className="w-4 h-4 text-muted-foreground/50" />
                                                 </div>
                                             )}
                                         </td>
@@ -646,6 +676,13 @@ export function SectorOccupancyViewer() {
                     onSuccess={handleBookingSuccess}
                 />
             )}
+
+            {/* Booking Details Dialog */}
+            <BookingDetailsDialog
+                open={showDetailsModal}
+                onClose={() => setShowDetailsModal(false)}
+                bookingId={selectedBookingId}
+            />
         </div>
     );
 }
