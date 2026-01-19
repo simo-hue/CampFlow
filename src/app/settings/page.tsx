@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { SettingsLayout } from '@/components/settings/SettingsLayout';
 import { PitchManagement } from '@/components/settings/PitchManagement';
+import { SeasonalPricingManager } from '@/components/settings/SeasonalPricingManager';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
@@ -12,15 +13,11 @@ import { Save, Check } from 'lucide-react';
 interface PricingSettings {
     person_price_per_day: number;
     dog_price_per_day: number;
-    tent_price_per_day: number;
-    pitch_price_per_day: number;
 }
 
 const DEFAULT_PRICING: PricingSettings = {
     person_price_per_day: 10,
     dog_price_per_day: 5,
-    tent_price_per_day: 15,
-    pitch_price_per_day: 25,
 };
 
 export default function SettingsPage() {
@@ -93,7 +90,7 @@ export default function SettingsPage() {
                     <div className="mb-6">
                         <h2 className="text-2xl font-bold">Gestione Prezzi</h2>
                         <p className="text-muted-foreground mt-1">
-                            Configura le tariffe giornaliere per persone, animali e strutture
+                            Configura le tariffe giornaliere per persone, animali e stagionalità
                         </p>
                     </div>
 
@@ -130,66 +127,27 @@ export default function SettingsPage() {
                             </p>
                         </div>
 
-                        {/* Prezzo Tenda */}
-                        <div className="grid gap-2">
-                            <Label htmlFor="tent-price">Tenda (€/giorno)</Label>
-                            <Input
-                                id="tent-price"
-                                type="number"
-                                min="0"
-                                step="0.5"
-                                value={pricing.tent_price_per_day}
-                                onChange={(e) => updatePricing('tent_price_per_day', e.target.value)}
-                            />
-                            <p className="text-xs text-muted-foreground">
-                                Costo base per tenda al giorno
-                            </p>
-                        </div>
+                        <div className="my-4 border-t" />
 
-                        {/* Prezzo Piazzola */}
-                        <div className="grid gap-2">
-                            <Label htmlFor="pitch-price">Piazzola (€/giorno)</Label>
-                            <Input
-                                id="pitch-price"
-                                type="number"
-                                min="0"
-                                step="0.5"
-                                value={pricing.pitch_price_per_day}
-                                onChange={(e) => updatePricing('pitch_price_per_day', e.target.value)}
-                            />
-                            <p className="text-xs text-muted-foreground">
-                                Costo base per piazzola al giorno
-                            </p>
-                        </div>
+                        {/* Seasonal Pricing Manager */}
+                        <SeasonalPricingManager />
+                    </div>
 
-                        {/* Example Calculation */}
-                        <div className="p-4 border rounded-lg bg-muted">
-                            <p className="text-sm font-medium mb-2">📊 Esempio di calcolo:</p>
-                            <p className="text-sm text-muted-foreground">
-                                2 persone + 1 cane + piazzola per 3 giorni =<br />
-                                (2 × {pricing.person_price_per_day}€ + 1 × {pricing.dog_price_per_day}€ + {pricing.pitch_price_per_day}€) × 3 giorni =
-                                <strong className="ml-1">
-                                    {((2 * pricing.person_price_per_day + pricing.dog_price_per_day + pricing.pitch_price_per_day) * 3).toFixed(2)}€
-                                </strong>
-                            </p>
-                        </div>
-
-                        {/* Save Button */}
-                        <div className="flex justify-end pt-4">
-                            <Button onClick={savePricing} className="w-full sm:w-auto" disabled={isSaved}>
-                                {isSaved ? (
-                                    <>
-                                        <Check className="mr-2 h-4 w-4" />
-                                        Modifiche Salvate
-                                    </>
-                                ) : (
-                                    <>
-                                        <Save className="mr-2 h-4 w-4" />
-                                        Salva Modifiche
-                                    </>
-                                )}
-                            </Button>
-                        </div>
+                    {/* Save Button */}
+                    <div className="flex justify-end pt-4">
+                        <Button onClick={savePricing} className="w-full sm:w-auto" disabled={isSaved}>
+                            {isSaved ? (
+                                <>
+                                    <Check className="mr-2 h-4 w-4" />
+                                    Modifiche Salvate
+                                </>
+                            ) : (
+                                <>
+                                    <Save className="mr-2 h-4 w-4" />
+                                    Salva Modifiche
+                                </>
+                            )}
+                        </Button>
                     </div>
                 </div>
             )}

@@ -16,19 +16,15 @@ import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Settings } from 'lucide-react';
 import { PitchManagement } from '@/components/settings/PitchManagement';
+import { SeasonalPricingManager } from '@/components/settings/SeasonalPricingManager';
 
-interface PricingSettings {
-    person_price_per_day: number;
-    dog_price_per_day: number;
-    tent_price_per_day: number;
-    pitch_price_per_day: number;
+person_price_per_day: number;
+dog_price_per_day: number;
 }
 
 const DEFAULT_PRICING: PricingSettings = {
     person_price_per_day: 10,
     dog_price_per_day: 5,
-    tent_price_per_day: 15,
-    pitch_price_per_day: 25,
 };
 
 export function SettingsDialog() {
@@ -135,82 +131,42 @@ export function SettingsDialog() {
 
                     {/* Prezzi Tab */}
                     <TabsContent value="pricing" className="space-y-4 mt-4">
-                        <div className="grid gap-4">
-                            {/* Prezzo Persona */}
-                            <div className="grid gap-2">
-                                <Label htmlFor="person-price">Prezzo Persona (€/giorno)</Label>
-                                <Input
-                                    id="person-price"
-                                    type="number"
-                                    min="0"
-                                    step="0.5"
-                                    value={pricing.person_price_per_day}
-                                    onChange={(e) => updatePricing('person_price_per_day', e.target.value)}
-                                />
-                                <p className="text-xs text-muted-foreground">
-                                    Costo per persona al giorno
-                                </p>
-                            </div>
-
-                            {/* Prezzo Cane */}
-                            <div className="grid gap-2">
-                                <Label htmlFor="dog-price">Prezzo Cane (€/giorno)</Label>
-                                <Input
-                                    id="dog-price"
-                                    type="number"
-                                    min="0"
-                                    step="0.5"
-                                    value={pricing.dog_price_per_day}
-                                    onChange={(e) => updatePricing('dog_price_per_day', e.target.value)}
-                                />
-                                <p className="text-xs text-muted-foreground">
-                                    Costo per cane al giorno
-                                </p>
-                            </div>
-
-                            {/* Prezzo Tenda */}
-                            <div className="grid gap-2">
-                                <Label htmlFor="tent-price">Prezzo Tenda (€/giorno)</Label>
-                                <Input
-                                    id="tent-price"
-                                    type="number"
-                                    min="0"
-                                    step="0.5"
-                                    value={pricing.tent_price_per_day}
-                                    onChange={(e) => updatePricing('tent_price_per_day', e.target.value)}
-                                />
-                                <p className="text-xs text-muted-foreground">
-                                    Costo base per tenda al giorno
-                                </p>
-                            </div>
-
-                            {/* Prezzo Piazzola */}
-                            <div className="grid gap-2">
-                                <Label htmlFor="pitch-price">Prezzo Piazzola (€/giorno)</Label>
-                                <Input
-                                    id="pitch-price"
-                                    type="number"
-                                    min="0"
-                                    step="0.5"
-                                    value={pricing.pitch_price_per_day}
-                                    onChange={(e) => updatePricing('pitch_price_per_day', e.target.value)}
-                                />
-                                <p className="text-xs text-muted-foreground">
-                                    Costo base per piazzola al giorno
-                                </p>
-                            </div>
-
-                            <div className="p-4 border rounded-md bg-muted/50">
-                                <p className="text-sm font-medium mb-2">📊 Esempio di calcolo:</p>
-                                <p className="text-sm text-muted-foreground">
-                                    2 persone + 1 cane + piazzola per 3 giorni =<br />
-                                    (2 × {pricing.person_price_per_day}€ + 1 × {pricing.dog_price_per_day}€ + {pricing.pitch_price_per_day}€) × 3 giorni =
-                                    <strong className="ml-1">
-                                        {((2 * pricing.person_price_per_day + pricing.dog_price_per_day + pricing.pitch_price_per_day) * 3).toFixed(2)}€
-                                    </strong>
-                                </p>
-                            </div>
+                        {/* Prezzo Persona */}
+                        <div className="grid gap-2">
+                            <Label htmlFor="person-price">Prezzo Persona (€/giorno)</Label>
+                            <Input
+                                id="person-price"
+                                type="number"
+                                min="0"
+                                step="0.5"
+                                value={pricing.person_price_per_day}
+                                onChange={(e) => updatePricing('person_price_per_day', e.target.value)}
+                            />
+                            <p className="text-xs text-muted-foreground">
+                                Costo per persona al giorno
+                            </p>
                         </div>
+
+                        {/* Prezzo Cane */}
+                        <div className="grid gap-2">
+                            <Label htmlFor="dog-price">Prezzo Cane (€/giorno)</Label>
+                            <Input
+                                id="dog-price"
+                                type="number"
+                                min="0"
+                                step="0.5"
+                                value={pricing.dog_price_per_day}
+                                onChange={(e) => updatePricing('dog_price_per_day', e.target.value)}
+                            />
+                            <p className="text-xs text-muted-foreground">
+                                Costo per cane al giorno
+                            </p>
+                        </div>
+
+                        <div className="my-4 border-t" />
+
+                        {/* Seasonal Pricing Manager */}
+                        <SeasonalPricingManager />
                     </TabsContent>
 
                     {/* Campeggio Tab */}

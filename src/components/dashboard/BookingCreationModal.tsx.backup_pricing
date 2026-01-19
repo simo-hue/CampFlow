@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,8 +9,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Calendar, Users, FileText, Loader2, Check, Dog, Plus, X, Euro } from 'lucide-react';
 import { calculateNights, formatDateLong } from '@/lib/dateUtils';
+import { calculatePrice } from '@/lib/pricing';
 import type { PitchType } from '@/lib/types';
-import type { PitchType, PriceBreakdownDay } from '@/lib/types';
 import { invalidateOccupancyCache } from './SectorOccupancyViewer';
 import { toast } from "sonner";
 
@@ -46,42 +46,22 @@ export function BookingCreationModal({
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
 
-
     const nights = calculateNights(checkIn, checkOut);
-    const [totalPrice, setTotalPrice] = useState(0);
-    const [priceBreakdown, setPriceBreakdown] = useState<PriceBreakdownDay[]>([]);
-    const [loadingPrice, setLoadingPrice] = useState(false);
-
-    // Fetch price from API whenever dates or pitch type change
-    useEffect(() => {
-        const fetchPrice = async () => {
-            setLoadingPrice(true);
-            try {
-                const res = await fetch(
-                    `/api/pricing/calculate?checkIn=${checkIn}&checkOut=${checkOut}&pitchType=${pitchType}`
-                );
-                
-                if (!res.ok) throw new Error("Failed to calculate price");
-                
-                const data = await res.json();
-                setTotalPrice(data.totalPrice || 0);
-                setPriceBreakdown(data.breakdown || []);
-            } catch (error) {
-                console.error("Price calculation error:", error);
-                toast.error("Errore calcolo prezzo", { 
-                    description: "Usando tariffa predefinita" 
-                });
-                // Fallback price
-                const fallbackRate = pitchType === "piazzola" ? 25 : 18;
-                const days = nights > 0 ? nights : 1;
-                setTotalPrice(fallbackRate * days);
-            } finally {
-                setLoadingPrice(false);
-            }
-        };
-
-        fetchPrice();
-    }, [checkIn, checkOut, pitchType, nights]);
+    // Price calculation - handle single day selection
+    let totalPrice = 0;
+    try {
+        // If same day selected, apply 1 day rate minimum
+        const daysToCharge = nights > 0 ? nights : 1;
+        if (daysToCharge === 1 && checkIn === checkOut) {
+            // Single day selection - calculate as 1 day
+            totalPrice = calculatePrice(checkIn, new Date(new Date(checkIn).getTime() + 86400000).toISOString().split("T")[0], pitchType);
+        } else {
+            totalPrice = calculatePrice(checkIn, checkOut, pitchType);
+        }
+    } catch (error) {
+        console.error("Price calculation error:", error);
+        toast.error("Errore calcolo prezzo", { description: "Verrà calcolato al salvataggio" });
+    }
 
     const handleCreateBooking = async () => {
         if (!firstName.trim() || !lastName.trim()) {

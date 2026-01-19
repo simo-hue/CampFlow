@@ -205,7 +205,7 @@ export function AvailabilityModule() {
                                 <p>Nessuna piazzola disponibile per il periodo selezionato</p>
                             </div>
                         ) : (
-                            <div className="border rounded-md max-h-96 overflow-auto">
+                            <div className="border rounded-md">
                                 <Table>
                                     <TableHeader>
                                         <TableRow>

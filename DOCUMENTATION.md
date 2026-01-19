@@ -329,6 +329,13 @@ CREATE POLICY "Staff can manage bookings"
 
 ## 📝 Changelog Decisioni
 
+### 2026-01-19 - UI Refinement: Seasonal Pricing Colors
+- ✅ Limitati i preset colori stagioni a 3 opzioni (Verde, Blu, Rosso) + selettore custom.
+
+### 2026-01-19 - Fix: Build Error
+- ✅ Risolto errore di export in `api/pricing/seasons` utilizzando l'istanza corretta `supabaseAdmin` in `src/app/api/pricing/seasons/route.ts`.
+
+
 ### 2026-01-18 - Sector Occupancy Viewer
 - ✅ Sostituita mappa SVG con visualizzazione settoriale
 - ✅ Implementati 6 settori (50 piazzole ciascuno)

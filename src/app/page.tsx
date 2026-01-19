@@ -2,7 +2,7 @@ import { QuickStatsWidget } from '@/components/dashboard/QuickStatsWidget';
 import { GlobalSearchBar } from '@/components/dashboard/GlobalSearchBar';
 import { AvailabilityModule } from '@/components/dashboard/AvailabilityModule';
 import { TodayView } from '@/components/dashboard/TodayView';
-import { Settings, Calendar } from 'lucide-react';
+import { Settings, Calendar, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 
@@ -27,6 +27,11 @@ export default function DashboardPage() {
               <Link href="/settings">
                 <Button variant="ghost" size="icon" title="Impostazioni">
                   <Settings className="h-5 w-5" />
+                </Button>
+              </Link>
+              <Link href="/info">
+                <Button variant="ghost" size="icon" title="Informazioni Campeggio">
+                  <Info className="h-5 w-5" />
                 </Button>
               </Link>
             </div>

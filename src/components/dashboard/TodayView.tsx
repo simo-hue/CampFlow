@@ -3,10 +3,11 @@
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { CalendarCheck, ArrowDownCircle, ArrowUpCircle } from 'lucide-react';
+import { CalendarCheck, ArrowDownCircle, ArrowUpCircle, ExternalLink } from 'lucide-react';
 import { format } from 'date-fns';
 import { it } from 'date-fns/locale';
 import { toast } from "sonner";
+import Link from 'next/link';
 
 interface TodayEvent {
     id: string;
@@ -45,7 +46,7 @@ export function TodayView() {
             }
         } catch (error) {
             console.error('Error loading today events:', error);
-        
+
             toast.error("Errore imprevisto", { description: error instanceof Error ? error.message : "Riprova più tardi" });
         } finally {
             setLoading(false);
@@ -81,12 +82,13 @@ export function TodayView() {
                         {/* Arrivals Section */}
                         {data.total_arrivals > 0 && (
                             <div>
-                                <div className="flex items-center gap-2 mb-3">
+                                <Link href="/arrivals" className="flex items-center gap-2 hover:underline group">
                                     <ArrowDownCircle className="h-4 w-4 text-green-600" />
-                                    <h3 className="font-semibold text-sm">
+                                    <h3 className="font-semibold text-sm group-hover:text-green-700">
                                         Arrivi ({data.total_arrivals})
                                     </h3>
-                                </div>
+                                    <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                </Link>
                                 <div className="space-y-2">
                                     {data.arrivals.map((arrival) => (
                                         <div
@@ -116,12 +118,13 @@ export function TodayView() {
                         {/* Departures Section */}
                         {data.total_departures > 0 && (
                             <div>
-                                <div className="flex items-center gap-2 mb-3">
+                                <Link href="/departures" className="flex items-center gap-2 hover:underline group">
                                     <ArrowUpCircle className="h-4 w-4 text-blue-600" />
-                                    <h3 className="font-semibold text-sm">
+                                    <h3 className="font-semibold text-sm group-hover:text-blue-700">
                                         Partenze ({data.total_departures})
                                     </h3>
-                                </div>
+                                    <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                </Link>
                                 <div className="space-y-2">
                                     {data.departures.map((departure) => (
                                         <div

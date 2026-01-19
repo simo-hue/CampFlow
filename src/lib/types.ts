@@ -16,6 +16,39 @@ export interface PitchAttributes {
     [key: string]: boolean | number | undefined;
 }
 
+// =====================================================
+// SEASONAL PRICING TYPES
+// =====================================================
+
+export interface PricingSeason {
+    id: string;
+    name: string;
+    description: string | null;
+    start_date: string; // YYYY-MM-DD
+    end_date: string;
+    piazzola_price_per_day: number;
+    tenda_price_per_day: number;
+    priority: number; // Higher = wins in overlaps
+    color: string; // Hex code for UI
+    is_active: boolean;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface PriceBreakdownDay {
+    date: string;
+    rate: number;
+    seasonName: string;
+    seasonColor: string;
+}
+
+export interface PriceCalculation {
+    totalPrice: number;
+    breakdown: PriceBreakdownDay[];
+    days: number;
+    averageRate: number;
+}
+
 export interface Pitch {
     id: string;
     number: string; // Base number e.g. "001"
@@ -97,7 +130,7 @@ export interface BookingGuest {
     id: string;
     booking_id: string;
     first_name: string;
-        last_name: string;
+    last_name: string;
     birth_date?: string; // YYYY-MM-DD
     birth_place?: string;
     address?: string;
@@ -112,7 +145,7 @@ export interface BookingGuest {
 export interface CreateGuestRequest {
     booking_id: string;
     first_name: string;
-        last_name: string;
+    last_name: string;
     birth_date?: string;
     birth_place?: string;
     address?: string;
