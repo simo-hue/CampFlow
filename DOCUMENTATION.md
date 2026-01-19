@@ -48,17 +48,17 @@ Il modale di creazione ora include:
   - Se viene fornito `customer_id` (da Autocomplete), quel cliente viene usato e i suoi dati secondari (email, indirizzo) vengono aggiornati senza alterare il nome.
 
 ### 2.3 Pagina Clienti (Lista e Dettaglio)
-**Stato**: Refactoring UI (2026-01-19)
+**Stato**: Refactoring Tabbed UI (2026-01-19)
 **Nuova Implementazione**:
 - **Lista Clienti (`/customers`)**: 
   - Visualizza tutti i clienti con ricerca rapida per nome/email/telefono.
   - Ricerca ottimizzata con debounce.
 - **Dettaglio Cliente (`/customers/[id]`)**: 
-  - **Layout Responsive Split-View**:
-      - **Sinistra (Profile)**: Pannello completo con Dati Personali, Residenza, Documenti e Statistiche (sempre visibili).
-      - **Destra (History)**: Storico prenotazioni scrollabile.
-  - **Editing Completo**: La modalità modifica sblocca tutti i campi nel pannello sinistro.
-  - **Statistiche Integrate**: Card per Spesa Totale e Numero Prenotazioni in evidenza.
+  - **Layout a Tab**: Interfaccia pulita divisa in 3 sezioni navigabili tramite selettore "a pillola".
+      1. **Anagrafica (Default)**: Form completo per la visualizzazione e modifica di tutti i dati personali e documenti.
+      2. **Prenotazioni**: Lista cronologica dei soggiorni con gestione rapida status Questura.
+      3. **Statistiche**: Statistiche (Spesa, Soggiorni) visibili solo su richiesta per ridurre il carico cognitivo.
+  - **Editing Completo**: La modalità modifica è disponibile nel tab Anagrafica.
 
 ## 3. Arrivals and Departures UI Refactor
 ### Date: 2026-01-19

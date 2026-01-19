@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
     Table,
     TableBody,
@@ -33,7 +34,8 @@ import {
     X,
     Check,
     FileText,
-    History
+    History,
+    BarChart3
 } from 'lucide-react';
 import Link from 'next/link';
 import { format } from 'date-fns';
@@ -52,7 +54,7 @@ type Customer = {
 
     // Anagrafica Nascita
     birth_date?: string;
-    birth_place?: string; // We might want separate city/country if DB has them. Previous Edit showed them.
+    birth_place?: string;
     birth_city?: string;
     birth_province?: string;
     birth_country?: string;
@@ -178,6 +180,8 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
     if (isLoading) return <div className="h-screen w-full flex items-center justify-center"><Loader2 className="animate-spin h-8 w-8 text-primary" /></div>;
     if (error) return <div className="p-10 text-center text-red-500">Errore caricamento cliente</div>;
 
+    if (!data) return null;
+
     const { customer, bookings } = data;
     const totalBookings = bookings.length;
     const totalSpent = bookings.reduce((acc: number, b: Booking) => acc + (b.total_price || 0), 0);
@@ -190,266 +194,306 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
         setFormData(prev => ({ ...prev, [field]: value }));
     };
 
-    const StatCard = ({ label, value, icon: Icon }: { label: string, value: string | number, icon: any }) => (
-        <div className="flex items-center gap-4 bg-card p-4 rounded-xl border shadow-sm">
-            <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
-                <Icon className="h-5 w-5" />
-            </div>
-            <div>
-                <p className="text-sm font-medium text-muted-foreground">{label}</p>
-                <p className="text-xl font-bold">{value}</p>
-            </div>
-        </div>
+    const StatCard = ({ label, value, icon: Icon, subtext }: { label: string, value: string | number, icon: any, subtext?: string }) => (
+        <Card>
+            <CardContent className="p-6 flex items-center gap-4">
+                <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                    <Icon className="h-6 w-6" />
+                </div>
+                <div>
+                    <p className="text-sm font-medium text-muted-foreground">{label}</p>
+                    <p className="text-2xl font-bold">{value}</p>
+                    {subtext && <p className="text-xs text-muted-foreground mt-1">{subtext}</p>}
+                </div>
+            </CardContent>
+        </Card>
     );
 
     return (
-        <div className="h-[calc(100vh-4rem)] flex flex-col md:flex-row overflow-hidden bg-muted/10">
-            {/* Header Mobile Only (if needed, but usually header is global) */}
+        <div className="h-[calc(100vh-4rem)] flex flex-col bg-muted/5 p-4 md:p-6 gap-6 overflow-hidden">
 
-            {/* Left Column: Profile & Edit Form - Scrollable on mobile, Fixed/Scrollable Sidebar on Desktop */}
-            <div className="w-full md:w-[500px] lg:w-[600px] flex flex-col h-full border-r bg-background/50 backdrop-blur-sm z-10 overflow-y-auto">
-                <div className="p-6 space-y-6">
-                    {/* Header Section */}
-                    <div className="flex items-start justify-between">
-                        <div className="space-y-1">
-                            <Link href="/customers" className='text-sm text-muted-foreground hover:text-foreground flex items-center gap-1 mb-2'>
-                                <ArrowLeft className="h-3 w-3" /> Torna alla lista
-                            </Link>
-                            <h1 className="text-2xl font-bold tracking-tight">{customer.first_name} {customer.last_name}</h1>
-                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                <Badge variant="secondary" className="font-normal">
-                                    Cliente dal {format(new Date(customer.created_at), 'MMM yyyy', { locale: it })}
-                                </Badge>
-                            </div>
-                        </div>
-                        <Button
-                            variant={isEditing ? "destructive" : "secondary"}
-                            size="sm"
-                            onClick={() => setIsEditing(!isEditing)}
-                        >
-                            {isEditing ? <X className="h-4 w-4 mr-2" /> : <Pencil className="h-4 w-4 mr-2" />}
-                            {isEditing ? 'Annulla' : 'Modifica'}
-                        </Button>
+            {/* Header: Identity & Navigation - Centered */}
+            <div className="flex flex-col items-center justify-center text-center gap-2 shrink-0">
+                <div className="space-y-1">
+                    <Link href="/customers" className='text-sm text-muted-foreground hover:text-foreground flex items-center justify-center gap-1 mb-2'>
+                        <ArrowLeft className="h-3 w-3" /> Torna alla lista
+                    </Link>
+                    <h1 className="text-3xl font-bold tracking-tight">{customer.first_name} {customer.last_name}</h1>
+                    <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+                        <Badge variant="secondary" className="font-normal">
+                            Cliente dal {format(new Date(customer.created_at), 'MMM yyyy', { locale: it })}
+                        </Badge>
+                        <span className="text-muted-foreground">•</span>
+                        <span>{customer.email}</span>
+                        <span className="text-muted-foreground">•</span>
+                        <span>{customer.phone}</span>
                     </div>
+                </div>
+            </div>
 
-                    {/* Quick Stats Row */}
-                    <div className="grid grid-cols-2 gap-3">
-                        <StatCard label="Prenotazioni" value={totalBookings} icon={History} />
-                        <StatCard label="Totale Speso" value={`€ ${totalSpent.toFixed(2)}`} icon={CreditCard} />
-                    </div>
+            {/* Main Content Tabs - Full Height & Width */}
+            <Tabs defaultValue="anagrafica" className="flex-1 flex flex-col w-full overflow-hidden">
 
-                    <Separator />
+                {/* Custom Pill-shaped Tab List - Centered */}
+                <div className="flex justify-center shrink-0 mb-6">
+                    <TabsList className="bg-muted/50 p-1 h-11 rounded-full border">
+                        <TabsTrigger value="anagrafica" className="rounded-full px-6 data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all">
+                            Anagrafica
+                        </TabsTrigger>
+                        <TabsTrigger value="prenotazioni" className="rounded-full px-6 data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all">
+                            Prenotazioni
+                        </TabsTrigger>
+                        <TabsTrigger value="stats" className="rounded-full px-6 data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all">
+                            Statistiche
+                        </TabsTrigger>
+                    </TabsList>
+                </div>
 
-                    {/* Main Detail Form/View */}
-                    <div className="space-y-6">
-                        {/* Section: Contatti & Info Base */}
-                        <section className="space-y-4">
-                            <h3 className="font-semibold flex items-center gap-2 text-primary">
-                                <User className="h-4 w-4" /> Anagrafica e Contatti
-                            </h3>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <Label>Nome</Label>
-                                    <Input disabled={!isEditing} value={formData.first_name || ''} onChange={e => handleInputChange('first_name', e.target.value)} />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label>Cognome</Label>
-                                    <Input disabled={!isEditing} value={formData.last_name || ''} onChange={e => handleInputChange('last_name', e.target.value)} />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label>Email</Label>
-                                    <Input disabled={!isEditing} value={formData.email || ''} onChange={e => handleInputChange('email', e.target.value)} />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label>Telefono</Label>
-                                    <Input disabled={!isEditing} value={formData.phone || ''} onChange={e => handleInputChange('phone', e.target.value)} />
-                                </div>
-
-                                {/* Dati Nascita - Only show inputs if editing or if value exists */}
-                                {(isEditing || formData.birth_date) && (
-                                    <div className="space-y-2">
-                                        <Label>Data di Nascita</Label>
-                                        <Input type="date" disabled={!isEditing} value={formData.birth_date ? format(new Date(formData.birth_date), 'yyyy-MM-dd') : ''} onChange={e => handleInputChange('birth_date', e.target.value)} />
-                                    </div>
-                                )}
-                                {(isEditing || formData.gender) && (
-                                    <div className="space-y-2">
-                                        <Label>Sesso</Label>
-                                        <Input disabled={!isEditing} value={formData.gender || ''} onChange={e => handleInputChange('gender', e.target.value)} placeholder="M/F" />
-                                    </div>
-                                )}
+                {/* TAB 1: ANAGRAFICA (Form & Editing) */}
+                <TabsContent value="anagrafica" className="flex-1 w-full h-full data-[state=inactive]:hidden mt-0">
+                    <Card className="h-full flex flex-col border-0 shadow-sm bg-background/50 backdrop-blur-sm">
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+                            <div>
+                                <CardTitle>Dati Personali</CardTitle>
+                                <CardDescription>Gestisci le informazioni anagrafiche, la residenza e i documenti.</CardDescription>
                             </div>
-
-                            {(isEditing || formData.birth_city) && (
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="space-y-2">
-                                        <Label>Comune Nascita</Label>
-                                        <Input disabled={!isEditing} value={formData.birth_city || ''} onChange={e => handleInputChange('birth_city', e.target.value)} />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label>Provincia</Label>
-                                        <Input disabled={!isEditing} value={formData.birth_province || ''} onChange={e => handleInputChange('birth_province', e.target.value)} />
-                                    </div>
-                                </div>
-                            )}
-                        </section>
-
+                            <Button
+                                variant={isEditing ? "destructive" : "outline"}
+                                size="sm"
+                                onClick={() => setIsEditing(!isEditing)}
+                            >
+                                {isEditing ? <X className="h-4 w-4 mr-2" /> : <Pencil className="h-4 w-4 mr-2" />}
+                                {isEditing ? 'Annulla Modifiche' : 'Modifica Dati'}
+                            </Button>
+                        </CardHeader>
                         <Separator />
-
-                        {/* Section: Residenza */}
-                        <section className="space-y-4">
-                            <h3 className="font-semibold flex items-center gap-2 text-primary">
-                                <MapPin className="h-4 w-4" /> Residenza
-                            </h3>
-                            <div className="space-y-3">
-                                <div className="space-y-2">
-                                    <Label>Indirizzo</Label>
-                                    <Input disabled={!isEditing} value={formData.address || ''} onChange={e => handleInputChange('address', e.target.value)} placeholder="Via Roma, 1" />
-                                </div>
-                                <div className="grid grid-cols-3 gap-2">
-                                    <div className="col-span-1 space-y-2">
-                                        <Label>CAP</Label>
-                                        <Input disabled={!isEditing} value={formData.residence_zip || ''} onChange={e => handleInputChange('residence_zip', e.target.value)} />
+                        <ScrollArea className="flex-1">
+                            <CardContent className="p-8 space-y-8 max-w-5xl mx-auto w-full">
+                                {/* Section: Contatti & Info Base */}
+                                <section className="space-y-4">
+                                    <h3 className="font-semibold flex items-center gap-2 text-primary text-sm uppercase tracking-wide">
+                                        <User className="h-4 w-4" /> Anagrafica e Contatti
+                                    </h3>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div className="space-y-2">
+                                            <Label>Nome</Label>
+                                            <Input disabled={!isEditing} value={formData.first_name || ''} onChange={e => handleInputChange('first_name', e.target.value)} />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label>Cognome</Label>
+                                            <Input disabled={!isEditing} value={formData.last_name || ''} onChange={e => handleInputChange('last_name', e.target.value)} />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label>Email</Label>
+                                            <Input disabled={!isEditing} value={formData.email || ''} onChange={e => handleInputChange('email', e.target.value)} />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label>Telefono</Label>
+                                            <Input disabled={!isEditing} value={formData.phone || ''} onChange={e => handleInputChange('phone', e.target.value)} />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label>Data di Nascita</Label>
+                                            <Input type="date" disabled={!isEditing} value={formData.birth_date ? format(new Date(formData.birth_date), 'yyyy-MM-dd') : ''} onChange={e => handleInputChange('birth_date', e.target.value)} />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label>Sesso</Label>
+                                            <Input disabled={!isEditing} value={formData.gender || ''} onChange={e => handleInputChange('gender', e.target.value)} placeholder="M/F" />
+                                        </div>
                                     </div>
-                                    <div className="col-span-2 space-y-2">
-                                        <Label>Città</Label>
-                                        <Input disabled={!isEditing} value={formData.residence_city || ''} onChange={e => handleInputChange('residence_city', e.target.value)} />
+
+                                    <div className="grid grid-cols-2 gap-6 pt-2">
+                                        <div className="space-y-2">
+                                            <Label>Comune Nascita</Label>
+                                            <Input disabled={!isEditing} value={formData.birth_city || ''} onChange={e => handleInputChange('birth_city', e.target.value)} />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label>Provincia</Label>
+                                            <Input disabled={!isEditing} value={formData.birth_province || ''} onChange={e => handleInputChange('birth_province', e.target.value)} />
+                                        </div>
                                     </div>
-                                </div>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="space-y-2">
-                                        <Label>Provincia</Label>
-                                        <Input disabled={!isEditing} value={formData.residence_province || ''} onChange={e => handleInputChange('residence_province', e.target.value)} />
+                                </section>
+
+                                <Separator />
+
+                                {/* Section: Residenza */}
+                                <section className="space-y-4">
+                                    <h3 className="font-semibold flex items-center gap-2 text-primary text-sm uppercase tracking-wide">
+                                        <MapPin className="h-4 w-4" /> Residenza
+                                    </h3>
+                                    <div className="space-y-4">
+                                        <div className="space-y-2">
+                                            <Label>Indirizzo</Label>
+                                            <Input disabled={!isEditing} value={formData.address || ''} onChange={e => handleInputChange('address', e.target.value)} placeholder="Via Roma, 1" />
+                                        </div>
+                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                            <div className="md:col-span-1 space-y-2">
+                                                <Label>CAP</Label>
+                                                <Input disabled={!isEditing} value={formData.residence_zip || ''} onChange={e => handleInputChange('residence_zip', e.target.value)} />
+                                            </div>
+                                            <div className="md:col-span-2 space-y-2">
+                                                <Label>Città</Label>
+                                                <Input disabled={!isEditing} value={formData.residence_city || ''} onChange={e => handleInputChange('residence_city', e.target.value)} />
+                                            </div>
+                                        </div>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                            <div className="space-y-2">
+                                                <Label>Provincia</Label>
+                                                <Input disabled={!isEditing} value={formData.residence_province || ''} onChange={e => handleInputChange('residence_province', e.target.value)} />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Label>Stato</Label>
+                                                <Input disabled={!isEditing} value={formData.residence_country || ''} onChange={e => handleInputChange('residence_country', e.target.value)} />
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div className="space-y-2">
-                                        <Label>Stato</Label>
-                                        <Input disabled={!isEditing} value={formData.residence_country || ''} onChange={e => handleInputChange('residence_country', e.target.value)} />
+                                </section>
+
+                                <Separator />
+
+                                {/* Section: Documenti */}
+                                <section className="space-y-4">
+                                    <h3 className="font-semibold flex items-center gap-2 text-primary text-sm uppercase tracking-wide">
+                                        <Shield className="h-4 w-4" /> Documento d'Identità
+                                    </h3>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div className="space-y-2">
+                                            <Label>Tipo</Label>
+                                            <Input disabled={!isEditing} value={formData.document_type || ''} onChange={e => handleInputChange('document_type', e.target.value)} placeholder="carta_identita" />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label>Numero</Label>
+                                            <Input disabled={!isEditing} value={formData.document_number || ''} onChange={e => handleInputChange('document_number', e.target.value)} />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label>Rilasciato da</Label>
+                                            <Input disabled={!isEditing} value={formData.document_issuer || ''} onChange={e => handleInputChange('document_issuer', e.target.value)} />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label>Data Rilascio</Label>
+                                            <Input type="date" disabled={!isEditing} value={formData.document_issue_date ? format(new Date(formData.document_issue_date), 'yyyy-MM-dd') : ''} onChange={e => handleInputChange('document_issue_date', e.target.value)} />
+                                        </div>
                                     </div>
-                                </div>
-                            </div>
-                        </section>
+                                </section>
 
-                        <Separator />
+                                <Separator />
 
-                        {/* Section: Documenti */}
-                        <section className="space-y-4">
-                            <h3 className="font-semibold flex items-center gap-2 text-primary">
-                                <Shield className="h-4 w-4" /> Documento d'Identità
-                            </h3>
-                            <div className="grid grid-cols-2 gap-4">
+                                {/* Notes */}
                                 <div className="space-y-2">
-                                    <Label>Tipo</Label>
-                                    <Input disabled={!isEditing} value={formData.document_type || ''} onChange={e => handleInputChange('document_type', e.target.value)} placeholder="carta_identita" />
+                                    <Label>Note Interne</Label>
+                                    <Input disabled={!isEditing} value={formData.notes || ''} onChange={e => handleInputChange('notes', e.target.value)} placeholder="Note visibili solo allo staff..." />
                                 </div>
-                                <div className="space-y-2">
-                                    <Label>Numero</Label>
-                                    <Input disabled={!isEditing} value={formData.document_number || ''} onChange={e => handleInputChange('document_number', e.target.value)} />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label>Rilasciato da</Label>
-                                    <Input disabled={!isEditing} value={formData.document_issuer || ''} onChange={e => handleInputChange('document_issuer', e.target.value)} />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label>Data Rilascio</Label>
-                                    <Input type="date" disabled={!isEditing} value={formData.document_issue_date ? format(new Date(formData.document_issue_date), 'yyyy-MM-dd') : ''} onChange={e => handleInputChange('document_issue_date', e.target.value)} />
-                                </div>
-                            </div>
-                        </section>
-
-                        <Separator />
-
-                        <div className="space-y-2">
-                            <Label>Note Interne</Label>
-                            <Input disabled={!isEditing} value={formData.notes || ''} onChange={e => handleInputChange('notes', e.target.value)} placeholder="Note visibili solo allo staff..." />
-                        </div>
-
-                        {/* Save Button Sticky Bottom of Left Panel if editing */}
+                            </CardContent>
+                        </ScrollArea>
                         {isEditing && (
-                            <div className="pt-4 sticky bottom-0 bg-background pb-4 border-t mt-4">
-                                <Button className="w-full" onClick={handleSave} disabled={updateCustomerMutation.isPending}>
+                            <CardFooter className="bg-muted/10 border-t flex justify-center py-4 shrink-0">
+                                <Button className="w-full md:w-auto min-w-[200px]" onClick={handleSave} disabled={updateCustomerMutation.isPending}>
                                     {updateCustomerMutation.isPending ? <Loader2 className="animate-spin mr-2" /> : <Save className="mr-2 h-4 w-4" />}
                                     Salva Modifiche
                                 </Button>
-                            </div>
+                            </CardFooter>
                         )}
-                    </div>
-                </div>
-            </div>
+                    </Card>
+                </TabsContent>
 
-            {/* Right Column: Bookings History - Full/Remaining Width */}
-            <div className="flex-1 flex flex-col h-full bg-muted/20">
-                <div className="p-6 pb-2">
-                    <h2 className="text-xl font-bold flex items-center gap-2 mb-1">
-                        <Calendar className="h-5 w-5" /> Storico Prenotazioni
-                    </h2>
-                    <p className="text-muted-foreground text-sm">
-                        Visualizza e gestisci tutti i soggiorni di questo cliente.
-                    </p>
-                </div>
-
-                <ScrollArea className="flex-1 px-6 pb-6">
-                    <div className="space-y-4">
-                        {bookings.length === 0 ? (
-                            <div className="flex flex-col items-center justify-center p-12 text-muted-foreground border rounded-xl border-dashed bg-background/50">
-                                <History className="h-10 w-10 mb-4 opacity-20" />
-                                <p>Nessuna prenotazione trovata per questo cliente.</p>
-                            </div>
-                        ) : (
-                            bookings.map((booking: Booking) => (
-                                <Card key={booking.id} className="overflow-hidden hover:shadow-md transition-shadow">
-                                    <div className="flex flex-col sm:flex-row border-l-4 border-l-primary/50">
-                                        {/* Date Box */}
-                                        <div className="bg-primary/5 p-4 flex flex-col items-center justify-center min-w-[120px] border-b sm:border-b-0 sm:border-r border-primary/10">
-                                            <span className="text-xs font-semibold text-muted-foreground uppercase">Arrivo</span>
-                                            <span className="text-xl font-bold text-primary">
-                                                {booking.start ? format(booking.start, 'd MMM') : '?'}
-                                            </span>
-                                            <span className="text-xs text-muted-foreground mt-1">{booking.start ? format(booking.start, 'yyyy') : ''}</span>
-                                        </div>
-
-                                        {/* Content */}
-                                        <div className="p-4 flex-1 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 items-center">
-                                            <div>
-                                                <div className="flex items-center gap-2 mb-1">
-                                                    <Badge variant="outline" className="font-mono">{booking.pitch?.number}</Badge>
-                                                    <span className="text-xs uppercase font-medium text-muted-foreground">{booking.pitch?.type}</span>
-                                                </div>
-                                                <div className="text-sm text-muted-foreground">
-                                                    Partenza: <span className="font-medium text-foreground">{booking.end ? format(booking.end, 'd MMM yyyy') : '?'}</span>
-                                                </div>
-                                            </div>
-
-                                            <div className="flex flex-col sm:items-center">
-                                                <div className="text-lg font-bold">€ {booking.total_price?.toFixed(2)}</div>
-                                                <Badge variant={booking.status === 'checked_in' ? "secondary" : "outline"} className="w-fit">
-                                                    {booking.status === 'checked_in' ? 'Checked-in' : booking.status}
-                                                </Badge>
-                                            </div>
-
-                                            <div className="flex items-center gap-3 sm:justify-end bg-muted/30 p-2 rounded-lg">
-                                                <Switch
-                                                    id={`q-${booking.id}`}
-                                                    checked={booking.questura_sent || false}
-                                                    onCheckedChange={(checked) => updateBookingQuesturaMutation.mutate({
-                                                        bookingId: booking.id,
-                                                        sent: checked
-                                                    })}
-                                                />
-                                                <div className="flex flex-col">
-                                                    <Label htmlFor={`q-${booking.id}`} className="cursor-pointer font-medium text-sm">Questura</Label>
-                                                    <span className={`text-[10px] uppercase font-bold ${booking.questura_sent ? 'text-green-600' : 'text-muted-foreground'}`}>
-                                                        {booking.questura_sent ? 'Inviato' : 'Da inviare'}
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
+                {/* TAB 2: PRENOTAZIONI (List) */}
+                <TabsContent value="prenotazioni" className="flex-1 w-full h-full data-[state=inactive]:hidden mt-0 overflow-hidden">
+                    <ScrollArea className="h-full">
+                        <div className="space-y-4 max-w-5xl mx-auto w-full pb-8">
+                            {bookings.length === 0 ? (
+                                <Card className="p-12 text-center text-muted-foreground border-dashed bg-background/50">
+                                    <History className="h-10 w-10 mx-auto mb-4 opacity-20" />
+                                    <p>Nessuna prenotazione trovata.</p>
                                 </Card>
-                            ))
-                        )}
+                            ) : (
+                                bookings.map((booking: Booking) => (
+                                    <Card key={booking.id} className="overflow-hidden border-0 shadow-sm bg-background/50 backdrop-blur-sm">
+                                        <div className="flex flex-col md:flex-row">
+                                            {/* Date Box */}
+                                            <div className="bg-muted/30 p-4 md:w-48 flex flex-col items-center justify-center border-b md:border-b-0 md:border-r">
+                                                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Check-in</span>
+                                                <span className="text-2xl font-bold text-foreground">
+                                                    {booking.start ? format(booking.start, 'd MMM') : '?'}
+                                                </span>
+                                                <span className="text-sm text-muted-foreground">{booking.start ? format(booking.start, 'yyyy') : ''}</span>
+                                            </div>
+
+                                            {/* Content */}
+                                            <div className="p-5 flex-1 grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
+                                                <div>
+                                                    <div className="flex items-center gap-2 mb-2">
+                                                        <Badge variant="outline" className="font-mono">{booking.pitch?.number}</Badge>
+                                                        <span className="text-xs uppercase font-medium text-muted-foreground">{booking.pitch?.type}</span>
+                                                    </div>
+                                                    <div className="text-sm">
+                                                        Check-out: <span className="font-medium">{booking.end ? format(booking.end, 'd MMM yyyy') : '?'}</span>
+                                                    </div>
+                                                </div>
+
+                                                <div className="flex flex-col md:items-center">
+                                                    <div className="text-xl font-bold">€ {booking.total_price?.toFixed(2)}</div>
+                                                    <Badge variant={booking.status === 'checked_in' ? "secondary" : "outline"} className="w-fit mt-1">
+                                                        {booking.status === 'checked_in' ? 'Checked-in' : booking.status}
+                                                    </Badge>
+                                                </div>
+
+                                                <div className="md:justify-self-end">
+                                                    <div className="flex items-center gap-3 bg-muted/20 p-2 rounded-lg border">
+                                                        <Switch
+                                                            id={`q-${booking.id}`}
+                                                            checked={booking.questura_sent || false}
+                                                            onCheckedChange={(checked) => updateBookingQuesturaMutation.mutate({
+                                                                bookingId: booking.id,
+                                                                sent: checked
+                                                            })}
+                                                        />
+                                                        <div className="flex flex-col">
+                                                            <Label htmlFor={`q-${booking.id}`} className="cursor-pointer font-medium text-sm">Questura</Label>
+                                                            <span className={`text-[10px] uppercase font-bold ${booking.questura_sent ? 'text-green-600' : 'text-muted-foreground'}`}>
+                                                                {booking.questura_sent ? 'Inviato' : 'Da Inviare'}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </Card>
+                                ))
+                            )}
+                        </div>
+                    </ScrollArea>
+                </TabsContent>
+
+                {/* TAB 3: STATISTICHE (Stats Only) */}
+                <TabsContent value="stats" className="flex-1 w-full mt-0">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto w-full">
+                        <StatCard
+                            label="Prenotazioni Totali"
+                            value={totalBookings}
+                            icon={History}
+                            subtext="Soggiorni completati o futuri"
+                        />
+                        <StatCard
+                            label="Spesa Totale"
+                            value={`€ ${totalSpent.toFixed(2)}`}
+                            icon={CreditCard}
+                            subtext="Fatturato netto generato"
+                        />
+                        {/* Placeholder for future stats */}
+                        <StatCard
+                            label="Giorni di Presenza"
+                            value="-"
+                            icon={Calendar}
+                            subtext="Dato non ancora disponibile"
+                        />
+                        <StatCard
+                            label="Media Soggiorno"
+                            value="-"
+                            icon={BarChart3}
+                            subtext="Dato non ancora disponibile"
+                        />
                     </div>
-                </ScrollArea>
-            </div>
-        </div>
+                </TabsContent>
+            </Tabs>
+        </div >
     );
 }
