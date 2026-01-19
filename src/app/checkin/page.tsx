@@ -19,6 +19,7 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
+import { MunicipalityAutocomplete, ProvinceAutocomplete } from './components/GeoAutocomplete';
 
 // Helper to extract dates from PostgreSQL daterange string "[2024-01-01,2024-01-05)"
 const parseBookingPeriod = (period: string) => {
@@ -305,6 +306,8 @@ function CheckInDialog({ open, onOpenChange, booking, onClose, onSuccess }: {
 
     const { start, end } = parseBookingPeriod(booking.booking_period);
 
+    const isItaly = (s: string) => !s || s.toLowerCase() === 'italia';
+
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="sm:max-w-[95vw] max-w-[95vw] w-full h-[95vh] flex flex-col p-6 gap-0">
@@ -364,18 +367,59 @@ function CheckInDialog({ open, onOpenChange, booking, onClose, onSuccess }: {
                                             <option value="F">Femmina</option>
                                         </select>
                                     </div>
+
+                                    {/* Stato Nascita */}
                                     <div className="space-y-2">
                                         <Label>Stato Nascita</Label>
-                                        <Input placeholder="Italia" value={birthCountry} onChange={e => setBirthCountry(e.target.value)} />
+                                        <Input
+                                            placeholder="Italia"
+                                            value={birthCountry}
+                                            onChange={e => setBirthCountry(e.target.value)}
+                                        />
                                     </div>
+
+                                    {/* Provincia Nascita */}
                                     <div className="space-y-2">
                                         <Label>Provincia (Sigla)</Label>
-                                        <Input placeholder="MI" maxLength={2} className="uppercase" value={birthProvince} onChange={e => setBirthProvince(e.target.value.toUpperCase())} />
+                                        {isItaly(birthCountry) ? (
+                                            <ProvinceAutocomplete
+                                                value={birthProvince}
+                                                onSelect={(p) => setBirthProvince(p.sigla)}
+                                                placeholder="RM"
+                                            />
+                                        ) : (
+                                            <Input
+                                                placeholder="MI"
+                                                maxLength={2}
+                                                className="uppercase"
+                                                value={birthProvince}
+                                                onChange={e => setBirthProvince(e.target.value.toUpperCase())}
+                                            />
+                                        )}
                                     </div>
+
+                                    {/* Comune Nascita */}
                                     <div className="space-y-2">
                                         <Label>Comune Nascita</Label>
-                                        <Input placeholder="Milano" value={birthCity} onChange={e => setBirthCity(e.target.value)} />
+                                        {isItaly(birthCountry) ? (
+                                            <MunicipalityAutocomplete
+                                                value={birthCity}
+                                                onSelect={(c) => {
+                                                    setBirthCity(c.nome);
+                                                    setBirthProvince(c.sigla);
+                                                    if (!birthCountry) setBirthCountry("Italia");
+                                                }}
+                                                placeholder="Cerca comune..."
+                                            />
+                                        ) : (
+                                            <Input
+                                                placeholder="Milano"
+                                                value={birthCity}
+                                                onChange={e => setBirthCity(e.target.value)}
+                                            />
+                                        )}
                                     </div>
+
                                     <div className="space-y-2">
                                         <Label>Cittadinanza</Label>
                                         <Input placeholder="Italiana" value={citizenship} onChange={e => setCitizenship(e.target.value)} />
@@ -395,21 +439,62 @@ function CheckInDialog({ open, onOpenChange, booking, onClose, onSuccess }: {
                                         <Input placeholder="Via Roma, 1" value={address} onChange={e => setAddress(e.target.value)} />
                                     </div>
                                     <div className="grid grid-cols-2 gap-4">
+                                        {/* Stato Residenza */}
+                                        <div className="space-y-2">
+                                            <Label>Stato</Label>
+                                            <Input
+                                                placeholder="Italia"
+                                                value={residenceCountry}
+                                                onChange={e => setResidenceCountry(e.target.value)}
+                                            />
+                                        </div>
+
+                                        {/* Comune Residenza */}
                                         <div className="space-y-2">
                                             <Label>Comune</Label>
-                                            <Input placeholder="Roma" value={residenceCity} onChange={e => setResidenceCity(e.target.value)} />
+                                            {isItaly(residenceCountry) ? (
+                                                <MunicipalityAutocomplete
+                                                    value={residenceCity}
+                                                    onSelect={(c) => {
+                                                        setResidenceCity(c.nome);
+                                                        setResidenceProvince(c.sigla);
+                                                        setResidenceZip(c.cap[0] || "");
+                                                        if (!residenceCountry) setResidenceCountry("Italia");
+                                                    }}
+                                                    placeholder="Cerca comune..."
+                                                />
+                                            ) : (
+                                                <Input
+                                                    placeholder="Roma"
+                                                    value={residenceCity}
+                                                    onChange={e => setResidenceCity(e.target.value)}
+                                                />
+                                            )}
                                         </div>
+
                                         <div className="space-y-2">
                                             <Label>CAP</Label>
                                             <Input placeholder="00100" value={residenceZip} onChange={e => setResidenceZip(e.target.value)} />
                                         </div>
+
+                                        {/* Provincia Residenza */}
                                         <div className="space-y-2">
                                             <Label>Provincia</Label>
-                                            <Input placeholder="RM" maxLength={2} className="uppercase" value={residenceProvince} onChange={e => setResidenceProvince(e.target.value.toUpperCase())} />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label>Stato</Label>
-                                            <Input placeholder="Italia" value={residenceCountry} onChange={e => setResidenceCountry(e.target.value)} />
+                                            {isItaly(residenceCountry) ? (
+                                                <ProvinceAutocomplete
+                                                    value={residenceProvince}
+                                                    onSelect={(p) => setResidenceProvince(p.sigla)}
+                                                    placeholder="RM"
+                                                />
+                                            ) : (
+                                                <Input
+                                                    placeholder="RM"
+                                                    maxLength={2}
+                                                    className="uppercase"
+                                                    value={residenceProvince}
+                                                    onChange={e => setResidenceProvince(e.target.value.toUpperCase())}
+                                                />
+                                            )}
                                         </div>
                                     </div>
                                 </div>
@@ -449,17 +534,35 @@ function CheckInDialog({ open, onOpenChange, booking, onClose, onSuccess }: {
                                             <Label>Data Rilascio</Label>
                                             <Input type="date" value={docIssueDate} onChange={e => setDocIssueDate(e.target.value)} />
                                         </div>
-                                        <div className="space-y-2">
-                                            <Label>Ente Rilascio</Label>
-                                            <Input placeholder="Comune di..." value={docIssuer} onChange={e => setDocIssuer(e.target.value)} />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label>Comune Rilascio</Label>
-                                            <Input placeholder="Milano" value={docIssueCity} onChange={e => setDocIssueCity(e.target.value)} />
-                                        </div>
+
                                         <div className="space-y-2">
                                             <Label>Stato Rilascio</Label>
                                             <Input placeholder="Italia" value={docIssueCountry} onChange={e => setDocIssueCountry(e.target.value)} />
+                                        </div>
+
+                                        <div className="space-y-2">
+                                            <Label>Comune Rilascio</Label>
+                                            {isItaly(docIssueCountry) ? (
+                                                <MunicipalityAutocomplete
+                                                    value={docIssueCity}
+                                                    onSelect={(c) => {
+                                                        setDocIssueCity(c.nome);
+                                                        if (!docIssueCountry) setDocIssueCountry("Italia");
+                                                    }}
+                                                    placeholder="Cerca comune..."
+                                                />
+                                            ) : (
+                                                <Input
+                                                    placeholder="Milano"
+                                                    value={docIssueCity}
+                                                    onChange={e => setDocIssueCity(e.target.value)}
+                                                />
+                                            )}
+                                        </div>
+
+                                        <div className="space-y-2">
+                                            <Label>Ente Rilascio</Label>
+                                            <Input placeholder="Comune di..." value={docIssuer} onChange={e => setDocIssuer(e.target.value)} />
                                         </div>
                                     </div>
                                 </div>

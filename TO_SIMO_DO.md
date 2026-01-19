@@ -26,4 +26,9 @@
 5. **Test Strict Matching**: Crea una nuova prenotazione con lo STESSO numero di telefono di un cliente esistente, ma con Nome/Cognome DIVERSI. Verifica che venga creato un NUOVO cliente e non sovrascritto il vecchio.
 6. **Test Autocomplete**: Nella creazione prenotazione, inizia a scrivere il nome di un cliente esistente. Selezionalo dal menu. Verifica che i campi si autocompilino. Cambia il nome e salva. Verifica il comportamento atteso.
 7. **Test Modale Check-in**: Vai su `/checkin`, clicca "Effettua Check-in" su una prenotazione. Verifica che si apra il modale e non ci sia più il form a fondo pagina. Compila i dati e conferma. Verifica che il toast di conferma appaia e la lista si aggiorni.
-
+8. **Test Autocomplete Comune Check-in**: 
+    - Apri il modale Check-in. Assicurati che "Stato Nascita" sia "Italia" (o vuoto).
+    - Inizia a scrivere nel campo "Comune Nascita". Verifica che appaiano i suggerimenti.
+    - Seleziona un comune. Verifica che il campo "Provincia" si compili automaticamente con la sigla corretta.
+    - Cambia "Stato Nascita" in "Francia". Verifica che il campo Comune diventi un input normale senza suggerimenti.
+    - Ripeti per "Residenza": Selezionando un comune, verifica che Provincia e CAP vengano compilati.

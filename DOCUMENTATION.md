@@ -102,4 +102,12 @@ La pagina di Check-in è stata ridisegnata per migliorare l'usabilità.
     - **Residenza**: Indirizzo, Comune, CAP, Provincia, Stato.
     - **Documento d'Identità**: Tipo, Numero, Data Rilascio, Ente, Comune e Stato di Rilascio.
     - **Adempimenti**: Switch per la conferma invio Questura.
+    - **Autocomplete Geografico**:
+        - Implementata ricerca intelligente con suggerimenti (Autocomplete) per i campi "Comune" e "Provincia".
+        - Logica condizionale: L'autocomplete si attiva solo se lo "Stato" è impostato su "Italia" (default). Se lo stato è estero, i campi tornano input di testo libero.
+        - **Auto-Fill**: La selezione di un comune italiano compila automaticamente:
+            - Provincia (Sigla)
+            - CAP (Residenza)
+            - Normalizza il nome del Comune.
+        - Fonte Dati: Database JSON integrato con tutti i comuni italiani (`src/lib/data/comuni.json`).
 
