@@ -51,3 +51,37 @@ Il modale di creazione ora include:
   - Se tutti e tre coincidono, usa il cliente esistente. 
   - Se il telefono coincide ma il nome differisce, crea un **NUOVO** cliente (per gestire omonimie o familiari con stesso cellulare).
   - Se viene fornito `customer_id` (da Autocomplete), quel cliente viene usato e i suoi dati secondari (email, indirizzo) vengono aggiornati senza alterare il nome.
+
+## 3. Arrivals and Departures UI Refactor
+### Date: 2026-01-19
+### Changes
+- **Redesigned GuestCard**: Converted from a grid card to a horizontal row layout for better information density and professionalism. Uses `shadcn/ui` Card component.
+- **Arrivals Page**:
+  - Switched to a list layout (`space-y-4`).
+  - Added summary statistics in the header (e.g., total count).
+  - Improved sticky header with backdrop blur.
+  - Enhanced empty state with better messaging.
+- **Departures Page**:
+  - Mirrored the Arrivals page layout improvements.
+  - Applied Blue theme consistent with "Departure" status.
+  - Same responsive and list-based improvements.
+
+### Files Modified
+- `src/components/shared/GuestCard.tsx`
+- `src/app/arrivals/page.tsx`
+- `src/app/departures/page.tsx`
+
+## 4. Statistics Dashboard
+**Stato**: Implementato (2026-01-19)
+**Descrizione**:
+Implementata una nuova pagina `/stats` per la visualizzazione delle performance del campeggio.
+- **Libreria Grafica**: `recharts` con styling personalizzato per un look moderno e pulito.
+- **Funzionalità**:
+    - **Filtri Temporali**: Tab per selezionare rapidamente ultimi 7gg, 30gg, 3 mesi, o Anno Corrente.
+    - **KPI Cards**: Card riassuntive per Ricavi totali, Tasso di occupazione medio, Numero prenotazioni e Durata media soggiorno.
+    - **Grafici**:
+        - **Trend Ricavi**: Grafico ad area con sfumature (gradient fill) per visualizzare l'andamento del fatturato.
+        - **Occupazione**: Grafico a barre per mostrare il numero di piazzole occupate giorno per giorno.
+        - **Nazionalità**: Grafico a ciambella (Donut) per la distribuzione geografica degli ospiti (Top 5 paesi).
+- **Integrazione**: Aggiunto link "Statistiche" nell'header di navigazione (icona Grafico).
+- **Logica**: I dati vengono calcolati aggregando giorno per giorno le prenotazioni attive che si sovrappongono al periodo selezionato.

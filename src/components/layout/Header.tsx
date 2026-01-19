@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { Calendar, Settings, Info, Tent, LayoutDashboard, UserCheck } from 'lucide-react';
+import { Calendar, Settings, Info, Tent, LayoutDashboard, UserCheck, BarChart3 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 // Actually, looking at layout.tsx, there's no ThemeToggle imported, but ThemeProvider exists. 
@@ -13,6 +13,7 @@ const NAV_ITEMS = [
     // { label: 'Dashboard', href: '/', icon: LayoutDashboard },
     { label: 'Vista Occupazione', href: '/occupancy', icon: Calendar },
     { label: 'Check-in', href: '/checkin', icon: UserCheck },
+    { label: 'Statistiche', href: '/stats', icon: BarChart3 },
     { label: 'Impostazioni', href: '/settings', icon: Settings },
     { label: 'Info', href: '/info', icon: Info },
 ];

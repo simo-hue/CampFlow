@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, ArrowDownCircle, Search } from 'lucide-react';
+import { ArrowLeft, ArrowDownCircle, Search, CalendarIcon } from 'lucide-react';
 import { format, addDays, startOfDay } from 'date-fns';
 import { it } from 'date-fns/locale';
 import { toast } from 'sonner';
@@ -88,8 +88,8 @@ export default function ArrivalsPage() {
     return (
         <div className="flex flex-col h-screen bg-background">
             {/* Header Sticky */}
-            <header className="sticky top-0 z-10 border-b bg-card/80 backdrop-blur-sm shadow-sm">
-                <div className="container mx-auto px-4 py-4 max-w-7xl">
+            <header className="sticky top-0 z-20 border-b bg-card/80 backdrop-blur-md shadow-sm">
+                <div className="container mx-auto px-4 py-4 max-w-5xl">
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                         <div className="flex items-center gap-4">
                             <Link href="/">
@@ -101,8 +101,14 @@ export default function ArrivalsPage() {
                                 <h1 className="text-2xl font-bold flex items-center gap-2 text-foreground">
                                     <ArrowDownCircle className="h-6 w-6 text-green-600" />
                                     Arrivi
+                                    {!loading && data && (
+                                        <span className="text-lg font-medium text-muted-foreground ml-2">
+                                            ({data.total_arrivals})
+                                        </span>
+                                    )}
                                 </h1>
-                                <p className="text-sm text-muted-foreground hidden sm:block">
+                                <p className="text-sm text-muted-foreground flex items-center gap-1.5">
+                                    <CalendarIcon className="h-3.5 w-3.5" />
                                     {view === 'week'
                                         ? "Prossimi 7 giorni"
                                         : format(view === 'tomorrow' ? addDays(new Date(), 1) : new Date(), 'EEEE d MMMM yyyy', { locale: it })
@@ -111,8 +117,8 @@ export default function ArrivalsPage() {
                             </div>
                         </div>
 
-                        <div className="flex items-center gap-3">
-                            <div className="relative w-full md:w-64">
+                        <div className="flex items-center gap-3 w-full md:w-auto">
+                            <div className="relative flex-1 md:w-64">
                                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                                 <Input
                                     placeholder="Cerca ospite o piazzola..."
@@ -129,11 +135,11 @@ export default function ArrivalsPage() {
 
             {/* Main Content Scrollable */}
             <main className="flex-1 overflow-auto p-4 md:p-6 bg-muted/10">
-                <div className="container mx-auto max-w-7xl">
+                <div className="container mx-auto max-w-5xl">
                     {loading ? (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            {[1, 2, 3, 4, 5, 6].map(i => (
-                                <div key={i} className="h-32 bg-muted rounded-xl animate-pulse" />
+                        <div className="space-y-4">
+                            {[1, 2, 3, 4].map(i => (
+                                <div key={i} className="h-24 bg-muted rounded-xl animate-pulse" />
                             ))}
                         </div>
                     ) : !data || filteredArrivals.length === 0 ? (
@@ -142,25 +148,22 @@ export default function ArrivalsPage() {
                                 <ArrowDownCircle className="h-12 w-12 text-green-600 dark:text-green-400" />
                             </div>
                             <h2 className="text-xl font-semibold mb-2">Nessun arrivo trovato</h2>
-                            <p className="text-muted-foreground">
+                            <p className="text-muted-foreground max-w-sm mx-auto">
                                 {data?.total_arrivals === 0
-                                    ? `Nessuna prenotazione prevista`
-                                    : "Nessun risultato corrisponde alla tua ricerca"}
+                                    ? `Non ci sono arrivi previsti per ${view === 'week' ? 'i prossimi giorni' : 'questa data'}.`
+                                    : "Nessun risultato corrisponde alla tua ricerca. Prova a modificare i filtri."}
                             </p>
                         </div>
                     ) : (
-                        <>
+                        <div className="pb-10">
                             {view === 'week' ? (
                                 <div className="space-y-8">
                                     {sortedDates.map(date => (
                                         <div key={date}>
-                                            <h3 className="text-lg font-semibold mb-4 sticky top-0 bg-background/95 backdrop-blur py-2 px-1 border-b z-0">
+                                            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3 sticky top-0 bg-background/95 backdrop-blur py-2 z-10">
                                                 {format(new Date(date), 'EEEE d MMMM', { locale: it })}
-                                                <span className="ml-2 text-sm font-normal text-muted-foreground">
-                                                    ({groupedArrivals[date].length})
-                                                </span>
                                             </h3>
-                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                                            <div className="space-y-3">
                                                 {groupedArrivals[date].map(arrival => (
                                                     <GuestCard key={arrival.id} event={arrival} type="arrival" />
                                                 ))}
@@ -169,7 +172,7 @@ export default function ArrivalsPage() {
                                     ))}
                                 </div>
                             ) : (
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                                <div className="space-y-3">
                                     {filteredArrivals.map((arrival) => (
                                         <GuestCard key={arrival.id} event={arrival} type="arrival" />
                                     ))}
@@ -179,7 +182,7 @@ export default function ArrivalsPage() {
                             <div className="mt-8 text-center text-sm text-muted-foreground">
                                 Visualizzando {filteredArrivals.length} di {data.total_arrivals} arrivi
                             </div>
-                        </>
+                        </div>
                     )}
                 </div>
             </main>

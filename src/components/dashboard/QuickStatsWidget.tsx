@@ -110,26 +110,28 @@ export function QuickStatsWidget() {
             </Link>
 
             {/* Current Occupancy */}
-            <Card className="border-l-4 border-l-purple-500">
-                <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium text-muted-foreground flex items-center justify-between">
-                        <span>📊 Occupazione Attuale</span>
-                        <Badge variant={getOccupancyBadgeVariant(stats.occupancy_percentage)}>
-                            {stats.occupancy_percentage}%
-                        </Badge>
-                    </CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <div className="text-3xl font-bold mb-2">
-                        {stats.current_occupancy} <span className="text-lg text-muted-foreground">/ {stats.total_pitches}</span>
-                    </div>
-                    <Progress
-                        value={stats.occupancy_percentage}
-                        className="h-2"
-                        indicatorClassName={getOccupancyColor(stats.occupancy_percentage)}
-                    />
-                </CardContent>
-            </Card>
+            <Link href="/stats" className="block transition-transform hover:scale-[1.02]">
+                <Card className="border-l-4 border-l-purple-500 cursor-pointer h-full hover:bg-accent/5">
+                    <CardHeader className="pb-2">
+                        <CardTitle className="text-sm font-medium text-muted-foreground flex items-center justify-between">
+                            <span>📊 Occupazione Attuale</span>
+                            <Badge variant={getOccupancyBadgeVariant(stats.occupancy_percentage)}>
+                                {stats.occupancy_percentage}%
+                            </Badge>
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-3xl font-bold mb-2">
+                            {stats.current_occupancy} <span className="text-lg text-muted-foreground">/ {stats.total_pitches}</span>
+                        </div>
+                        <Progress
+                            value={stats.occupancy_percentage}
+                            className="h-2"
+                            indicatorClassName={getOccupancyColor(stats.occupancy_percentage)}
+                        />
+                    </CardContent>
+                </Card>
+            </Link>
         </div>
     );
 }
