@@ -13,6 +13,8 @@
 ### API Updates
 - ✅ Aggiornato `/api/bookings` per gestire la creazione clienti con nuovi dati
 - ✅ Creato/Aggiornato `/api/customers` per ricerca e creazione
+- ✅ Refactoring pagina Check-in con nuovo Modale interattivo
+
 
 ---
 
@@ -23,3 +25,5 @@
 4. Verifica nel database che i dati siano stati salvati correttamente nella tabella `customers`.
 5. **Test Strict Matching**: Crea una nuova prenotazione con lo STESSO numero di telefono di un cliente esistente, ma con Nome/Cognome DIVERSI. Verifica che venga creato un NUOVO cliente e non sovrascritto il vecchio.
 6. **Test Autocomplete**: Nella creazione prenotazione, inizia a scrivere il nome di un cliente esistente. Selezionalo dal menu. Verifica che i campi si autocompilino. Cambia il nome e salva. Verifica il comportamento atteso.
+7. **Test Modale Check-in**: Vai su `/checkin`, clicca "Effettua Check-in" su una prenotazione. Verifica che si apra il modale e non ci sia più il form a fondo pagina. Compila i dati e conferma. Verifica che il toast di conferma appaia e la lista si aggiorni.
+

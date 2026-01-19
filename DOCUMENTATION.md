@@ -85,3 +85,21 @@ Implementata una nuova pagina `/stats` per la visualizzazione delle performance 
         - **Nazionalità**: Grafico a ciambella (Donut) per la distribuzione geografica degli ospiti (Top 5 paesi).
 - **Integrazione**: Aggiunto link "Statistiche" nell'header di navigazione (icona Grafico).
 - **Logica**: I dati vengono calcolati aggregando giorno per giorno le prenotazioni attive che si sovrappongono al periodo selezionato.
+
+## 5. Check-in Refactoring
+**Stato**: Implementato (2026-01-19)
+**Descrizione**:
+La pagina di Check-in è stata ridisegnata per migliorare l'usabilità.
+- **Modale Dialog**: Convertito il form di check-in da inline (fondo pagina) a un componente `Dialog` (Modal) di Shadcn UI.
+- **Workflow Migliorato**: 
+    1. L'utente cerca la prenotazione nella lista.
+    2. Clicca su "Effettua Check-in".
+    3. Si apre il modale con i dettagli precompilati.
+    4. L'utente completa i dati mancanti (documenti, questura) e conferma.
+    5. Il modale si chiude e la lista si aggiorna.
+- **Layout**: Il modale è organizzato in tre sezioni per coprire tutti i requisiti TULPS:
+    - **Dati di Nascita**: Data, Sesso, Stato, Provincia, Comune, Cittadinanza.
+    - **Residenza**: Indirizzo, Comune, CAP, Provincia, Stato.
+    - **Documento d'Identità**: Tipo, Numero, Data Rilascio, Ente, Comune e Stato di Rilascio.
+    - **Adempimenti**: Switch per la conferma invio Questura.
+
