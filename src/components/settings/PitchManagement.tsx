@@ -168,23 +168,22 @@ export function PitchManagement() {
                 </div>
 
                 {/* Sector Filter */}
-                {typeFilter !== 'tenda' && (
-                    <div className="w-48 space-y-2">
-                        <Label>Settore</Label>
-                        <select
-                            value={sectorFilter}
-                            onChange={(e) => setSectorFilter(e.target.value)}
-                            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                        >
-                            <option value="all">Tutti</option>
-                            {SECTORS.map((sector) => (
-                                <option key={sector.id} value={sector.id}>
-                                    {sector.name} ({sector.range.min}-{sector.range.max})
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-                )}
+                <div className={`w-48 space-y-2 ${typeFilter === 'tenda' ? 'opacity-50' : ''}`}>
+                    <Label>Settore</Label>
+                    <select
+                        value={sectorFilter}
+                        onChange={(e) => setSectorFilter(e.target.value)}
+                        disabled={typeFilter === 'tenda'}
+                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm disabled:cursor-not-allowed"
+                    >
+                        <option value="all">Tutti</option>
+                        {SECTORS.map((sector) => (
+                            <option key={sector.id} value={sector.id}>
+                                {sector.name} ({sector.range.min}-{sector.range.max})
+                            </option>
+                        ))}
+                    </select>
+                </div>
             </div>
 
             {/* Table */}
