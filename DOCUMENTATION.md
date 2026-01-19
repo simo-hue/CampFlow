@@ -48,17 +48,17 @@ Il modale di creazione ora include:
   - Se viene fornito `customer_id` (da Autocomplete), quel cliente viene usato e i suoi dati secondari (email, indirizzo) vengono aggiornati senza alterare il nome.
 
 ### 2.3 Pagina Clienti (Lista e Dettaglio)
-**Stato**: Refactoring Tabbed UI (2026-01-19)
+**Stato**: Refactoring UI (2026-01-19)
 **Nuova Implementazione**:
 - **Lista Clienti (`/customers`)**: 
-  - Visualizza tutti i clienti con ricerca rapida per nome/email/telefono.
+  - **Layout Full Screen Dashboard**: Visualizzazione a schermo intero con lista scrollabile e header centrale fisso.
+  - **Card Grid**: Lista interattiva con effetti hover e icone per i contatti.
   - Ricerca ottimizzata con debounce.
 - **Dettaglio Cliente (`/customers/[id]`)**: 
-  - **Layout a Tab**: Interfaccia pulita divisa in 3 sezioni navigabili tramite selettore "a pillola".
-      1. **Anagrafica (Default)**: Form completo per la visualizzazione e modifica di tutti i dati personali e documenti.
-      2. **Prenotazioni**: Lista cronologica dei soggiorni con gestione rapida status Questura.
-      3. **Statistiche**: Statistiche (Spesa, Soggiorni) visibili solo su richiesta per ridurre il carico cognitivo.
-  - **Editing Completo**: La modalità modifica è disponibile nel tab Anagrafica.
+  - **Layout Responsive Full Screen**:
+      - Header e Controlli Tab centrati.
+      - Contenuto scrollabile indipendentemente.
+  - **Editing Completo**: La modalità modifica sblocca tutti i campi.
 
 ## 3. Arrivals and Departures UI Refactor
 ### Date: 2026-01-19
@@ -90,26 +90,21 @@ Implementata una nuova pagina `/stats` per la visualizzazione delle performance 
 - **Logica**: I dati vengono calcolati aggregando giorno per giorno le prenotazioni attive che si sovrappongono al periodo selezionato.
 
 ## 5. Check-in Refactoring
-**Stato**: Implementato (2026-01-19)
+**Stato**: Refactoring UI (2026-01-20)
 **Descrizione**:
-La pagina di Check-in è stata ridisegnata per migliorare l'usabilità.
-- **Modale Dialog**: Convertito il form di check-in da inline (fondo pagina) a un componente `Dialog` (Modal) di Shadcn UI.
-- **Workflow Migliorato**: 
-    1. L'utente cerca la prenotazione nella lista.
-    2. Clicca su "Effettua Check-in".
-    3. Si apre il modale con i dettagli precompilati.
-    4. L'utente completa i dati mancanti (documenti, questura) e conferma.
-    5. Il modale si chiude e la lista si aggiorna.
-- **Layout**: Il modale è organizzato in tre sezioni per coprire tutti i requisiti TULPS:
-    - **Dati di Nascita**: Data, Sesso, Stato, Provincia, Comune, Cittadinanza.
-    - **Residenza**: Indirizzo, Comune, CAP, Provincia, Stato.
-    - **Documento d'Identità**: Tipo, Numero, Data Rilascio, Ente, Comune e Stato di Rilascio.
-    - **Adempimenti**: Switch per la conferma invio Questura.
-    - **Autocomplete Geografico**:
-        - Implementata ricerca intelligente con suggerimenti (Autocomplete) per i campi "Comune" e "Provincia".
-        - Logica condizionale: L'autocomplete si attiva solo se lo "Stato" è impostato su "Italia" (default). Se lo stato è estero, i campi tornano input di testo libero.
-        - **Auto-Fill**: La selezione di un comune italiano compila automaticamente:
-            - Provincia (Sigla)
-            - CAP (Residenza)
-            - Normalizza il nome del Comune.
-        - Fonte Dati: Database JSON integrato con tutti i comuni italiani (`src/lib/data/comuni.json`).
+La pagina di Check-in è stata ridisegnata per allinearsi al nuovo stile "Dashboard".
+- **Visual Design**:
+    - **Full Viewport Height**: Layout a schermo intero senza scroll globale.
+    - **Intestazione Centrata**: Titolo e ricerca al centro per massima pulizia.
+    - **Lista Scrollabile**: Area centrale dedicata allo scroll delle prenotazioni.
+    - **Card Design**: Stile consistente con la lista clienti (bordi colorati, icone, badge).
+- **Modale Check-in**: 
+    - Convertito il form di check-in da inline (fondo pagina) a un componente `Dialog` (Modal) di Shadcn UI (mantenuto nella logica ma integrato visivamente).
+- **Workflow**: 
+    1. Ricerca prenotazione (filtrata realtime).
+    2. Click su "Effettua Check-in" apre il modale.
+    3. Completamento dati anagrafici, residenza e documenti.
+    4. Conferma e invio Questura.
+- **Funzionalità Geografiche**:
+    - **Autocomplete**: Integrata ricerca intelligente per Comuni e Province italiane.
+    - **Auto-Fill**: Selezione comune compila provincia, CAP e normalizza il nome.

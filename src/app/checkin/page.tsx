@@ -5,12 +5,13 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Search, Loader2, Check, UserCheck, AlertCircle, Calendar, Users, FileText, Info } from 'lucide-react';
+import { Search, Loader2, Check, UserCheck, AlertCircle, Calendar, Users, FileText, Info, ChevronRight, Mail, Phone } from 'lucide-react';
 import { format } from 'date-fns';
 import { it } from 'date-fns/locale';
 import { toast } from "sonner";
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import {
     Dialog,
     DialogContent,
@@ -88,95 +89,143 @@ export default function CheckInPage() {
     });
 
     return (
-        <div className="container mx-auto px-4 py-8 max-w-5xl">
-            <h1 className="text-3xl font-bold mb-6">Check-in Ospiti</h1>
+        <div className="h-[calc(100vh-4rem)] flex flex-col bg-muted/5 p-4 md:p-6 gap-6 overflow-hidden">
 
-            {/* Search Section */}
-            <div className="flex gap-4 mb-8">
-                <div className="relative w-full">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                    <Input
-                        placeholder="Cerca per nome o cognome..."
-                        className="text-lg py-6 pl-12"
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                    />
+            {/* Header: Centered & Professional */}
+            <div className="flex flex-col items-center justify-center text-center gap-4 shrink-0">
+                <div className="space-y-1">
+                    <h1 className="text-3xl font-bold tracking-tight flex items-center justify-center gap-2">
+                        <UserCheck className="h-8 w-8 text-primary" />
+                        Check-in Ospiti
+                    </h1>
+                    <p className="text-muted-foreground text-sm max-w-[500px]">
+                        Ricerca prenotazioni, inserisci i documenti d'identità e gestisci gli invii al portale Alloggiati Web.
+                    </p>
+                </div>
+
+                {/* Main Action Bar: Search Only */}
+                <div className="flex w-full max-w-2xl items-center gap-2">
+                    <div className="relative flex-1">
+                        <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                        <Input
+                            placeholder="Cerca prenotazione per nome o cognome..."
+                            className="pl-9 bg-background/50 backdrop-blur-sm border-muted-foreground/20"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                    </div>
                 </div>
             </div>
 
-            {/* Results */}
-            <div className="space-y-4">
-                {filteredBookings.map((booking) => {
-                    const { start, end } = parseBookingPeriod(booking.booking_period);
-                    const customerName = `${booking.customer?.first_name || ''} ${booking.customer?.last_name || ''}`.trim();
+            {/* Main Content Area */}
+            <div className="flex-1 w-full overflow-hidden max-w-7xl mx-auto">
+                <Card className="h-full flex flex-col border-0 shadow-sm bg-background/50 backdrop-blur-sm overflow-hidden">
+                    <CardContent className="p-0 flex-1 flex flex-col overflow-hidden">
 
-                    return (
-                        <Card key={booking.id} className="hover:shadow-md transition-all border-l-4 border-l-primary">
-                            <CardContent className="p-6 flex items-center justify-between">
-                                <div className="flex items-center gap-6">
-                                    <div className="bg-primary/10 p-4 rounded-full">
-                                        <UserCheck className="w-8 h-8 text-primary" />
-                                    </div>
-                                    <div>
-                                        <div className="flex items-center gap-3 mb-1">
-                                            <h3 className="text-2xl font-bold">{customerName || 'Cliente Sconosciuto'}</h3>
-                                            <Badge variant={booking.status === 'checked_in' ? "secondary" : "outline"} className="text-xs uppercase">
-                                                {booking.status === 'checked_in' ? 'Checked-in' : 'Confermato'}
-                                            </Badge>
-                                        </div>
+                        {/* Table Header Row (Sticky) */}
+                        <div className="border-b bg-muted/30 px-6 py-3 grid grid-cols-12 gap-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                            <div className="col-span-4">Ospite</div>
+                            <div className="col-span-4">Soggiorno & Piazzola</div>
+                            <div className="col-span-2">Stato</div>
+                            <div className="col-span-2 text-right">Azioni</div>
+                        </div>
 
-                                        <div className="flex flex-wrap gap-4 text-sm text-muted-foreground mt-2">
-                                            <div className="flex items-center gap-1 bg-secondary/30 px-2 py-1 rounded-md">
-                                                <span className="font-semibold text-foreground">Piazzola {booking.pitch?.number || '?'}</span>
-                                            </div>
-                                            <div className="flex items-center gap-1">
-                                                <Calendar className="w-4 h-4" />
-                                                <span>{format(start, 'd MMM yyyy', { locale: it })} - {format(end, 'd MMM yyyy', { locale: it })}</span>
-                                            </div>
-                                            <div className="flex items-center gap-1">
-                                                <Users className="w-4 h-4" />
-                                                <span>{booking.guests_count} Ospiti</span>
-                                            </div>
-                                            {booking.notes && (
-                                                <div className="flex items-center gap-1 text-amber-600 dark:text-amber-500">
-                                                    <FileText className="w-4 h-4" />
-                                                    <span>Note presenti</span>
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
+                        {/* Scrollable List */}
+                        <ScrollArea className="flex-1">
+                            {loading ? (
+                                <div className="flex flex-col items-center justify-center h-48 gap-3 text-muted-foreground">
+                                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                                    <p className="text-sm">Caricamento prenotazioni...</p>
                                 </div>
-                                <Button
-                                    size="lg"
-                                    variant={booking.status === 'checked_in' ? "secondary" : "default"}
-                                    onClick={() => handleOpenCheckIn(booking)}
-                                >
-                                    {booking.status === 'checked_in' ? (
-                                        <>
-                                            <Check className="w-4 h-4 mr-2" /> Modifica Dati
-                                        </>
-                                    ) : (
-                                        'Effettua Check-in'
-                                    )}
-                                </Button>
-                            </CardContent>
-                        </Card>
-                    );
-                })}
+                            ) : filteredBookings.length === 0 ? (
+                                <div className="flex flex-col items-center justify-center h-64 gap-3 text-muted-foreground">
+                                    <Search className="h-12 w-12 opacity-20" />
+                                    <p>Nessuna prenotazione trovata.</p>
+                                </div>
+                            ) : (
+                                <div className="divide-y">
+                                    {filteredBookings.map((booking) => {
+                                        const { start, end } = parseBookingPeriod(booking.booking_period);
+                                        const customerName = `${booking.customer?.first_name || ''} ${booking.customer?.last_name || ''}`.trim();
+                                        const isCheckedIn = booking.status === 'checked_in';
 
-                {filteredBookings.length === 0 && !loading && (
-                    <div className="text-center py-20 bg-muted/10 rounded-xl border border-dashed">
-                        <Search className="w-12 h-12 text-muted-foreground mx-auto mb-4 opacity-20" />
-                        <h3 className="text-xl font-semibold text-muted-foreground">Nessuna prenotazione trovata</h3>
-                        <p className="text-sm text-muted-foreground mt-2">Prova a cercare un altro nome o controlla i filtri.</p>
-                    </div>
-                )}
+                                        return (
+                                            <div key={booking.id} className="grid grid-cols-12 gap-4 px-6 py-4 items-center hover:bg-muted/30 transition-colors group">
+                                                {/* Ospite */}
+                                                <div className="col-span-4 flex items-center gap-3">
+                                                    <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm">
+                                                        {booking.customer?.first_name?.[0]}{booking.customer?.last_name?.[0]}
+                                                    </div>
+                                                    <div>
+                                                        <div className="font-semibold text-foreground group-hover:text-primary transition-colors">
+                                                            {customerName || 'Cliente Sconosciuto'}
+                                                        </div>
+                                                        <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
+                                                            <Users className="h-3 w-3" />
+                                                            {booking.guests_count} Ospiti
+                                                            {booking.notes && (
+                                                                <span className="flex items-center gap-1 text-amber-600 dark:text-amber-500 ml-2">
+                                                                    <FileText className="h-3 w-3" /> Note
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                {/* Soggiorno */}
+                                                <div className="col-span-4 space-y-1">
+                                                    <div className="flex items-center gap-2 text-sm text-foreground/80">
+                                                        <Calendar className="h-3 w-3 text-muted-foreground" />
+                                                        {format(start, 'd MMM', { locale: it })} - {format(end, 'd MMM yyyy', { locale: it })}
+                                                    </div>
+                                                    <div className="flex items-center gap-2">
+                                                        <Badge variant="outline" className="text-xs font-normal">
+                                                            Piazzola {booking.pitch?.number || '?'}
+                                                        </Badge>
+                                                    </div>
+                                                </div>
+
+                                                {/* Stato */}
+                                                <div className="col-span-2">
+                                                    <Badge variant={isCheckedIn ? "secondary" : "outline"} className={`font-medium text-xs ${isCheckedIn ? 'bg-green-100 text-green-700 hover:bg-green-100 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800' : ''}`}>
+                                                        {isCheckedIn ? 'Checked-in' : 'Confermato'}
+                                                    </Badge>
+                                                    {isCheckedIn && booking.questura_sent && (
+                                                        <div className="text-[10px] text-muted-foreground mt-1 flex items-center gap-1">
+                                                            <Check className="h-3 w-3 text-green-600" /> Alloggiati Web
+                                                        </div>
+                                                    )}
+                                                </div>
+
+                                                {/* Azioni */}
+                                                <div className="col-span-2 flex justify-end">
+                                                    <Button
+                                                        variant={isCheckedIn ? "secondary" : "default"}
+                                                        size="sm"
+                                                        className={`gap-1 shadow-sm transition-all ${!isCheckedIn ? 'hover:bg-primary/90' : 'hover:bg-muted/80'}`}
+                                                        onClick={() => handleOpenCheckIn(booking)}
+                                                    >
+                                                        {isCheckedIn ? (
+                                                            <>Dettagli <ChevronRight className="h-3 w-3" /></>
+                                                        ) : (
+                                                            <>Check-in <ChevronRight className="h-3 w-3" /></>
+                                                        )}
+                                                    </Button>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            )}
+                        </ScrollArea>
+                    </CardContent>
+                </Card>
             </div>
 
             {/* Modal Dialog */}
             <CheckInDialog
                 open={isDialogOpen}
-                onOpenChange={setIsDialogOpen} // Allow clicking outside to close
+                onOpenChange={setIsDialogOpen}
                 booking={selectedBooking}
                 onClose={handleCloseDialog}
                 onSuccess={handleSuccess}
