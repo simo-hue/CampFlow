@@ -12,6 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import type { Pitch, CreatePitchRequest, UpdatePitchRequest, PitchAttributes, PitchType, PitchStatus } from '@/lib/types';
+import { toast } from "sonner";
 
 interface PitchDialogProps {
     open: boolean;
@@ -89,7 +90,9 @@ export function PitchDialog({ open, onOpenChange, onSubmit, initialData }: Pitch
             // Assuming onSubmit might throw an Error with the message.
             if (err instanceof Error) {
                 setError(err.message);
-            } else {
+            
+            toast.error("Errore imprevisto", { description: err instanceof Error ? err.message : "Riprova più tardi" });
+        } else {
                 setError('Si è verificato un errore. Riprova.');
             }
         } finally {

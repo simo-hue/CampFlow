@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/command';
 import { Search } from 'lucide-react';
 import type { Customer } from '@/lib/types';
+import { toast } from "sonner";
 
 export function GlobalSearchBar() {
     const [open, setOpen] = useState(false);
@@ -45,6 +46,8 @@ export function GlobalSearchBar() {
             }
         } catch (error) {
             console.error('Search error:', error);
+        
+            toast.error("Errore imprevisto", { description: error instanceof Error ? error.message : "Riprova più tardi" });
         }
     }, []);
 
@@ -92,7 +95,7 @@ export function GlobalSearchBar() {
                                     }}
                                 >
                                     <div className="flex flex-col">
-                                        <span className="font-medium">{customer.full_name}</span>
+                                        <span className="font-medium">{`${customer.first_name} ${customer.last_name}`}</span>
                                         <span className="text-sm text-muted-foreground">
                                             {customer.phone}
                                             {customer.email && ` • ${customer.email}`}

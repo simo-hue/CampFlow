@@ -43,15 +43,14 @@ export default function DashboardPage() {
             <QuickStatsWidget />
           </section>
 
-          {/* Availability Query */}
-          <section>
-            <AvailabilityModule />
-          </section>
-
-
           {/* Today View at Bottom */}
           <section>
             <TodayView />
+          </section>
+
+          {/* Availability Query */}
+          <section>
+            <AvailabilityModule />
           </section>
         </div>
       </main>

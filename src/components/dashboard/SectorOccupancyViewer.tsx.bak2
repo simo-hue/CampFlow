@@ -234,40 +234,14 @@ export function SectorOccupancyViewer() {
         }
     }, [cacheKey, loadSectorOccupancy]);
 
-
-    // Keyboard support - ESC to cancel selection
-    useEffect(() => {
-        const handleKeyDown = (e: KeyboardEvent) => {
-            if (e.key === 'Escape' && isSelecting) {
-                setIsSelecting(false);
-                setSelection(null);
-            }
-        };
-
-        window.addEventListener('keydown', handleKeyDown);
-        return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [isSelecting]);
-
-    // Global mouseup to catch mouse release outside cells
-    useEffect(() => {
-        const handleGlobalMouseUp = () => {
-            if (isSelecting) {
-                handleMouseUp();
-            }
-        };
-
-        document.addEventListener('mouseup', handleGlobalMouseUp);
-        return () => document.removeEventListener('mouseup', handleGlobalMouseUp);
-    }, [isSelecting, selection]);
     const handleRefresh = () => {
         loadSectorOccupancy(true);
     };
 
     // Mouse handlers for drag-to-book functionality
     const handleCellMouseDown = (pitch: Pitch, date: string, isOccupied: boolean) => {
-        if (isOccupied) return;
-
-        console.log('🖱️ MouseDown:', { pitch: pitch.number, date });
+        if (isOccupied) return; // Just return for now, could show details later
+        
         setIsSelecting(true);
         setSelection({
             pitchId: pitch.id,
@@ -281,17 +255,12 @@ export function SectorOccupancyViewer() {
         if (!isSelecting || !selection) return;
         if (selection.pitchId !== pitch.id) return;
         if (isOccupied) return;
-
+        
         setSelection(prev => prev ? { ...prev, endDate: date } : null);
     };
 
     const handleMouseUp = () => {
-        if (!isSelecting || !selection) {
-            console.log('⚠️ MouseUp ignored - not selecting or no selection');
-            return;
-        }
-
-        console.log('✅ MouseUp - Opening modal:', selection);
+        if (!isSelecting || !selection) return;
         setIsSelecting(false);
         setShowBookingModal(true);
     };
@@ -308,11 +277,11 @@ export function SectorOccupancyViewer() {
     const getCellClassName = (pitch: Pitch, date: string, isOccupied: boolean): string => {
         const selected = isCellSelected(pitch.id, date);
         const baseColor = getCellColor(isOccupied);
-
+        
         if (selected) {
-            return `p-2 border-r ring-4 ring-blue-500 bg-blue-300 dark:bg-blue-600 scale-110 shadow-2xl transition-all duration-150 cursor-crosshair z-10`;
+            return `${baseColor} ring-2 ring-blue-500 bg-blue-200 dark:bg-blue-700/60 scale-105 shadow-lg transition-all duration-150 cursor-crosshair`;
         }
-
+        
         return `${baseColor} transition-all duration-150 ${isOccupied ? 'cursor-pointer' : 'cursor-cell'}`;
     };
 
@@ -476,17 +445,23 @@ export function SectorOccupancyViewer() {
                                                 {item.days.map((day) => (
                                                     <td
                                                         key={day.date}
-                                                        className={`p-2 border-r ${getCellClassName(item.pitch, day.date, day.isOccupied)}`}
-                                                        onMouseDown={() => handleCellMouseDown(item.pitch, day.date, day.isOccupied)}
-                                                        onMouseEnter={() => handleCellMouseEnter(item.pitch, day.date, day.isOccupied)}
-                                                        onMouseUp={handleMouseUp}
+                                                        className={`p-2 border-r transition-all cursor-pointer ${getCellColor(day.isOccupied)}`}
+                                                        onClick={() => {
+                                                            if (day.isOccupied && day.bookingInfo) {
+                                                                alert(
+                                                                    `${selectedPitchType === 'piazzola' ? 'Piazzola' : 'Tenda'} ${item.pitch.number} - ${day.date}\n` +
+                                                                    `Cliente: ${day.bookingInfo.customer_name}\n` +
+                                                                    `Ospiti: ${day.bookingInfo.guests_count}`
+                                                                );
+                                                            }
+                                                        }}
                                                         title={
                                                             day.isOccupied && day.bookingInfo
                                                                 ? `${day.bookingInfo.customer_name} (${day.bookingInfo.guests_count} ospiti)`
-                                                                : 'Click e trascina per prenotare'
+                                                                : 'Libera'
                                                         }
                                                     >
-                                                        <div className="h-8 w-full flex items-center justify-center select-none">
+                                                        <div className="h-8 w-full flex items-center justify-center">
                                                             {day.isOccupied && (
                                                                 <div className="w-3 h-3 rounded-full bg-red-600 shadow-sm" />
                                                             )}
@@ -530,24 +505,6 @@ export function SectorOccupancyViewer() {
                         </div>
                     </>
                 )}
-
-                {/* Booking Creation Modal */}
-                {selection && (
-                    <BookingCreationModal
-                        open={showBookingModal}
-                        onClose={() => {
-                            setShowBookingModal(false);
-                            setSelection(null);
-                        }}
-                        pitchNumber={selection.pitchNumber}
-                        pitchId={selection.pitchId}
-                        pitchType={selectedPitchType}
-                        checkIn={selection.startDate <= selection.endDate ? selection.startDate : selection.endDate}
-                        checkOut={selection.startDate <= selection.endDate ? selection.endDate : selection.startDate}
-                        onSuccess={handleBookingSuccess}
-                    />
-                )}
-
             </div>
         </div>
     );

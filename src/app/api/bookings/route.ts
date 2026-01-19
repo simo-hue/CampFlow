@@ -76,7 +76,8 @@ export async function POST(request: NextRequest) {
             await supabaseAdmin
                 .from('customers')
                 .update({
-                    full_name: body.customer.full_name,
+                    first_name: body.customer.first_name,
+                    last_name: body.customer.last_name,
                     email: body.customer.email,
                     address: body.customer.address,
                     notes: body.customer.notes,
@@ -87,7 +88,8 @@ export async function POST(request: NextRequest) {
             const { data: newCustomer, error: customerError } = await supabaseAdmin
                 .from('customers')
                 .insert({
-                    full_name: body.customer.full_name,
+                    first_name: body.customer.first_name,
+                    last_name: body.customer.last_name,
                     email: body.customer.email,
                     phone: body.customer.phone,
                     address: body.customer.address,
@@ -145,14 +147,11 @@ export async function POST(request: NextRequest) {
         }
 
         return NextResponse.json({
+            id: booking.id,
             success: true,
             booking,
             message: 'Prenotazione creata con successo',
 
-        // Invalida cache occupancy dopo nuova prenotazione
-        if (typeof window !== 'undefined') {
-            invalidateOccupancyCache();
-        }
         }, { status: 201 });
 
     } catch (error) {

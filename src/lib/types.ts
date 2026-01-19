@@ -29,7 +29,8 @@ export interface Pitch {
 
 export interface Customer {
     id: string;
-    full_name: string;
+    first_name: string;
+    last_name: string;
     email?: string;
     phone: string;
     address?: string;
@@ -44,6 +45,7 @@ export interface Booking {
     customer_id: string;
     booking_period: string; // PostgreSQL tsrange as string: "[2026-01-01 00:00:00,2026-01-05 00:00:00)"
     guests_count: number;
+    dogs_count: number;
     total_price: number;
     status: BookingStatus;
     notes?: string;
@@ -67,7 +69,8 @@ export interface AvailabilityQuery {
 export interface CreateBookingRequest {
     pitch_id: string;
     customer: {
-        full_name: string;
+        first_name: string;
+        last_name: string;
         email?: string;
         phone: string;
         address?: string;
@@ -76,6 +79,7 @@ export interface CreateBookingRequest {
     check_in: string; // YYYY-MM-DD
     check_out: string; // YYYY-MM-DD
     guests_count: number;
+    dogs_count: number;
     notes?: string;
 }
 
@@ -92,7 +96,8 @@ export type GuestType = 'adult' | 'child' | 'infant';
 export interface BookingGuest {
     id: string;
     booking_id: string;
-    full_name: string;
+    first_name: string;
+        last_name: string;
     birth_date?: string; // YYYY-MM-DD
     birth_place?: string;
     address?: string;
@@ -106,7 +111,8 @@ export interface BookingGuest {
 
 export interface CreateGuestRequest {
     booking_id: string;
-    full_name: string;
+    first_name: string;
+        last_name: string;
     birth_date?: string;
     birth_place?: string;
     address?: string;

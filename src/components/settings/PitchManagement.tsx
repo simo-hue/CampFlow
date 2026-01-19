@@ -25,6 +25,7 @@ import {
 import type { Pitch, CreatePitchRequest, UpdatePitchRequest } from '@/lib/types';
 import { getPitchDisplayNumber, canSplitPitch, getSiblingPitch, SECTORS, getPitchSector } from '@/lib/pitchUtils';
 import { PitchDialog } from './PitchDialog';
+import { toast } from "sonner";
 
 export function PitchManagement() {
     const [pitches, setPitches] = useState<Pitch[]>([]);
@@ -51,6 +52,8 @@ export function PitchManagement() {
             }
         } catch (error) {
             console.error('Error loading pitches:', error);
+        
+            toast.error("Errore imprevisto", { description: error instanceof Error ? error.message : "Riprova più tardi" });
         } finally {
             setLoading(false);
         }
@@ -90,11 +93,13 @@ export function PitchManagement() {
                 return;
             } else {
                 const error = await response.json();
-                alert(`Errore: ${error.error}`);
+                toast.error(`Errore: ${error.error}`);
             }
         } catch (error) {
             console.error('Error saving pitch:', error);
-            alert('Errore durante il salvataggio');
+            toast.error('Errore durante il salvataggio');
+        
+            toast.error("Errore imprevisto", { description: error instanceof Error ? error.message : "Riprova più tardi" });
         }
     };
 
@@ -112,14 +117,16 @@ export function PitchManagement() {
 
             if (response.ok) {
                 await loadPitches();
-                alert('Piazzola sdoppiata con successo!');
+                toast.success('Piazzola sdoppiata!', { description: 'La piazzola è stata sdoppiata con successo' });
             } else {
                 const error = await response.json();
-                alert(`Errore: ${error.error}`);
+                toast.error(`Errore: ${error.error}`);
             }
         } catch (error) {
             console.error('Error splitting pitch:', error);
-            alert('Errore durante lo sdoppiamento');
+            toast.error('Errore durante lo sdoppiamento');
+        
+            toast.error("Errore imprevisto", { description: error instanceof Error ? error.message : "Riprova più tardi" });
         }
     };
 
@@ -140,14 +147,16 @@ export function PitchManagement() {
 
             if (response.ok) {
                 await loadPitches();
-                alert('Piazzole unite con successo!');
+                toast.success('Piazzole unite!', { description: 'Le piazzole sono state unite con successo' });
             } else {
                 const error = await response.json();
-                alert(`Errore: ${error.error}`);
+                toast.error(`Errore: ${error.error}`);
             }
         } catch (error) {
             console.error('Error merging pitches:', error);
             alert('Errore durante l\'unione');
+        
+            toast.error("Errore imprevisto", { description: error instanceof Error ? error.message : "Riprova più tardi" });
         }
     };
 
@@ -163,14 +172,16 @@ export function PitchManagement() {
 
             if (response.ok) {
                 await loadPitches();
-                alert('Piazzola eliminata con successo!');
+                toast.success('Piazzola eliminata!', { description: 'La piazzola è stata rimossa' });
             } else {
                 const error = await response.json();
-                alert(`Errore: ${error.error}`);
+                toast.error(`Errore: ${error.error}`);
             }
         } catch (error) {
             console.error('Error deleting pitch:', error);
             alert('Errore durante l\'eliminazione');
+        
+            toast.error("Errore imprevisto", { description: error instanceof Error ? error.message : "Riprova più tardi" });
         }
     };
 

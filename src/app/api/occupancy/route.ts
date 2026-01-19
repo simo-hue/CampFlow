@@ -42,7 +42,7 @@ export async function GET(request: NextRequest) {
         booking_period,
         status,
         guests_count,
-        customer:customers(full_name)
+        customer:customers(first_name, last_name)
       `)
             .eq('pitch_id', pitchId)
             .neq('status', 'cancelled')
@@ -68,7 +68,7 @@ export async function GET(request: NextRequest) {
             const customerData = Array.isArray(booking.customer) ? booking.customer[0] : booking.customer;
 
             bookingInfo = {
-                customer_name: (customerData as { full_name?: string })?.full_name || 'N/A',
+                customer_name: `${(customerData as {first_name?: string, last_name?: string})?.first_name || ''} ${(customerData as {first_name?: string, last_name?: string})?.last_name || ''}`.trim() || 'N/A',
                 check_in: periodMatch ? periodMatch[1] : 'N/A',
                 check_out: periodMatch ? periodMatch[2] : 'N/A',
                 guests_count: booking.guests_count,

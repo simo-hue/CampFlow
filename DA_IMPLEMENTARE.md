@@ -1,0 +1,7 @@
+- Pagina degli arrivi ( quando ci clicco per vedere chi e cosa ha prenotato )
+- Pagina delle partenze ( quando ci clicco per vedere chi e cosa parte )
+- Cerca Piazzole Disponibili che deve essere scrollabile al di fuori dal box
+- sistemare header per renderlo più navigabile e intuibile all'utente
+- se si clicca su "occupazione attuale" mi deve portare alle statistiche 
+- sistemare la barra di ricerca per renderla più intuitiva
+- search bar funzionante per ricerca di clienti/prenotazioni

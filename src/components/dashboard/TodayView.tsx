@@ -6,13 +6,14 @@ import { Badge } from '@/components/ui/badge';
 import { CalendarCheck, ArrowDownCircle, ArrowUpCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { it } from 'date-fns/locale';
+import { toast } from "sonner";
 
 interface TodayEvent {
     id: string;
     pitch_id: string;
     guests_count: number;
     pitches: { number: string };
-    customers: { full_name: string };
+    customers: { first_name: string; last_name: string };
 }
 
 interface TodayData {
@@ -44,6 +45,8 @@ export function TodayView() {
             }
         } catch (error) {
             console.error('Error loading today events:', error);
+        
+            toast.error("Errore imprevisto", { description: error instanceof Error ? error.message : "Riprova più tardi" });
         } finally {
             setLoading(false);
         }
@@ -95,7 +98,7 @@ export function TodayView() {
                                                     Piazzola {arrival.pitches.number}
                                                 </Badge>
                                                 <div>
-                                                    <p className="font-medium text-sm">{arrival.customers.full_name}</p>
+                                                    <p className="font-medium text-sm">{`${arrival.customers.first_name} ${arrival.customers.last_name}`}</p>
                                                     <p className="text-xs text-muted-foreground">
                                                         {arrival.guests_count} {arrival.guests_count === 1 ? 'ospite' : 'ospiti'}
                                                     </p>
@@ -130,7 +133,7 @@ export function TodayView() {
                                                     Piazzola {departure.pitches.number}
                                                 </Badge>
                                                 <div>
-                                                    <p className="font-medium text-sm">{departure.customers.full_name}</p>
+                                                    <p className="font-medium text-sm">{`${departure.customers.first_name} ${departure.customers.last_name}`}</p>
                                                     <p className="text-xs text-muted-foreground">
                                                         {departure.guests_count} {departure.guests_count === 1 ? 'ospite' : 'ospiti'}
                                                     </p>

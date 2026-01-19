@@ -21,7 +21,7 @@ export async function GET() {
         guests_count,
         booking_period,
         pitches!inner(number, suffix, type),
-        customers!inner(full_name)
+        customers!inner(first_name, last_name)
       `)
             .in('status', ['confirmed', 'checked_in'])
             .order('pitches(number)');
@@ -48,7 +48,7 @@ export async function GET() {
         guests_count,
         booking_period,
         pitches!inner(number, suffix, type),
-        customers!inner(full_name)
+        customers!inner(first_name, last_name)
       `)
             .in('status', ['checked_in', 'checked_out'])
             .order('pitches(number)');
