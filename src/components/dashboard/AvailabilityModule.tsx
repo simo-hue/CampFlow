@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useAvailability } from '@/hooks/useAvailability';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -24,50 +25,13 @@ export function AvailabilityModule() {
     const [checkInDate, setCheckInDate] = useState<Date>();
     const [checkOutDate, setCheckOutDate] = useState<Date>();
     const [pitchType, setPitchType] = useState<string>('all');
-    const [loading, setLoading] = useState(false);
+
     const [checkInOpen, setCheckInOpen] = useState(false);
     const [checkOutOpen, setCheckOutOpen] = useState(false);
-    const [results, setResults] = useState<{
-        pitches: Pitch[];
-        total_available: number;
-    } | null>(null);
-    const [error, setError] = useState<string | null>(null);
 
-    const handleSearch = async () => {
-        if (!checkInDate || !checkOutDate) {
-            setError('Inserisci entrambe le date');
-            return;
-        }
-
-        setLoading(true);
-        setError(null);
-
-        try {
-            const params = new URLSearchParams({
-                check_in: format(checkInDate, 'yyyy-MM-dd'),
-                check_out: format(checkOutDate, 'yyyy-MM-dd'),
-            });
-
-            if (pitchType !== 'all') {
-                params.append('pitch_type', pitchType);
-            }
-
-            const response = await fetch(`/api/availability?${params}`);
-
-            if (!response.ok) {
-                const data = await response.json();
-                throw new Error(data.error || 'Errore nella ricerca');
-            }
-
-            const data = await response.json();
-            setResults(data);
-        } catch (err) {
-            setError(err instanceof Error ? err.message : 'Errore sconosciuto');
-            setResults(null);
-        } finally {
-            setLoading(false);
-        }
-    };
+    // React Query Hook
+    const { data: results, isLoading: loading, error: queryError } = useAvailability(checkInDate, checkOutDate);
+    const error = queryError instanceof Error ? queryError.message : null;
 
     const getAttributeBadges = (attributes: Record<string, unknown>) => {
         const badges = [];
@@ -79,6 +43,15 @@ export function AvailabilityModule() {
         return badges;
     };
 
+    // Calculate derived state
+    const piazzolaCount = results?.pitches.filter(p => p.type === 'piazzola').length || 0;
+    const tendaCount = results?.pitches.filter(p => p.type === 'tenda').length || 0;
+
+    const filteredPitches = results?.pitches.filter(p => {
+        if (pitchType === 'all') return true;
+        return p.type === pitchType;
+    }) || [];
+
     return (
         <Card>
             <CardHeader>
@@ -89,7 +62,7 @@ export function AvailabilityModule() {
             </CardHeader>
             <CardContent>
                 {/* Search Form */}
-                <div className="grid gap-4 md:grid-cols-4 mb-6">
+                <div className="grid gap-4 md:grid-cols-3 mb-6">
                     {/* Check-in Date Picker */}
                     <div className="space-y-2">
                         <label className="text-sm font-medium">Data Arrivo</label>
@@ -167,16 +140,6 @@ export function AvailabilityModule() {
                             <option value="tenda">Tenda</option>
                         </select>
                     </div>
-
-                    <div className="flex items-end">
-                        <Button
-                            onClick={handleSearch}
-                            disabled={loading || !checkInDate || !checkOutDate}
-                            className="w-full"
-                        >
-                            {loading ? 'Ricerca...' : 'Cerca'}
-                        </Button>
-                    </div>
                 </div>
 
                 {/* Error Message */}
@@ -190,19 +153,20 @@ export function AvailabilityModule() {
                 {results && (
                     <div>
                         <div className="flex items-center justify-between mb-4">
-                            <h3 className="text-lg font-semibold">
-                                Piazzole Disponibili: {results.total_available}
-                            </h3>
-                            {results.total_available > 0 && (
-                                <Badge variant="default" className="bg-green-500">
-                                    {results.total_available} libere
+                            <h3 className="text-lg font-semibold flex items-center gap-4">
+                                <span>Disponibilità:</span>
+                                <Badge variant="secondary" className="bg-emerald-100 text-emerald-800 hover:bg-emerald-200">
+                                    {piazzolaCount} Piazzole
                                 </Badge>
-                            )}
+                                <Badge variant="secondary" className="bg-blue-100 text-blue-800 hover:bg-blue-200">
+                                    {tendaCount} Tende
+                                </Badge>
+                            </h3>
                         </div>
 
-                        {results.total_available === 0 ? (
+                        {filteredPitches.length === 0 ? (
                             <div className="p-8 text-center text-muted-foreground border rounded-md">
-                                <p>Nessuna piazzola disponibile per il periodo selezionato</p>
+                                <p>Nessuna disponibilità compatibile con i filtri selezionati</p>
                             </div>
                         ) : (
                             <div className="border rounded-md">
@@ -211,19 +175,17 @@ export function AvailabilityModule() {
                                         <TableRow>
                                             <TableHead>Numero</TableHead>
                                             <TableHead>Tipo</TableHead>
-                                            <TableHead>Dimensione</TableHead>
                                             <TableHead>Caratteristiche</TableHead>
                                             <TableHead className="text-right">Azioni</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
-                                        {results.pitches.map((pitch) => (
+                                        {filteredPitches.map((pitch) => (
                                             <TableRow key={pitch.id}>
                                                 <TableCell className="font-medium">{pitch.number}</TableCell>
                                                 <TableCell>
                                                     <Badge variant="secondary">{pitch.type}</Badge>
                                                 </TableCell>
-                                                <TableCell>{pitch.attributes.size_sqm || '-'} m²</TableCell>
                                                 <TableCell>
                                                     <div className="flex gap-1 flex-wrap">
                                                         {getAttributeBadges(pitch.attributes).map((attr) => (

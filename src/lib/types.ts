@@ -66,8 +66,31 @@ export interface Customer {
     last_name: string;
     email?: string;
     phone: string;
-    address?: string;
+    address?: string; // Via/Piazza + Civico
     notes?: string;
+
+    // Birth Details
+    birth_date?: string;
+    birth_country?: string;
+    birth_city?: string;
+    birth_province?: string;
+    citizenship?: string;
+    gender?: 'M' | 'F' | 'Other';
+
+    // Residence Details
+    residence_country?: string;
+    residence_province?: string;
+    residence_city?: string;
+    residence_zip?: string;
+
+    // Document Details
+    document_type?: string;
+    document_number?: string;
+    document_issue_country?: string;
+    document_issue_city?: string;
+    document_issue_date?: string;
+    document_issuer?: string; // Ente
+
     created_at: string;
     updated_at: string;
 }
@@ -108,6 +131,23 @@ export interface CreateBookingRequest {
         phone: string;
         address?: string;
         notes?: string;
+        // Detailed info
+        birth_date?: string;
+        birth_country?: string;
+        birth_city?: string;
+        birth_province?: string;
+        citizenship?: string;
+        gender?: 'M' | 'F' | 'Other';
+        residence_country?: string;
+        residence_province?: string;
+        residence_city?: string;
+        residence_zip?: string;
+        document_type?: string;
+        document_number?: string;
+        document_issue_country?: string;
+        document_issue_city?: string;
+        document_issue_date?: string;
+        document_issuer?: string;
     };
     check_in: string; // YYYY-MM-DD
     check_out: string; // YYYY-MM-DD

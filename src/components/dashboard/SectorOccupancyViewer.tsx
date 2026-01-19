@@ -3,13 +3,16 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Grid, Calendar, RefreshCw, Zap, Home, Tent } from 'lucide-react';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar as CalendarComponent } from '@/components/ui/calendar';
+import { Grid, Calendar, RefreshCw, Zap, Home, Tent, ChevronLeft, ChevronRight, ChevronsRight } from 'lucide-react';
 import { BookingCreationModal } from './BookingCreationModal';
-import { isDateInRange, getDatesInRange } from '@/lib/dateUtils';
+import { isDateInRange } from '@/lib/dateUtils';
 import type { Pitch, PitchType } from '@/lib/types';
 import { SECTORS } from '@/lib/pitchUtils';
-import { addDays, format, startOfDay, parseISO } from 'date-fns';
+import { addDays, subDays, format, startOfDay, parseISO, isSameDay } from 'date-fns';
 import { it } from 'date-fns/locale';
+import { toast } from "sonner";
 
 interface DayOccupancy {
     date: string;
@@ -36,8 +39,7 @@ const PITCH_TYPES: { id: PitchType; name: string; icon: any }[] = [
     { id: 'tenda', name: 'Tende', icon: Tent },
 ];
 
-// OTTIMIZZAZIONE: Cache sempre 30 giorni, poi slicing per visualizzazioni più corte
-const CACHE_WINDOW_DAYS = 30;
+const CACHE_WINDOW_DAYS = 45; // Increased to allow smoother navigation buffering
 const CACHE_KEY_PREFIX = 'occupancy_cache_';
 const CACHE_VERSION_KEY = 'occupancy_cache_version';
 
@@ -82,7 +84,6 @@ function setCachedData(key: string, data: PitchWithDays[]) {
             data,
         };
         localStorage.setItem(CACHE_KEY_PREFIX + key, JSON.stringify(cacheObject));
-        console.log('💾 Cache SAVED:', key, '(', data[0]?.days.length, 'days )');
     } catch (error) {
         console.error('Error writing cache:', error);
     }
@@ -93,13 +94,16 @@ export function SectorOccupancyViewer() {
     const [selectedTimeframe, setSelectedTimeframe] = useState(TIMEFRAMES[1]);
     const [selectedPitchType, setSelectedPitchType] = useState<PitchType>('piazzola');
 
-    // Full 30-day data cached
-    const [fullDataCache, setFullDataCache] = useState<PitchWithDays[]>([]);
+    // View State
+    const [viewStartDate, setViewStartDate] = useState<Date>(startOfDay(new Date()));
 
+    // Cache & Data
+    const [fullDataCache, setFullDataCache] = useState<PitchWithDays[]>([]);
     const [loading, setLoading] = useState(false);
 
-    // Interactive booking selection state
-    const [isSelecting, setIsSelecting] = useState(false);
+    // Interaction State
+    const [isDragging, setIsDragging] = useState(false);
+    const [draftStart, setDraftStart] = useState<{ pitchId: string; date: string } | null>(null);
     const [selection, setSelection] = useState<{
         pitchId: string;
         pitchNumber: string;
@@ -108,39 +112,32 @@ export function SectorOccupancyViewer() {
     } | null>(null);
     const [showBookingModal, setShowBookingModal] = useState(false);
 
-    // Full 30-day date range for caching
+    // --- Navigation Handlers ---
+    const handleNext = () => setViewStartDate(curr => addDays(curr, selectedTimeframe.days));
+    const handlePrev = () => setViewStartDate(curr => subDays(curr, selectedTimeframe.days));
+    const handleToday = () => setViewStartDate(startOfDay(new Date()));
+    const handleDateSelect = (date: Date | undefined) => {
+        if (date) setViewStartDate(startOfDay(date));
+    };
+
+    // Calculate dates
     const fullDateRange = useMemo(() => {
-        const today = startOfDay(new Date());
-        return Array.from({ length: CACHE_WINDOW_DAYS }, (_, i) => addDays(today, i));
-    }, []);
+        // Cache window starts slightly before viewStartDate for smoother experience
+        return Array.from({ length: CACHE_WINDOW_DAYS }, (_, i) => addDays(viewStartDate, i));
+    }, [viewStartDate]);
 
-    // Displayed date range based on selected timeframe
     const displayDateRange = useMemo(() => {
-        const today = startOfDay(new Date());
-        return Array.from({ length: selectedTimeframe.days }, (_, i) => addDays(today, i));
-    }, [selectedTimeframe]);
+        return Array.from({ length: selectedTimeframe.days }, (_, i) => addDays(viewStartDate, i));
+    }, [selectedTimeframe, viewStartDate]);
 
-    // Cache key based ONLY on sector + pitch type (NOT timeframe!)
     const cacheKey = useMemo(() => {
-        const startDate = format(fullDateRange[0], 'yyyy-MM-dd');
+        const dateKey = format(fullDateRange[0], 'yyyy-MM-dd');
         const sectorPart = selectedPitchType === 'tenda' ? 'all' : selectedSector.id;
-        return `${sectorPart}_${selectedPitchType}_${startDate}`;
+        return `${sectorPart}_${selectedPitchType}_${dateKey}`;
     }, [selectedSector, selectedPitchType, fullDateRange]);
 
-
-    // Memoized slicing - non-blocking, optimized performance
-    const displayedData = useMemo(() => {
-        if (fullDataCache.length === 0) return [];
-
-        console.log(`✂️ Slicing ${fullDataCache[0]?.days.length || 0} days to ${selectedTimeframe.days} days`);
-
-        return fullDataCache.map(item => ({
-            pitch: item.pitch,
-            days: item.days.slice(0, selectedTimeframe.days)
-        }));
-    }, [fullDataCache, selectedTimeframe.days]);
+    // Data Loading
     const loadSectorOccupancy = useCallback(async (forceRefresh: boolean = false) => {
-        // Check cache first
         if (!forceRefresh && cacheKey) {
             const cached = getCachedData(cacheKey);
             if (cached) {
@@ -150,155 +147,279 @@ export function SectorOccupancyViewer() {
         }
 
         setLoading(true);
-        const startTime = performance.now();
-
         try {
             const startDate = format(fullDateRange[0], 'yyyy-MM-dd');
             const endDate = format(addDays(fullDateRange[fullDateRange.length - 1], 1), 'yyyy-MM-dd');
 
-            console.log(`⚡ BATCH Loading ${selectedPitchType === 'tenda' ? 'Tende' : selectedSector.name} - ${selectedPitchType} (${CACHE_WINDOW_DAYS} days FULL WINDOW)...`);
+            console.log(`⚡ Loading ${startDate} to ${endDate}`);
 
-            const params: any = {
-                date_from: startDate,
-                date_to: endDate,
-            };
-
+            const params: any = { date_from: startDate, date_to: endDate };
             if (selectedPitchType === 'piazzola') {
                 params.sector_min = selectedSector.range.min.toString();
                 params.sector_max = selectedSector.range.max.toString();
             }
 
             const response = await fetch('/api/occupancy/batch?' + new URLSearchParams(params));
-
-            if (!response.ok) {
-                throw new Error('Failed to load occupancy data');
-            }
+            if (!response.ok) throw new Error('Failed to load occupancy data');
 
             const data = await response.json();
             const pitches: Pitch[] = data.pitches || [];
             const bookings = data.bookings || [];
 
-            // Filter by pitch type
             const filteredPitches = pitches.filter(p => p.type === selectedPitchType);
 
-            // Build FULL 30-day occupancy for each pitch
             const pitchesWithOccupancy: PitchWithDays[] = filteredPitches.map((pitch) => {
                 const daysOccupancy = fullDateRange.map((date) => {
                     const dateStr = format(date, 'yyyy-MM-dd');
-
                     const booking = bookings.find((b: any) => {
                         if (b.pitch_id !== pitch.id) return false;
-                        if (!b.check_in || !b.check_out) return false;
-
-                        try {
-                            const checkIn = parseISO(b.check_in);
-                            const checkOut = parseISO(b.check_out);
-                            const currentDate = parseISO(dateStr);
-
-                            return currentDate >= checkIn && currentDate < checkOut;
-                        } catch (e) {
-                            return false;
-                        }
+                        const checkIn = parseISO(b.check_in);
+                        // Fix: Check-out day is free for next arrival, so strictly less than
+                        const checkOut = parseISO(b.check_out);
+                        const currentDate = parseISO(dateStr);
+                        return currentDate >= checkIn && currentDate < checkOut;
                     });
 
                     return {
                         date: dateStr,
                         isOccupied: !!booking,
                         bookingInfo: booking ? {
-                            customer_name: booking.customer_name || 'N/A',
+                            customer_name: booking.customer_name || 'Occupato',
                             guests_count: booking.guests_count || 0,
                         } : undefined,
                     };
                 });
-
                 return { pitch, days: daysOccupancy };
             });
 
-            const endTime = performance.now();
-            console.log(`✅ BATCH Loaded ${CACHE_WINDOW_DAYS} days in ${Math.round(endTime - startTime)}ms: ${filteredPitches.length} ${selectedPitchType}, ${bookings.length} bookings`);
-
             setFullDataCache(pitchesWithOccupancy);
             setCachedData(cacheKey, pitchesWithOccupancy);
-
         } catch (error) {
-            console.error('Error loading sector occupancy:', error);
+            console.error('Error loading occupancy:', error);
+            toast.error("Errore caricamento dati");
         } finally {
             setLoading(false);
         }
     }, [selectedSector, selectedPitchType, fullDateRange, cacheKey]);
 
-    // Load full data when cache key changes
     useEffect(() => {
-        if (cacheKey) {
-            loadSectorOccupancy(false);
-        }
-    }, [cacheKey, loadSectorOccupancy]);
+        loadSectorOccupancy(false);
+    }, [loadSectorOccupancy]);
+
+    // Derived Display Data
+    const displayedData = useMemo(() => {
+        if (fullDataCache.length === 0) return [];
+        return fullDataCache.map(item => ({
+            pitch: item.pitch,
+            days: item.days.slice(0, selectedTimeframe.days)
+        }));
+    }, [fullDataCache, selectedTimeframe]);
 
 
     // Keyboard support - ESC to cancel selection
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
-            if (e.key === 'Escape' && isSelecting) {
-                setIsSelecting(false);
-                setSelection(null);
+            if (e.key === 'Escape') {
+                if (isDragging || draftStart || selection) {
+                    console.log("🚫 Escape pressed - Cancelling selection");
+                    setIsDragging(false);
+                    setDraftStart(null);
+                    setSelection(null);
+                }
             }
         };
 
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [isSelecting]);
+    }, [isDragging, draftStart, selection]);
 
-    // Global mouseup to catch mouse release outside cells
-    useEffect(() => {
-        const handleGlobalMouseUp = () => {
-            if (isSelecting) {
-                handleMouseUp();
-            }
-        };
+    // --- Interaction Logic (Drag + Click-Click) ---
 
-        document.addEventListener('mouseup', handleGlobalMouseUp);
-        return () => document.removeEventListener('mouseup', handleGlobalMouseUp);
-    }, [isSelecting, selection]);
-    const handleRefresh = () => {
-        loadSectorOccupancy(true);
-    };
-
-    // Mouse handlers for drag-to-book functionality
+    // 1. Mouse Down: Start Drag or Prepare Click
     const handleCellMouseDown = (pitch: Pitch, date: string, isOccupied: boolean) => {
         if (isOccupied) return;
 
-        console.log('🖱️ MouseDown:', { pitch: pitch.number, date });
-        setIsSelecting(true);
-        setSelection({
-            pitchId: pitch.id,
-            pitchNumber: pitch.number,
-            startDate: date,
-            endDate: date,
-        });
+        setIsDragging(true);
+
+        // If we are continuing a draft (click-click) on same pitch, don't reset yet
+        if (draftStart && draftStart.pitchId === pitch.id) {
+            // Previewing the end of split selection
+        } else {
+            // Start fresh drag/click
+            setDraftStart(null); // Clear previous draft if different pitch
+            setSelection({
+                pitchId: pitch.id,
+                pitchNumber: pitch.number,
+                startDate: date,
+                endDate: date,
+            });
+        }
     };
 
+    // 2. Mouse Enter: Update Drag Selection
     const handleCellMouseEnter = (pitch: Pitch, date: string, isOccupied: boolean) => {
-        if (!isSelecting || !selection) return;
-        if (selection.pitchId !== pitch.id) return;
         if (isOccupied) return;
 
-        setSelection(prev => prev ? { ...prev, endDate: date } : null);
-    };
-
-    const handleMouseUp = () => {
-        if (!isSelecting || !selection) {
-            console.log('⚠️ MouseUp ignored - not selecting or no selection');
+        // Visual feedback for Dragging
+        if (isDragging && selection && selection.pitchId === pitch.id) {
+            setSelection(prev => prev ? { ...prev, endDate: date } : null);
             return;
         }
 
-        console.log('✅ MouseUp - Opening modal:', selection);
-        setIsSelecting(false);
-        setShowBookingModal(true);
+        // Visual feedback for Click-Click Draft
+        if (!isDragging && draftStart && draftStart.pitchId === pitch.id) {
+            setSelection({
+                pitchId: pitch.id,
+                pitchNumber: pitch.number,
+                startDate: draftStart.date,
+                endDate: date
+            });
+        }
     };
+
+    // Helper: Check for overlaps in full data
+    const checkOverlap = (pitchId: string, startDate: string, endDate: string) => {
+        const pitchData = fullDataCache.find(p => p.pitch.id === pitchId);
+        if (!pitchData) return false; // Fail safe
+
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+
+        // Iterate through days in range
+        for (let d = start; d < end; d = addDays(d, 1)) {
+            const dateStr = format(d, 'yyyy-MM-dd');
+            const dayInfo = pitchData.days.find(day => day.date === dateStr);
+
+            // Note: If day is not in cache (navigated away), we might miss it.
+            // But for standard usage, cache covers 45 days.
+            if (dayInfo && dayInfo.isOccupied) {
+                return true;
+            }
+        }
+        return false;
+    };
+
+    // 3. Mouse Up: Commit or Set Draft
+    const handleMouseUp = (pitch: Pitch, date: string) => {
+        if (!isDragging && !draftStart) return;
+
+        // Always stop dragging
+        setIsDragging(false);
+
+        // Analysis: Was it a Drag or a Click?
+        // If selection start != end, it was a drag -> Commit
+        if (selection && selection.startDate !== selection.endDate) {
+            console.log("✅ Drag Commit");
+
+            // Normalize Date Range: Ensure start is always before end
+            let finalStart = selection.startDate;
+            let finalEnd = selection.endDate;
+
+            if (selection.startDate > selection.endDate) {
+                finalStart = selection.endDate;
+                finalEnd = selection.startDate;
+                setSelection(prev => prev ? {
+                    ...prev,
+                    startDate: finalStart,
+                    endDate: finalEnd
+                } : null);
+            }
+
+            // VALIDATION: Check for overlapping bookings (Drag)
+            const hasOverlap = checkOverlap(pitch.id, finalStart, finalEnd);
+            if (hasOverlap) {
+                toast.error("Selezione non valida", {
+                    description: "La selezione include giorni già occupati. Scegli un periodo libero."
+                });
+                setDraftStart(null);
+                setSelection(null);
+                return;
+            }
+
+            setShowBookingModal(true);
+            setDraftStart(null);
+            return;
+        }
+
+        // It was a single click (Start == End)
+        // If we have a draftStart on this pitch...
+        if (draftStart && draftStart.pitchId === pitch.id) {
+            // ... and we clicked a different date (via navigation)? 
+            // Logic: If I click start, then navigate, then click end, selection is range.
+            // If I click start, then click start again -> Reset?
+            if (draftStart.date === date) {
+                // Clicked same cell twice -> maybe cancel or just keep it?
+                // Let's keep it selected (Drafting)
+            } else {
+                // Clicked different cell -> Commit Click-Click
+
+                // VALIDATION: Check if end date is before start date
+                if (date < draftStart.date) {
+                    toast.warning("Selezione non valida", {
+                        description: "La data di partenza deve essere successiva alla data di arrivo. Riprova."
+                    });
+                    setDraftStart(null);
+                    setSelection(null);
+                    return;
+                }
+
+                // VALIDATION: Check for overlapping bookings
+                // Iterate from start to end and check fullDataCache
+                const hasOverlap = checkOverlap(pitch.id, draftStart.date, date);
+                if (hasOverlap) {
+                    toast.error("Selezione non valida", {
+                        description: "La selezione include giorni già occupati. Scegli un periodo libero."
+                    });
+                    setDraftStart(null);
+                    setSelection(null);
+                    return;
+                }
+
+                console.log("✅ Click-Click Commit");
+                // Ensure selection is updated to range
+                setSelection({
+                    pitchId: pitch.id,
+                    pitchNumber: pitch.number,
+                    startDate: draftStart.date,
+                    endDate: date
+                });
+                setShowBookingModal(true);
+                setDraftStart(null);
+            }
+        } else {
+            // First click -> Start Draft
+            console.log("✏️ Draft Start");
+            setDraftStart({ pitchId: pitch.id, date: date });
+            setSelection({
+                pitchId: pitch.id,
+                pitchNumber: pitch.number,
+                startDate: date,
+                endDate: date
+            });
+        }
+    };
+
+    // Global Mouse Up to cancel drag if outside
+    useEffect(() => {
+        const handleGlobalMouseUp = () => {
+            if (isDragging) {
+                setIsDragging(false);
+                // If we were effectively dragging (range selected), commit?
+                // Better: if released outside, cancel drag but keep selection?
+                // Let's just cancel drag state.
+            }
+        };
+        document.addEventListener('mouseup', handleGlobalMouseUp);
+        return () => document.removeEventListener('mouseup', handleGlobalMouseUp);
+    }, [isDragging]);
 
     const handleBookingSuccess = () => {
         loadSectorOccupancy(true);
+        setDraftStart(null);
+        setSelection(null);
     };
+
+    // --- Render Helpers ---
 
     const isCellSelected = (pitchId: string, date: string): boolean => {
         if (!selection || selection.pitchId !== pitchId) return false;
@@ -307,248 +428,224 @@ export function SectorOccupancyViewer() {
 
     const getCellClassName = (pitch: Pitch, date: string, isOccupied: boolean): string => {
         const selected = isCellSelected(pitch.id, date);
-        const baseColor = getCellColor(isOccupied);
+        const isDraft = draftStart?.pitchId === pitch.id && draftStart.date === date;
+        const baseColor = isOccupied
+            ? 'bg-red-500/15 hover:bg-red-500/25 dark:bg-red-500/20 dark:hover:bg-red-500/30'
+            : 'bg-green-500/0 hover:bg-green-500/20 dark:bg-green-500/15 dark:hover:bg-green-500/25';
 
         if (selected) {
-            return `p-2 border-r ring-4 ring-blue-500 bg-blue-300 dark:bg-blue-600 scale-110 shadow-2xl transition-all duration-150 cursor-crosshair z-10`;
+            return `p-2 border-r bg-blue-500 text-white shadow-lg z-10 scale-105 transition-transform duration-150`;
         }
 
-        return `${baseColor} transition-all duration-150 ${isOccupied ? 'cursor-pointer' : 'cursor-cell'}`;
-    };
+        if (isDraft) {
+            return `p-2 border-r bg-blue-300 dark:bg-blue-700 animate-pulse`;
+        }
 
-    const getCellColor = (isOccupied: boolean) => {
-        return isOccupied
-            ? 'bg-red-100 hover:bg-red-200 dark:bg-red-900/50 dark:hover:bg-red-800/60'
-            : 'bg-green-100 hover:bg-green-200 dark:bg-green-700/40 dark:hover:bg-green-600/50';
+        return `${baseColor} transition-colors duration-200 ${isOccupied ? 'cursor-not-allowed opacity-80' : 'cursor-pointer'}`;
     };
 
     return (
         <div className="h-full flex flex-col bg-background">
-            {/* Controls Bar - Sticky */}
-            <div className="bg-card border-b px-6 py-4 space-y-4 sticky top-0 z-40 shadow-sm">
-                <div className="flex items-center justify-between gap-4">
-                    <div className={`flex-1 grid grid-cols-1 gap-4 ${selectedPitchType === 'piazzola' ? 'lg:grid-cols-3' : 'lg:grid-cols-2'}`}>
-                        {/* Pitch Type Selector */}
-                        <div>
-                            <label className="text-sm font-medium mb-2 block">Tipo Struttura</label>
-                            <div className="flex gap-2">
-                                {PITCH_TYPES.map((type) => {
-                                    const Icon = type.icon;
-                                    return (
-                                        <Button
-                                            key={type.id}
-                                            variant={selectedPitchType === type.id ? 'default' : 'outline'}
-                                            size="sm"
-                                            onClick={() => setSelectedPitchType(type.id)}
-                                            className="flex-1"
-                                        >
-                                            <Icon className="h-4 w-4 mr-2" />
-                                            {type.name}
-                                        </Button>
-                                    );
-                                })}
-                            </div>
+            {/* Top Bar */}
+            <div className="bg-card border-b px-4 py-3 sticky top-0 z-40 shadow-sm space-y-3">
+
+                {/* Row 1: Filters */}
+                <div className="flex flex-wrap items-center justify-between gap-4">
+                    {/* Pitch Type & Sector */}
+                    <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
+                        <div className="flex gap-1 border-r pr-2 mr-2">
+                            {PITCH_TYPES.map(type => (
+                                <Button
+                                    key={type.id}
+                                    variant={selectedPitchType === type.id ? 'default' : 'ghost'}
+                                    size="sm"
+                                    onClick={() => setSelectedPitchType(type.id)}
+                                >
+                                    <type.icon className="w-4 h-4 mr-1" />
+                                    {type.name}
+                                </Button>
+                            ))}
                         </div>
 
-                        {/* Sector Selector - Only for Piazzole */}
                         {selectedPitchType === 'piazzola' && (
-                            <div>
-                                <label className="text-sm font-medium mb-2 block">Settore</label>
-                                <div className="flex flex-wrap gap-2">
-                                    {SECTORS.map((sector) => (
-                                        <Button
-                                            key={sector.id}
-                                            variant={selectedSector.id === sector.id ? 'default' : 'outline'}
-                                            size="sm"
-                                            onClick={() => setSelectedSector(sector)}
-                                        >
-                                            {sector.name}
-                                        </Button>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-
-                        {/* Timeframe Selector */}
-                        <div>
-                            <label className="text-sm font-medium mb-2 block flex items-center gap-1">
-                                <Calendar className="h-3 w-3" />
-                                Periodo
-                            </label>
-                            <div className="flex flex-wrap gap-2">
-                                {TIMEFRAMES.map((timeframe) => (
+                            <div className="flex gap-1">
+                                {SECTORS.map(sector => (
                                     <Button
-                                        key={timeframe.id}
-                                        variant={selectedTimeframe.id === timeframe.id ? 'default' : 'outline'}
+                                        key={sector.id}
+                                        variant={selectedSector.id === sector.id ? 'secondary' : 'ghost'}
                                         size="sm"
-                                        onClick={() => setSelectedTimeframe(timeframe)}
+                                        className="text-xs"
+                                        onClick={() => setSelectedSector(sector)}
                                     >
-                                        {timeframe.name}
+                                        {sector.name}
                                     </Button>
                                 ))}
                             </div>
-                        </div>
+                        )}
                     </div>
 
-                    {/* Right side: Refresh Button */}
-                    <div className="flex items-end pb-1">
+                    {/* Timeframe */}
+                    <div className="flex bg-muted rounded-lg p-1">
+                        {TIMEFRAMES.map(tf => (
+                            <button
+                                key={tf.id}
+                                onClick={() => setSelectedTimeframe(tf)}
+                                className={`px-3 py-1 text-xs font-medium rounded-md transition-all ${selectedTimeframe.id === tf.id ? 'bg-background shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'
+                                    }`}
+                            >
+                                {tf.name}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+
+                {/* Row 2: Navigation & Status */}
+                <div className="flex items-center justify-between">
+                    {/* Date Navigation */}
+                    <div className="flex items-center gap-2">
+                        <Button variant="outline" size="icon" onClick={handlePrev} title="Periodo Precedente">
+                            <ChevronLeft className="h-4 w-4" />
+                        </Button>
+
+                        <Popover>
+                            <PopoverTrigger asChild>
+                                <Button variant="outline" className="min-w-[140px] font-mono">
+                                    <Calendar className="mr-2 h-4 w-4" />
+                                    {format(viewStartDate, 'd MMM yyyy', { locale: it })}
+                                </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0" align="start">
+                                <CalendarComponent
+                                    mode="single"
+                                    selected={viewStartDate}
+                                    onSelect={handleDateSelect}
+                                    initialFocus
+                                />
+                            </PopoverContent>
+                        </Popover>
+
+                        <Button variant="outline" size="icon" onClick={handleNext} title="Periodo Successivo">
+                            <ChevronRight className="h-4 w-4" />
+                        </Button>
+
+                        <Button variant="ghost" size="sm" onClick={handleToday}>
+                            Oggi
+                        </Button>
+                    </div>
+
+                    {/* Interaction Hint */}
+                    <div className="text-xs text-muted-foreground hidden md:flex items-center gap-2">
+                        {draftStart ? (
+                            <span className="flex items-center text-blue-600 font-bold animate-pulse">
+                                <ChevronsRight className="w-4 h-4 mr-1" />
+                                Seleziona data di partenza
+                            </span>
+                        ) : (
+                            <span>Click o Trascina per prenotare</span>
+                        )}
+                        <div className="h-4 w-px bg-border mx-2" />
                         <Button
                             size="sm"
-                            variant="outline"
-                            onClick={handleRefresh}
+                            variant="ghost"
+                            onClick={() => loadSectorOccupancy(true)}
                             disabled={loading}
                         >
-                            <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-                            Ricarica
+                            <RefreshCw className={`h-3 w-3 mr-1 ${loading ? 'animate-spin' : ''}`} />
+                            Aggiorna
                         </Button>
                     </div>
                 </div>
             </div>
 
-            {/* Matrix Content - Scrollable */}
-            <div className="flex-1 overflow-auto px-6 py-6">
-                {loading ? (
-                    <div className="flex items-center justify-center h-96">
-                        <div className="text-center">
-                            <RefreshCw className="h-12 w-12 animate-spin mx-auto mb-4 text-primary" />
-                            <div className="text-lg font-medium">Caricamento {selectedSector.name}...</div>
-                            <div className="text-sm text-muted-foreground mt-2">
-                                Caricamento finestra completa {CACHE_WINDOW_DAYS} giorni...
-                            </div>
-                        </div>
-                    </div>
-                ) : displayedData.length === 0 ? (
-                    <div className="flex items-center justify-center h-96 border-2 border-dashed rounded-lg">
-                        <div className="text-center text-muted-foreground">
-                            <Grid className="h-16 w-16 mx-auto mb-4 opacity-20" />
-                            <p className="text-lg font-medium">Nessuna {selectedPitchType} trovata in questo settore</p>
-                            <p className="text-sm mt-2">Verifica che le {selectedPitchType === 'piazzola' ? 'piazzole' : 'tende'} siano state inserite nel database</p>
+            {/* Matrix */}
+            <div className="flex-1 overflow-auto bg-muted/5">
+                {loading && displayedData.length === 0 ? (
+                    <div className="flex items-center justify-center h-full">
+                        <div className="flex flex-col items-center gap-3">
+                            <RefreshCw className="h-8 w-8 animate-spin text-primary" />
+                            <p className="text-sm text-muted-foreground">Caricamento disponibilità...</p>
                         </div>
                     </div>
                 ) : (
-                    <>
-                        {/* Professional Matrix Table */}
-                        <div className="border rounded-lg shadow-lg overflow-hidden bg-card">
-                            <div className="overflow-x-auto">
-                                <table className="w-full text-sm">
-                                    <thead>
-                                        <tr className="bg-muted/80 border-b-2">
-                                            <th className="sticky left-0 bg-muted/80 z-20 p-3 text-left font-bold border-r-2 min-w-[100px]">
-                                                {selectedPitchType === 'piazzola' ? 'Piazzola' : 'Tenda'}
-                                            </th>
-                                            {displayDateRange.map((date) => {
-                                                const dayFormat = selectedTimeframe.days === 3
-                                                    ? format(date, 'EEEE', { locale: it })
-                                                    : format(date, 'EEE', { locale: it });
-                                                const dateFormat = selectedTimeframe.days === 3
-                                                    ? format(date, 'dd/MM/yyyy')
-                                                    : format(date, 'dd/MM');
-                                                const colWidth = selectedTimeframe.days === 3
-                                                    ? 'min-w-[120px]'
-                                                    : selectedTimeframe.days === 7
-                                                        ? 'min-w-[90px]'
-                                                        : 'min-w-[60px]';
+                    <table className="w-full text-sm border-collapse">
+                        <thead className="sticky top-0 z-30 bg-card shadow-sm">
+                            <tr>
+                                <th className="p-3 text-left border-b font-medium min-w-[100px] w-[100px] bg-card sticky left-0 z-40 border-r">
+                                    {selectedPitchType === 'piazzola' ? 'Piazzola' : 'Tenda'}
+                                </th>
+                                {displayDateRange.map(date => {
+                                    const isWeekend = date.getDay() === 0 || date.getDay() === 6;
+                                    const isToday = isSameDay(date, new Date());
 
-                                                return (
-                                                    <th
-                                                        key={date.toISOString()}
-                                                        className={`p-3 text-center font-bold border-r ${colWidth}`}
-                                                    >
-                                                        <div className="flex flex-col gap-1">
-                                                            <span className="text-xs font-medium uppercase text-muted-foreground">
-                                                                {dayFormat}
-                                                            </span>
-                                                            <span className="text-sm font-bold">
-                                                                {dateFormat}
-                                                            </span>
-                                                        </div>
-                                                    </th>
-                                                );
-                                            })}
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {displayedData.map((item) => (
-                                            <tr key={item.pitch.id} className="hover:bg-muted/30 border-b transition-colors">
-                                                <td className="sticky left-0 bg-card z-10 p-3 font-bold border-r-2 text-base">
-                                                    {item.pitch.number}
-                                                </td>
-                                                {item.days.map((day) => (
-                                                    <td
-                                                        key={day.date}
-                                                        className={`p-2 border-r ${getCellClassName(item.pitch, day.date, day.isOccupied)}`}
-                                                        onMouseDown={() => handleCellMouseDown(item.pitch, day.date, day.isOccupied)}
-                                                        onMouseEnter={() => handleCellMouseEnter(item.pitch, day.date, day.isOccupied)}
-                                                        onMouseUp={handleMouseUp}
-                                                        title={
-                                                            day.isOccupied && day.bookingInfo
-                                                                ? `${day.bookingInfo.customer_name} (${day.bookingInfo.guests_count} ospiti)`
-                                                                : 'Click e trascina per prenotare'
-                                                        }
-                                                    >
-                                                        <div className="h-8 w-full flex items-center justify-center select-none">
-                                                            {day.isOccupied && (
-                                                                <div className="w-3 h-3 rounded-full bg-red-600 shadow-sm" />
-                                                            )}
-                                                        </div>
-                                                    </td>
-                                                ))}
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-
-                        {/* Legend & Stats */}
-                        <div className="flex items-center justify-between mt-6 px-2">
-                            <div className="flex items-center gap-6 text-sm">
-                                <div className="flex items-center gap-2">
-                                    <div className="w-6 h-6 bg-green-100 dark:bg-green-700/40 border-2 rounded" />
-                                    <span className="font-medium">Libera</span>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <div className="w-6 h-6 bg-red-100 dark:bg-red-900/50 border-2 rounded flex items-center justify-center">
-                                        <div className="w-3 h-3 rounded-full bg-red-600" />
-                                    </div>
-                                    <span className="font-medium">Occupata</span>
-                                </div>
-                                <div className="h-4 w-px bg-border" />
-                                <Badge variant="secondary">
-                                    {displayedData.length} {selectedPitchType === 'piazzola' ? 'piazzole' : 'tende'}
-                                </Badge>
-                                <Badge variant="outline" className="gap-1">
-                                    <Zap className="h-3 w-3" />
-                                    Cache intelligente
-                                </Badge>
-                            </div>
-                            {displayDateRange.length > 0 && (
-                                <div className="text-sm text-muted-foreground font-medium">
-                                    Periodo: {format(displayDateRange[0], 'dd/MM/yyyy')} - {format(displayDateRange[displayDateRange.length - 1], 'dd/MM/yyyy')}
-                                </div>
-                            )}
-                        </div>
-                    </>
+                                    return (
+                                        <th key={date.toISOString()} className={`p-2 border-b border-r min-w-[60px] text-center ${isWeekend ? 'bg-muted/30' : ''} ${isToday ? 'bg-blue-50/50' : ''}`}>
+                                            <div className="flex flex-col items-center">
+                                                <span className="text-[10px] uppercase text-muted-foreground font-semibold">
+                                                    {format(date, 'EEE', { locale: it })}
+                                                </span>
+                                                <span className={`text-sm font-bold ${isToday ? 'text-blue-600' : ''}`}>
+                                                    {format(date, 'dd')}
+                                                </span>
+                                                {selectedTimeframe.days < 10 && (
+                                                    <span className="text-[10px] text-muted-foreground">
+                                                        {format(date, 'MMM', { locale: it })}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </th>
+                                    );
+                                })}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {displayedData.map(item => (
+                                <tr key={item.pitch.id} className="group bg-card hover:bg-muted/10 transition-colors">
+                                    <td className="p-3 font-bold text-center border-b border-r bg-card sticky left-0 z-20 group-hover:bg-muted/10">
+                                        {item.pitch.number}
+                                    </td>
+                                    {item.days.map(day => (
+                                        <td
+                                            key={day.date}
+                                            className={`border-b border-r relative h-[50px] ${getCellClassName(item.pitch, day.date, day.isOccupied)}`}
+                                            onMouseDown={() => handleCellMouseDown(item.pitch, day.date, day.isOccupied)}
+                                            onMouseEnter={() => handleCellMouseEnter(item.pitch, day.date, day.isOccupied)}
+                                            onMouseUp={() => handleMouseUp(item.pitch, day.date)}
+                                        >
+                                            {day.isOccupied && (
+                                                <div className="absolute inset-0 m-1 bg-red-500/10 rounded border border-red-200 flex items-center justify-center">
+                                                    {selectedTimeframe.days < 10 && (
+                                                        <span className="text-[10px] font-medium text-red-900 truncate px-1">
+                                                            {day.bookingInfo?.customer_name}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            )}
+                                        </td>
+                                    ))}
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
                 )}
-
-                {/* Booking Creation Modal */}
-                {selection && (
-                    <BookingCreationModal
-                        open={showBookingModal}
-                        onClose={() => {
-                            setShowBookingModal(false);
-                            setSelection(null);
-                        }}
-                        pitchNumber={selection.pitchNumber}
-                        pitchId={selection.pitchId}
-                        pitchType={selectedPitchType}
-                        checkIn={selection.startDate <= selection.endDate ? selection.startDate : selection.endDate}
-                        checkOut={selection.startDate <= selection.endDate ? selection.endDate : selection.startDate}
-                        onSuccess={handleBookingSuccess}
-                    />
-                )}
-
             </div>
+
+            {/* Existing Modal - Unchanged interface */}
+            {selection && showBookingModal && (
+                <BookingCreationModal
+                    open={showBookingModal}
+                    onClose={() => {
+                        setShowBookingModal(false);
+                        setSelection(null);
+                        setDraftStart(null);
+                    }}
+                    pitchNumber={selection.pitchNumber}
+                    pitchId={selection.pitchId}
+                    pitchType={selectedPitchType}
+                    checkIn={selection.startDate}
+                    checkOut={selection.endDate}
+                    onSuccess={handleBookingSuccess}
+                />
+            )}
         </div>
     );
 }

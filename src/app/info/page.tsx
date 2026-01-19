@@ -119,7 +119,6 @@ export default function InfoPage() {
                         <h3 className="font-semibold text-yellow-800 dark:text-yellow-200 mb-2">Note per lo Staff</h3>
                         <p className="text-sm text-yellow-700 dark:text-yellow-300">
                             • Ricordare di chiedere i documenti a TUTTI gli ospiti al check-in.<br />
-                            • Il cancello chiude automaticamente alle 23:00.<br />
                             • Codice Wi-Fi attuale: <strong>CAMP2026!</strong>
                         </p>
                     </div>
