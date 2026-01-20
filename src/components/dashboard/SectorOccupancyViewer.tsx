@@ -461,7 +461,7 @@ export function SectorOccupancyViewer() {
     return (
         <div className="h-full flex flex-col bg-background">
             {/* Top Bar */}
-            <div className="bg-card border-b px-4 py-3 sticky top-0 z-40 shadow-sm space-y-3">
+            <div className="bg-card border-b px-4 py-3 shadow-sm space-y-3">
 
                 {/* Row 1: Filters */}
                 <div className="flex flex-wrap items-center justify-between gap-4">
@@ -582,9 +582,9 @@ export function SectorOccupancyViewer() {
                     </div>
                 ) : (
                     <table className="w-full text-sm border-collapse">
-                        <thead className="sticky top-0 z-30 bg-card shadow-sm">
+                        <thead className="shadow-sm">
                             <tr>
-                                <th className="p-3 text-left border-b font-medium min-w-[100px] w-[100px] bg-card sticky left-0 z-40 border-r">
+                                <th className="p-3 text-left border-b font-medium min-w-[100px] w-[100px] bg-card sticky top-0 left-0 z-50 border-r shadow-[0_1px_2px_rgba(0,0,0,0.1)]">
                                     {selectedPitchType === 'piazzola' ? 'Piazzola' : 'Tenda'}
                                 </th>
                                 {displayDateRange.map(date => {
@@ -592,8 +592,8 @@ export function SectorOccupancyViewer() {
                                     const isToday = isSameDay(date, new Date());
 
                                     return (
-                                        <th key={date.toISOString()} className={`p-2 border-b border-r min-w-[60px] text-center ${isWeekend ? 'bg-muted/30' : ''} ${isToday ? 'bg-blue-50/50' : ''}`}>
-                                            <div className="flex flex-col items-center">
+                                        <th key={date.toISOString()} className="p-0 border-b border-r min-w-[60px] text-center sticky top-0 z-30 bg-card">
+                                            <div className={`p-2 flex flex-col items-center justify-center h-full w-full ${isWeekend ? 'bg-muted/30' : ''} ${isToday ? 'bg-blue-50/50' : ''}`}>
                                                 <span className="text-[10px] uppercase text-muted-foreground font-semibold">
                                                     {format(date, 'EEE', { locale: it })}
                                                 </span>
