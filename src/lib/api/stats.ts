@@ -1,6 +1,6 @@
 import { supabase } from '@/lib/supabase/client';
 import { Booking, BookingWithDetails, Customer } from '@/lib/types';
-import { eachDayOfInterval, format, isWithinInterval, parseISO, subDays, differenceInCalendarDays } from 'date-fns';
+import { eachDayOfInterval, format, isWithinInterval, parseISO, subDays, differenceInCalendarDays, startOfDay, endOfDay, addDays } from 'date-fns';
 
 export interface StatsData {
     kpi: {
@@ -77,16 +77,22 @@ export async function fetchStats(startDate: Date, endDate: Date): Promise<StatsD
     // Helper: Calculate Revenue and Occupancy for a range using daily accrual
     const calculateStatsForRange = (
         rangeBookings: BookingWithDetails[],
-        rangeStart: Date,
-        rangeEnd: Date
+        inputStart: Date,
+        inputEnd: Date
     ) => {
         let revenue = 0;
         let occupiedDays = 0;
+
+        // Normalize range to ensure we cover full days cleanly
+        // This prevents potential issues with times like 23:59:59 causing skipped days in intervals
+        const rangeStart = startOfDay(inputStart);
+        const rangeEnd = endOfDay(inputEnd);
+
         // Updated map to track specific occupancy types
         const daysMap = new Map<string, { revenue: number; occupiedPiazzola: number; occupiedTenda: number }>();
         const days = eachDayOfInterval({ start: rangeStart, end: rangeEnd });
 
-        // Init map
+        // Init map with all days in range
         days.forEach(day => {
             daysMap.set(format(day, 'yyyy-MM-dd'), { revenue: 0, occupiedPiazzola: 0, occupiedTenda: 0 });
         });
@@ -97,11 +103,14 @@ export async function fetchStats(startDate: Date, endDate: Date): Promise<StatsD
             const dailyRevenue = booking.total_price / Math.max(1, nights);
             const pitchType = booking.pitch?.type; // 'piazzola' | 'tenda'
 
+            // Normalize booking dates for comparison loop
+            // We need to iterate from booking start
+            let current = startOfDay(bStart);
+            const limit = startOfDay(bEnd);
+
             // Iterate days of booking
-            let current = bStart;
-            while (current < bEnd) {
-                // strict check: current day must be < bEnd (last day is checkout, usually not counting as occupied night)
-                // AND current day must be within our range
+            while (current < limit) {
+                // Check if current day is within our stats range
                 if (current >= rangeStart && current <= rangeEnd) {
                     const dayStr = format(current, 'yyyy-MM-dd');
                     if (daysMap.has(dayStr)) {
@@ -118,7 +127,7 @@ export async function fetchStats(startDate: Date, endDate: Date): Promise<StatsD
                         daysMap.set(dayStr, entry);
                     }
                 }
-                current = new Date(current.setDate(current.getDate() + 1));
+                current = addDays(current, 1);
             }
         });
 

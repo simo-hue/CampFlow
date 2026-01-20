@@ -36,6 +36,7 @@ export function OccupancyChart({ data, title = "Occupazione Giornaliera", action
                                 fontSize={12}
                                 tickLine={false}
                                 axisLine={false}
+                                minTickGap={30}
                                 tickFormatter={(str) => {
                                     const date = parseISO(str);
                                     return format(date, "d MMM");
@@ -49,11 +50,22 @@ export function OccupancyChart({ data, title = "Occupazione Giornaliera", action
                             />
                             <Tooltip
                                 contentStyle={{
-                                    backgroundColor: 'var(--color-card)',
-                                    color: 'var(--color-card-foreground)',
-                                    borderRadius: '8px',
-                                    border: '1px solid var(--color-border)',
-                                    boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
+                                    backgroundColor: 'hsl(var(--card))',
+                                    color: 'hsl(var(--foreground))',
+                                    borderRadius: '0.5rem',
+                                    border: '1px solid hsl(var(--border))',
+                                    boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
+                                    padding: '8px 12px',
+                                }}
+                                labelStyle={{
+                                    color: 'hsl(var(--muted-foreground))',
+                                    marginBottom: '0.25rem',
+                                    fontSize: '0.875rem',
+                                }}
+                                itemStyle={{
+                                    paddingTop: '0.25rem',
+                                    fontSize: '0.875rem',
+                                    fontWeight: 500
                                 }}
                                 labelFormatter={(label) => format(parseISO(label), "d MMMM yyyy")}
                             />

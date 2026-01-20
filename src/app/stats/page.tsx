@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { fetchStats } from "@/lib/api/stats";
 import { KPICard } from "@/components/stats/KPICard";
 import { RevenueChart } from "@/components/stats/RevenueChart";
@@ -23,9 +23,7 @@ import { subDays, startOfYear, endOfDay } from "date-fns";
 type TimeRange = "7d" | "30d" | "90d" | "year";
 
 export default function StatsPage() {
-    const [globalRange, setGlobalRange] = useState<TimeRange>("30d");
-    const [revenueRange, setRevenueRange] = useState<TimeRange>("30d");
-    const [occupancyRange, setOccupancyRange] = useState<TimeRange>("30d");
+    const [range, setRange] = useState<TimeRange>("30d");
 
     const getDateRange = (r: TimeRange) => {
         const end = endOfDay(new Date());
@@ -48,45 +46,24 @@ export default function StatsPage() {
         return { start, end };
     };
 
-    // 1. Global KPIs Query
-    const { start: globalStart, end: globalEnd } = getDateRange(globalRange);
-    const { data: globalStats, isLoading: globalLoading } = useQuery({
-        queryKey: ["stats", "global", globalRange],
-        queryFn: () => fetchStats(globalStart, globalEnd),
-    });
+    const { start, end } = getDateRange(range);
 
-    // 2. Revenue Chart Query
-    const { start: revenueStart, end: revenueEnd } = getDateRange(revenueRange);
-    const { data: revenueStats, isLoading: revenueLoading } = useQuery({
-        queryKey: ["stats", "revenue", revenueRange],
-        queryFn: () => fetchStats(revenueStart, revenueEnd),
+    const {
+        data: stats,
+        isLoading,
+        isFetching
+    } = useQuery({
+        queryKey: ["stats", range],
+        queryFn: () => fetchStats(start, end),
+        placeholderData: keepPreviousData,
     });
-
-    // 3. Occupancy Chart Query
-    const { start: occupancyStart, end: occupancyEnd } = getDateRange(occupancyRange);
-    const { data: occupancyStats, isLoading: occupancyLoading } = useQuery({
-        queryKey: ["stats", "occupancy", occupancyRange],
-        queryFn: () => fetchStats(occupancyStart, occupancyEnd),
-    });
-
-    // Helper for Chart Actions
-    const renderTimeRangeSelector = (value: TimeRange, onChange: (v: TimeRange) => void) => (
-        <Tabs value={value} onValueChange={(v) => onChange(v as TimeRange)}>
-            <TabsList className="h-8">
-                <TabsTrigger value="7d" className="text-xs h-6 px-2">7gg</TabsTrigger>
-                <TabsTrigger value="30d" className="text-xs h-6 px-2">30gg</TabsTrigger>
-                <TabsTrigger value="90d" className="text-xs h-6 px-2">3m</TabsTrigger>
-                <TabsTrigger value="year" className="text-xs h-6 px-2">Anno</TabsTrigger>
-            </TabsList>
-        </Tabs>
-    );
 
     return (
         <div className="flex-1 space-y-4 p-8 pt-6">
             <div className="flex items-center justify-between space-y-2">
                 <h2 className="text-3xl font-bold tracking-tight">Dashboard Statistiche</h2>
                 <div className="flex items-center space-x-2">
-                    <Tabs value={globalRange} onValueChange={(v) => setGlobalRange(v as TimeRange)} className="space-y-4">
+                    <Tabs value={range} onValueChange={(v) => setRange(v as TimeRange)} className="space-y-4">
                         <TabsList>
                             <TabsTrigger value="7d">7 Giorni</TabsTrigger>
                             <TabsTrigger value="30d">30 Giorni</TabsTrigger>
@@ -97,70 +74,56 @@ export default function StatsPage() {
                 </div>
             </div>
 
-            <div className="space-y-4">
-                {/* KPIs Section */}
-                {globalLoading ? (
-                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 h-32">
-                        <div className="col-span-4 flex items-center justify-center">
-                            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-                        </div>
+            <div className="space-y-4 relative">
+                {/* Global Loading Overlay for Refresh */}
+                {isFetching && !isLoading && (
+                    <div className="absolute inset-0 bg-background/50 z-20 flex items-start justify-center pt-32 rounded-lg">
+                        <Loader2 className="h-8 w-8 animate-spin text-primary" />
                     </div>
-                ) : globalStats ? (
-                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                        <KPICard
-                            title="Ricavi Totali"
-                            value={`€${globalStats.kpi.revenue.toLocaleString()}`}
-                            icon={Euro}
-                            description="Nel periodo selezionato"
-                        />
-                        <KPICard
-                            title="Occupazione"
-                            value={`${globalStats.kpi.occupancyRate}%`}
-                            icon={CalendarDays}
-                            description="Tasso occupazione medio"
-                        />
-                        <KPICard
-                            title="Prenotazioni"
-                            value={globalStats.kpi.totalBookings}
-                            icon={Users}
-                            description="Totale prenotazioni"
-                        />
-                        <KPICard
-                            title="Soggiorno Medio"
-                            value={`${globalStats.kpi.averageStay} notti`}
-                            icon={Clock}
-                            description="Durata media"
-                        />
+                )}
+
+                {isLoading ? (
+                    <div className="flex h-[400px] items-center justify-center">
+                        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                    </div>
+                ) : stats ? (
+                    <div className={`space-y-4 transition-opacity duration-300 ${isFetching ? 'opacity-50' : 'opacity-100'}`}>
+                        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                            <KPICard
+                                title="Ricavi Totali"
+                                value={`€${stats.kpi.revenue.toLocaleString()}`}
+                                icon={Euro}
+                                description="Nel periodo selezionato"
+                            />
+                            <KPICard
+                                title="Occupazione"
+                                value={`${stats.kpi.occupancyRate}%`}
+                                icon={CalendarDays}
+                                description="Tasso occupazione medio"
+                            />
+                            <KPICard
+                                title="Prenotazioni"
+                                value={stats.kpi.totalBookings}
+                                icon={Users}
+                                description="Totale prenotazioni"
+                            />
+                            <KPICard
+                                title="Soggiorno Medio"
+                                value={`${stats.kpi.averageStay} notti`}
+                                icon={Clock}
+                                description="Durata media"
+                            />
+                        </div>
+
+                        <div className="grid gap-4 md:grid-cols-1">
+                            <RevenueChart data={stats.charts.revenueByDate} />
+                        </div>
+
+                        <div className="grid gap-4 md:grid-cols-1">
+                            <OccupancyChart data={stats.charts.occupancyByDate} />
+                        </div>
                     </div>
                 ) : null}
-
-                {/* Revenue Chart */}
-                <div className="grid gap-4 md:grid-cols-1">
-                    {revenueLoading ? (
-                        <div className="h-[300px] flex items-center justify-center border rounded-lg">
-                            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-                        </div>
-                    ) : revenueStats ? (
-                        <RevenueChart
-                            data={revenueStats.charts.revenueByDate}
-                            action={renderTimeRangeSelector(revenueRange, setRevenueRange)}
-                        />
-                    ) : null}
-                </div>
-
-                {/* Occupancy Chart */}
-                <div className="grid gap-4 md:grid-cols-1">
-                    {occupancyLoading ? (
-                        <div className="h-[300px] flex items-center justify-center border rounded-lg">
-                            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-                        </div>
-                    ) : occupancyStats ? (
-                        <OccupancyChart
-                            data={occupancyStats.charts.occupancyByDate}
-                            action={renderTimeRangeSelector(occupancyRange, setOccupancyRange)}
-                        />
-                    ) : null}
-                </div>
             </div>
         </div>
     );
