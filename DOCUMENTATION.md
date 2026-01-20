@@ -55,3 +55,28 @@ The dashboard statistics (Arrivals, Departures, Occupancy) are calculated using 
 - **Revenue**: Calculated on an **Accrual Basis** (daily competence). Each booking's total price is divided by its duration, and the daily value is summed for each day within the selected range.
 - **Trend**: Compares the total revenue of the current selected period (e.g., last 30 days) with the **previous equivalent period** (e.g., the 30 days prior).
   - Formula: `((CurrentRevenue - PreviousRevenue) / PreviousRevenue) * 100`
+
+# System Reset (Danger Zone)
+
+## Overview
+A "System Reset" feature is available in the Developer Dashboard (`/sys-monitor`).
+This feature performs a "Factory Reset" of the application database.
+
+
+## Functionality
+When triggered (after confirmation), the following actions are performed:
+
+### 1. Clear Bookings
+- **Action**: Deletes all entries from the `bookings` table.
+- **Cascade**: Automatically removes associated guests.
+- **Preserves**: Pitches, Seasons, and Customers (unless strictly linked).
+- **Confirmation**: Requires typing "CLEAR".
+
+### 2. System Reset (Factory Reset)
+- **Action**: Wipes `bookings`, `customers`, `app_logs`, `pitches`, `pricing_seasons`.
+- **Restoration**: Re-inserts default pitches and seasons.
+- **Confirmation**: Requires typing "RESET".
+
+## Security
+- Protected by Admin Authentication (same as the dashboard).
+- Requires an explicit text confirmation ("RESET") in the UI to prevent accidental clicks.
