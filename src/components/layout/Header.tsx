@@ -22,6 +22,11 @@ const NAV_ITEMS = [
 export function Header() {
     const pathname = usePathname();
 
+    // Hide App Header on Website Routes
+    if (pathname?.startsWith('/w')) {
+        return null;
+    }
+
     return (
         <header className="sticky top-0 z-50 w-full border-b bg-background/80 backdrop-blur-md supports-[backdrop-filter]:bg-background/60">
             <div className="w-full px-4 h-16 flex items-center justify-between">
