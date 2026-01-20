@@ -28,6 +28,7 @@ export function AvailabilityModule() {
     const [checkInDate, setCheckInDate] = useState<Date>();
     const [checkOutDate, setCheckOutDate] = useState<Date>();
     const [pitchType, setPitchType] = useState<string>('all');
+    const [searchNumber, setSearchNumber] = useState<string>('');
 
     const [checkInOpen, setCheckInOpen] = useState(false);
     const [checkOutOpen, setCheckOutOpen] = useState(false);
@@ -57,8 +58,9 @@ export function AvailabilityModule() {
     const tendaCount = results?.pitches.filter(p => p.type === 'tenda').length || 0;
 
     const filteredPitches = results?.pitches.filter(p => {
-        if (pitchType === 'all') return true;
-        return p.type === pitchType;
+        const matchesType = pitchType === 'all' || p.type === pitchType;
+        const matchesNumber = searchNumber === '' || p.number.toLowerCase().includes(searchNumber.toLowerCase());
+        return matchesType && matchesNumber;
     }) || [];
 
     const handleBookingClick = (pitch: Pitch) => {
@@ -82,7 +84,7 @@ export function AvailabilityModule() {
             </CardHeader>
             <CardContent>
                 {/* Search Form */}
-                <div className="grid gap-4 md:grid-cols-3 mb-6">
+                <div className="grid gap-4 md:grid-cols-[1.5fr_1.5fr_1fr_1.5fr] mb-6">
                     {/* Check-in Date Picker */}
                     <div className="space-y-2">
                         <label className="text-sm font-medium">Data Arrivo</label>
@@ -159,6 +161,17 @@ export function AvailabilityModule() {
                             <option value="piazzola">Piazzola</option>
                             <option value="tenda">Tenda</option>
                         </select>
+                    </div>
+
+                    <div className="space-y-2">
+                        <label className="text-sm font-medium">Numero</label>
+                        <input
+                            type="text"
+                            placeholder="Es. 12"
+                            value={searchNumber}
+                            onChange={(e) => setSearchNumber(e.target.value)}
+                            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                        />
                     </div>
                 </div>
 
