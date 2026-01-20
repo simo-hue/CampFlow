@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Search, Loader2, Check, UserCheck, AlertCircle, Calendar, Users, FileText, Info, ChevronRight, Mail, Phone } from 'lucide-react';
+import { Search, Loader2, Check, UserCheck, AlertCircle, Calendar, Users, FileText, Info, ChevronRight, Mail, Phone, ChevronDown } from 'lucide-react';
 import { format } from 'date-fns';
 import { it } from 'date-fns/locale';
 import { toast } from "sonner";
@@ -125,42 +125,48 @@ export default function CheckInPage() {
                 </div>
 
                 {/* Main Action Bar: Search & Filters */}
-                <div className="flex flex-col md:flex-row w-full max-w-2xl items-stretch md:items-center gap-2">
-                    <div className="relative flex-1">
-                        <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                {/* Main Action Bar: Search & Filters - redesign premium */}
+                <div className="flex flex-col md:flex-row w-full max-w-4xl items-stretch md:items-center gap-3 bg-background/60 backdrop-blur-md p-2 rounded-2xl border shadow-sm mx-auto">
+                    <div className="relative flex-1 group">
+                        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
                         <Input
                             placeholder="Cerca prenotazione per nome o cognome..."
-                            className="pl-9 bg-background/50 backdrop-blur-sm border-muted-foreground/20"
+                            className="pl-11 h-12 text-base bg-transparent border-transparent focus-visible:ring-0 placeholder:text-muted-foreground/70"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
                     </div>
 
-                    <div className="w-full md:w-[180px]">
-                        <select
-                            className="flex h-10 w-full rounded-md border border-input bg-background/50 backdrop-blur-sm px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                            value={statusFilter}
-                            onChange={(e) => setStatusFilter(e.target.value as any)}
-                        >
-                            <option value="all">Tutti</option>
-                            <option value="not_checked_in">Da fare</option>
-                            <option value="checked_in">Checked-in</option>
-                        </select>
-                    </div>
+                    <div className="h-8 w-[1px] bg-border hidden md:block" />
 
-                    <div className={cn(
-                        "w-full md:w-[180px] transition-all duration-200",
-                        statusFilter !== 'checked_in' && "hidden md:flex md:opacity-0 md:invisible md:pointer-events-none"
-                    )}>
-                        <select
-                            className="flex h-10 w-full rounded-md border border-input bg-background/50 backdrop-blur-sm px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                            value={questuraFilter}
-                            onChange={(e) => setQuesturaFilter(e.target.value as any)}
-                        >
-                            <option value="all">Tutti (Alloggiati)</option>
-                            <option value="not_sent">Da inviare</option>
-                            <option value="sent">Inviati</option>
-                        </select>
+                    <div className="flex gap-2 w-full md:w-auto">
+                        <div className="relative flex-1 md:w-[180px]">
+                            <select
+                                className="appearance-none flex h-12 w-full rounded-xl bg-muted/50 hover:bg-muted/80 transition-colors px-4 py-2 pr-8 text-sm font-medium focus:outline-none cursor-pointer"
+                                value={statusFilter}
+                                onChange={(e) => setStatusFilter(e.target.value as any)}
+                            >
+                                <option value="all">Tutti gli stati</option>
+                                <option value="not_checked_in">Da fare</option>
+                                <option value="checked_in">Checked-in</option>
+                            </select>
+                            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                        </div>
+
+                        {statusFilter === 'checked_in' && (
+                            <div className="relative flex-1 md:w-[180px] animate-in fade-in slide-in-from-left-4 duration-300">
+                                <select
+                                    className="appearance-none flex h-12 w-full rounded-xl bg-muted/50 hover:bg-muted/80 transition-colors px-4 py-2 pr-8 text-sm font-medium focus:outline-none cursor-pointer"
+                                    value={questuraFilter}
+                                    onChange={(e) => setQuesturaFilter(e.target.value as any)}
+                                >
+                                    <option value="all">Tutti (Alloggiati)</option>
+                                    <option value="not_sent">Da inviare</option>
+                                    <option value="sent">Inviati</option>
+                                </select>
+                                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
@@ -361,13 +367,13 @@ function CheckInDialog({ open, onOpenChange, booking, onClose, onSuccess }: {
             { value: birthProvince, label: "Provincia Nascita", key: "birthProvince" },
             { value: birthCity, label: "Comune Nascita", key: "birthCity" },
             { value: citizenship, label: "Cittadinanza", key: "citizenship" },
-            
+
             { value: address, label: "Indirizzo Residenza", key: "address" },
             { value: residenceCountry, label: "Stato Residenza", key: "residenceCountry" },
             { value: residenceCity, label: "Comune Residenza", key: "residenceCity" },
             { value: residenceZip, label: "CAP Residenza", key: "residenceZip" },
             { value: residenceProvince, label: "Provincia Residenza", key: "residenceProvince" },
-            
+
             { value: docType, label: "Tipo Documento", key: "docType" },
             { value: docNumber, label: "Numero Documento", key: "docNumber" },
             { value: docIssueDate, label: "Data Rilascio Documento", key: "docIssueDate" },
@@ -384,13 +390,11 @@ function CheckInDialog({ open, onOpenChange, booking, onClose, onSuccess }: {
             }
             return isMissing;
         });
-        
+
         setErrors(newErrors);
 
         if (missing.length > 0) {
-            toast.error("Dati mancanti", {
-                description: `Compila i seguenti campi: ${missing.map(f => f.label).join(', ')}`
-            });
+            // Toast removed as requested. Only red borders are shown.
             return false;
         }
         return true;
