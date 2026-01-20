@@ -19,6 +19,23 @@ interface RevenueChartProps {
 }
 
 export function RevenueChart({ data, action }: RevenueChartProps) {
+    // Calculate gradient offset based on today's position
+    const calculateOffset = () => {
+        if (!data || data.length === 0) return 0;
+
+        const today = new Date();
+        const start = parseISO(data[0].date).getTime();
+        const end = parseISO(data[data.length - 1].date).getTime();
+        const current = today.getTime();
+
+        if (current <= start) return 0;
+        if (current >= end) return 1;
+
+        return (current - start) / (end - start);
+    };
+
+    const offset = calculateOffset();
+
     return (
         <Card className="col-span-4 flex flex-col h-full min-w-0">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -30,9 +47,13 @@ export function RevenueChart({ data, action }: RevenueChartProps) {
                     <ResponsiveContainer width="100%" height="100%">
                         <AreaChart data={data}>
                             <defs>
-                                <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                                <linearGradient id="colorRevenueFill" x1="0" y1="0" x2="0" y2="1">
                                     <stop offset="5%" stopColor="var(--color-primary)" stopOpacity={0.3} />
                                     <stop offset="95%" stopColor="var(--color-primary)" stopOpacity={0} />
+                                </linearGradient>
+                                <linearGradient id="colorRevenueStroke" x1="0" y1="0" x2="1" y2="0">
+                                    <stop offset={offset} stopColor="var(--color-primary)" stopOpacity={1} />
+                                    <stop offset={offset} stopColor="var(--color-primary)" stopOpacity={0.3} />
                                 </linearGradient>
                             </defs>
                             <XAxis
@@ -80,10 +101,10 @@ export function RevenueChart({ data, action }: RevenueChartProps) {
                             <Area
                                 type="monotone"
                                 dataKey="value"
-                                stroke="var(--color-primary)"
+                                stroke="url(#colorRevenueStroke)"
                                 strokeWidth={2}
                                 fillOpacity={1}
-                                fill="url(#colorRevenue)"
+                                fill="url(#colorRevenueFill)"
                             />
                         </AreaChart>
                     </ResponsiveContainer>
