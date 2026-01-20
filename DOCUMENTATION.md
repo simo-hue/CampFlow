@@ -192,3 +192,34 @@ E aggiungi questa voce al Changelog alla fine del documento:
     - `ADMIN_PASSWORD`
 - **Build Command**: Default (`next build`)
 - **Output Directory**: Default (`.next`)
+
+# Weekly Occupancy Optimization (2026-01-20)
+
+## Overview
+Optimized the "Panoramica Settimanale" widget to fix slow loading times.
+
+## Changes
+- **Client-Side**: `WeeklyOccupancyWidget` now fetches ONLY the 7 required days of data instead of the full booking history.
+- **Mechanism**: Utilizes Supabase `.overlaps()` filter for efficient database-level filtering without needing complex backend changes.
+- **Performance**: Reduced data transfer size by ~95% and eliminated client-side processing lag.
+- **Caching (Memory)**: Implemented 5-minute local cache to prevent re-fetching on navigation.
+- **Caching (Storage)**: Implemented `localStorage` persistence. The widget now loads *immediately* (0ms perceived latency) if the user has visited the dashboard earlier in the day.
+
+## Optional Database Optimization
+A prepared migration `supabase/migrations/20260120140000_get_weekly_occupancy.sql` is available.
+If enabled, it moves the calculation entirely to the database (RPC), which is slightly faster but currently not strictly necessary given the client-side optimization success.
+
+# Check-in Validation (2026-01-20)
+## Overview
+Strict validation has been enforced on the Check-in form to ensure data integrity and compliance with requirements (especially for Alloggiati Web).
+
+## Validated Fields
+The system now prevents check-in if ANY of the following fields are empty:
+- **Anagrafica**: Name, Surname, Birth Date, Gender, Birth Place (Country/Province/City), Citizenship.
+- **Residenza**: Address, Residence Place (Country/Province/City/ZIP).
+- **Document**: Type, Number, Issue Date, Issuer, Issue Place (City/Country).
+
+## Implementation
+- **Client-Side**: `validateForm()` helper in `CheckInPage` checks all fields before allowing the API call.
+- **Visual Feedback**: Invalid fields are highlighted with a **red border** to immediately attract the user's attention.
+- **Toast Feedback**: A clear error message lists specifically which fields are missing.

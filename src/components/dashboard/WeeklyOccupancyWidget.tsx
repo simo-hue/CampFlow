@@ -1,24 +1,70 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
-import { fetchStats } from "@/lib/api/stats";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { fetchWeeklyOccupancy } from "@/lib/api/stats";
 import { OccupancyChart } from "@/components/stats/OccupancyChart";
 import { addDays, startOfDay, endOfDay, subDays } from "date-fns";
 import { Loader2 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
+import { useEffect, useMemo } from "react";
+
+const CACHE_KEY_PREFIX = "campflow-weekly-occupancy-v1";
 
 export function WeeklyOccupancyWidget() {
+    const queryClient = useQueryClient();
+
     // Calculate range: Today - 3 days to Today + 3 days
     const today = startOfDay(new Date());
     const start = subDays(today, 3);
     const end = endOfDay(addDays(today, 3));
 
-    const { data: stats, isLoading, error } = useQuery({
-        queryKey: ["stats", "weekly-forecast"],
-        queryFn: () => fetchStats(start, end),
+    // Stable strings for dependencies
+    const startIso = start.toISOString();
+    const endIso = end.toISOString();
+
+    // Memoize queryKey to prevent infinite useEffect loop
+    const queryKey = useMemo(() =>
+        ["stats", "weekly-forecast", startIso, endIso],
+        [startIso, endIso]
+    );
+
+    const storageKey = `${CACHE_KEY_PREFIX}-${startIso}`;
+
+    // Load from localStorage AFTER mount to avoid hydration mismatch
+    useEffect(() => {
+        try {
+            const cached = window.localStorage.getItem(storageKey);
+            if (cached) {
+                const data = JSON.parse(cached);
+                // Initialize query data if not already present
+                queryClient.setQueryData(queryKey, (old: any) => {
+                    return old || data;
+                });
+            }
+        } catch (e) {
+            console.warn("Failed to load occupancy cache", e);
+        }
+    }, [queryClient, storageKey, queryKey]);
+
+    const { data: occupancyData, isLoading, error } = useQuery({
+        queryKey: queryKey,
+        queryFn: () => fetchWeeklyOccupancy(start, end),
+        staleTime: 1000 * 60 * 5, // Cache in memory for 5 minutes
     });
 
-    if (isLoading) {
+    // Save to localStorage when we get fresh data
+    useEffect(() => {
+        if (occupancyData) {
+            try {
+                window.localStorage.setItem(storageKey, JSON.stringify(occupancyData));
+            } catch (e) {
+                console.warn("Failed to save occupancy cache", e);
+            }
+        }
+    }, [occupancyData, storageKey]);
+
+    // Render loading state initially (matching server)
+    if (isLoading && !occupancyData) {
         return (
             <Card className="h-[400px] flex items-center justify-center">
                 <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
@@ -26,7 +72,7 @@ export function WeeklyOccupancyWidget() {
         );
     }
 
-    if (error || !stats) {
+    if (error) {
         return (
             <Card className="h-[400px] flex items-center justify-center text-red-500">
                 Errore nel caricamento del grafico.
@@ -36,26 +82,7 @@ export function WeeklyOccupancyWidget() {
 
     return (
         <div className="space-y-4">
-            {/* We reuse the OccupancyChart but we might want to override the title inside it or wrap it 
-          Currently OccupancyChart has its own Card wraper with a specific title.
-          Ideally we should refactor OccupancyChart to be just the chart, or accept a title.
-          For now, let's see how it looks. It has "Occupazione Giornaliera" title which is fine.
-          But we want to emphasize "Previsione 7 Giorni".
-      */}
-
-            {/* 
-          Since OccupancyChart exports a full Card, I will use it directly.
-          If I need to change the title, I should refactor OccupancyChart to accept props or be more composable.
-          For this iteration, I'll stick to using it as is, as "Occupazione Giornaliera" is technically correct.
-          Wait, the user sees "Occupazione Giornaliera" on the stats page too. 
-          Maybe I should refactor OccupancyChart to accept a title prop?
-          
-          Let's do a quick check on OccupancyChart source again.
-          It has <CardTitle>Occupazione Giornaliera</CardTitle> hardcoded.
-          
-          I will refactor OccupancyChart first to accept an optional title.
-      */}
-            <OccupancyChart data={stats.charts.occupancyByDate} title="Panoramica Settimanale" />
+            <OccupancyChart data={occupancyData || []} title="Panoramica Settimanale" />
         </div>
     );
 }

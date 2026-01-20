@@ -188,3 +188,73 @@ export async function fetchStats(startDate: Date, endDate: Date): Promise<StatsD
         }
     };
 }
+
+export async function fetchWeeklyOccupancy(startDate: Date, endDate: Date): Promise<StatsData['charts']['occupancyByDate']> {
+    // 1. Calculate Range
+    // Ensure we cover the full days (start 00:00 to end 23:59)
+    const rangeStart = startOfDay(startDate);
+    const rangeEnd = endOfDay(endDate);
+
+    // 2. Fetch ONLY overlapping bookings
+    // We use the PostgREST range operator 'cd' (contained by) or 'ov' (overlaps)
+    // For DATERANGE '[start, end)', we want any booking that overlaps with our view window
+    // formatted as [YYYY-MM-DD, YYYY-MM-DD)
+
+    // Since supabase-js might be tricky with range syntax, we construct the range string
+    const rangeStr = `[${format(rangeStart, 'yyyy-MM-dd')},${format(addDays(rangeEnd, 1), 'yyyy-MM-dd')})`;
+
+    const { data: bookingsData, error } = await supabase
+        .from('bookings')
+        .select(`
+            booking_period,
+            pitch_id,
+            pitch:pitches(type)
+        `)
+        .in('status', ['confirmed', 'checked_in'])
+        .overlaps('booking_period', rangeStr);
+
+    if (error) throw error;
+
+    // 3. Process Data in Memory (similar to calculateStatsForRange but simplified)
+    const daysMap = new Map<string, { piazzola: number; tenda: number }>();
+    const days = eachDayOfInterval({ start: rangeStart, end: rangeEnd });
+
+    // Init map
+    days.forEach(day => {
+        daysMap.set(format(day, 'yyyy-MM-dd'), { piazzola: 0, tenda: 0 });
+    });
+
+    // Helper to parse range
+    const getDates = (period: string) => {
+        const [s, e] = period.replace(/[\[\)]/g, '').split(',');
+        return { start: parseISO(s), end: parseISO(e) };
+    };
+
+    bookingsData?.forEach((booking: any) => {
+        const { start: bStart, end: bEnd } = getDates(booking.booking_period);
+        const pitchType = booking.pitch?.type;
+
+        let current = startOfDay(bStart);
+        const limit = startOfDay(bEnd);
+
+        while (current < limit) {
+            if (current >= rangeStart && current <= rangeEnd) {
+                const dayStr = format(current, 'yyyy-MM-dd');
+                if (daysMap.has(dayStr)) {
+                    const entry = daysMap.get(dayStr)!;
+                    if (pitchType === 'piazzola') entry.piazzola++;
+                    else if (pitchType === 'tenda') entry.tenda++;
+                    // Update map - though entry is a ref, so object is mutated, but good practice
+                }
+            }
+            current = addDays(current, 1);
+        }
+    });
+
+    return Array.from(daysMap.entries()).map(([date, counts]) => ({
+        date,
+        piazzola: counts.piazzola,
+        tenda: counts.tenda,
+        total: counts.piazzola + counts.tenda
+    }));
+}

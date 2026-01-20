@@ -290,6 +290,7 @@ function CheckInDialog({ open, onOpenChange, booking, onClose, onSuccess }: {
     onSuccess: () => void
 }) {
     const [sending, setSending] = useState(false);
+    const [errors, setErrors] = useState<Record<string, boolean>>({});
 
     // States initialized when booking changes
     const [questuraSent, setQuesturaSent] = useState(false);
@@ -344,12 +345,60 @@ function CheckInDialog({ open, onOpenChange, booking, onClose, onSuccess }: {
             setDocIssuer(c.document_issuer || '');
             setDocIssueCity(c.document_issue_city || '');
             setDocIssueCountry(c.document_issue_country || '');
+
+            // Clear errors when booking opens/changes
+            setErrors({});
         }
     }, [booking, open]);
 
     if (!booking) return null;
 
+    const validateForm = () => {
+        const requiredFields = [
+            { value: birthDate, label: "Data di Nascita", key: "birthDate" },
+            { value: gender, label: "Sesso", key: "gender" },
+            { value: birthCountry, label: "Stato Nascita", key: "birthCountry" },
+            { value: birthProvince, label: "Provincia Nascita", key: "birthProvince" },
+            { value: birthCity, label: "Comune Nascita", key: "birthCity" },
+            { value: citizenship, label: "Cittadinanza", key: "citizenship" },
+            
+            { value: address, label: "Indirizzo Residenza", key: "address" },
+            { value: residenceCountry, label: "Stato Residenza", key: "residenceCountry" },
+            { value: residenceCity, label: "Comune Residenza", key: "residenceCity" },
+            { value: residenceZip, label: "CAP Residenza", key: "residenceZip" },
+            { value: residenceProvince, label: "Provincia Residenza", key: "residenceProvince" },
+            
+            { value: docType, label: "Tipo Documento", key: "docType" },
+            { value: docNumber, label: "Numero Documento", key: "docNumber" },
+            { value: docIssueDate, label: "Data Rilascio Documento", key: "docIssueDate" },
+            { value: docIssuer, label: "Ente Rilascio", key: "docIssuer" },
+            { value: docIssueCity, label: "Comune Rilascio Documento", key: "docIssueCity" },
+            { value: docIssueCountry, label: "Stato Rilascio Documento", key: "docIssueCountry" }
+        ];
+
+        const newErrors: Record<string, boolean> = {};
+        const missing = requiredFields.filter(f => {
+            const isMissing = !f.value || f.value.trim() === '';
+            if (isMissing) {
+                newErrors[f.key] = true;
+            }
+            return isMissing;
+        });
+        
+        setErrors(newErrors);
+
+        if (missing.length > 0) {
+            toast.error("Dati mancanti", {
+                description: `Compila i seguenti campi: ${missing.map(f => f.label).join(', ')}`
+            });
+            return false;
+        }
+        return true;
+    };
+
     const handleConfirmCheckIn = async () => {
+        if (!validateForm()) return;
+
         setSending(true);
         try {
             // 1. Update Customer Details
@@ -452,13 +501,21 @@ function CheckInDialog({ open, onOpenChange, booking, onClose, onSuccess }: {
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-2">
-                                        <Label>Data di Nascita</Label>
-                                        <Input type="date" value={birthDate} onChange={e => setBirthDate(e.target.value)} />
+                                        <Label className={cn(errors.birthDate && "text-red-500")}>Data di Nascita</Label>
+                                        <Input
+                                            type="date"
+                                            value={birthDate}
+                                            onChange={e => setBirthDate(e.target.value)}
+                                            className={cn(errors.birthDate && "border-red-500 focus-visible:ring-red-500")}
+                                        />
                                     </div>
                                     <div className="space-y-2">
-                                        <Label>Sesso</Label>
+                                        <Label className={cn(errors.gender && "text-red-500")}>Sesso</Label>
                                         <select
-                                            className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                            className={cn(
+                                                "flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
+                                                errors.gender && "border-red-500 focus-visible:ring-red-500"
+                                            )}
                                             value={gender}
                                             onChange={e => setGender(e.target.value)}
                                         >
@@ -470,28 +527,30 @@ function CheckInDialog({ open, onOpenChange, booking, onClose, onSuccess }: {
 
                                     {/* Stato Nascita */}
                                     <div className="space-y-2">
-                                        <Label>Stato Nascita</Label>
+                                        <Label className={cn(errors.birthCountry && "text-red-500")}>Stato Nascita</Label>
                                         <Input
                                             placeholder="Italia"
                                             value={birthCountry}
                                             onChange={e => setBirthCountry(e.target.value)}
+                                            className={cn(errors.birthCountry && "border-red-500 focus-visible:ring-red-500")}
                                         />
                                     </div>
 
                                     {/* Provincia Nascita */}
                                     <div className="space-y-2">
-                                        <Label>Provincia (Sigla)</Label>
+                                        <Label className={cn(errors.birthProvince && "text-red-500")}>Provincia (Sigla)</Label>
                                         {isItaly(birthCountry) ? (
                                             <ProvinceAutocomplete
                                                 value={birthProvince}
                                                 onSelect={(p) => setBirthProvince(p.sigla)}
                                                 placeholder="RM"
+                                                className={cn(errors.birthProvince && "border-red-500 focus-visible:ring-red-500")}
                                             />
                                         ) : (
                                             <Input
                                                 placeholder="MI"
                                                 maxLength={2}
-                                                className="uppercase"
+                                                className={cn("uppercase", errors.birthProvince && "border-red-500 focus-visible:ring-red-500")}
                                                 value={birthProvince}
                                                 onChange={e => setBirthProvince(e.target.value.toUpperCase())}
                                             />
@@ -500,7 +559,7 @@ function CheckInDialog({ open, onOpenChange, booking, onClose, onSuccess }: {
 
                                     {/* Comune Nascita */}
                                     <div className="space-y-2">
-                                        <Label>Comune Nascita</Label>
+                                        <Label className={cn(errors.birthCity && "text-red-500")}>Comune Nascita</Label>
                                         {isItaly(birthCountry) ? (
                                             <MunicipalityAutocomplete
                                                 value={birthCity}
@@ -510,19 +569,26 @@ function CheckInDialog({ open, onOpenChange, booking, onClose, onSuccess }: {
                                                     if (!birthCountry) setBirthCountry("Italia");
                                                 }}
                                                 placeholder="Cerca comune..."
+                                                className={cn(errors.birthCity && "border-red-500 focus-visible:ring-red-500")}
                                             />
                                         ) : (
                                             <Input
                                                 placeholder="Milano"
                                                 value={birthCity}
                                                 onChange={e => setBirthCity(e.target.value)}
+                                                className={cn(errors.birthCity && "border-red-500 focus-visible:ring-red-500")}
                                             />
                                         )}
                                     </div>
 
                                     <div className="space-y-2">
-                                        <Label>Cittadinanza</Label>
-                                        <Input placeholder="Italiana" value={citizenship} onChange={e => setCitizenship(e.target.value)} />
+                                        <Label className={cn(errors.citizenship && "text-red-500")}>Cittadinanza</Label>
+                                        <Input
+                                            placeholder="Italiana"
+                                            value={citizenship}
+                                            onChange={e => setCitizenship(e.target.value)}
+                                            className={cn(errors.citizenship && "border-red-500 focus-visible:ring-red-500")}
+                                        />
                                     </div>
                                 </div>
                             </div>
@@ -535,23 +601,29 @@ function CheckInDialog({ open, onOpenChange, booking, onClose, onSuccess }: {
                                 </div>
                                 <div className="space-y-4">
                                     <div className="space-y-2">
-                                        <Label>Indirizzo (Via/Piazza, Civico)</Label>
-                                        <Input placeholder="Via Roma, 1" value={address} onChange={e => setAddress(e.target.value)} />
+                                        <Label className={cn(errors.address && "text-red-500")}>Indirizzo (Via/Piazza, Civico)</Label>
+                                        <Input
+                                            placeholder="Via Roma, 1"
+                                            value={address}
+                                            onChange={e => setAddress(e.target.value)}
+                                            className={cn(errors.address && "border-red-500 focus-visible:ring-red-500")}
+                                        />
                                     </div>
                                     <div className="grid grid-cols-2 gap-4">
                                         {/* Stato Residenza */}
                                         <div className="space-y-2">
-                                            <Label>Stato</Label>
+                                            <Label className={cn(errors.residenceCountry && "text-red-500")}>Stato</Label>
                                             <Input
                                                 placeholder="Italia"
                                                 value={residenceCountry}
                                                 onChange={e => setResidenceCountry(e.target.value)}
+                                                className={cn(errors.residenceCountry && "border-red-500 focus-visible:ring-red-500")}
                                             />
                                         </div>
 
                                         {/* Comune Residenza */}
                                         <div className="space-y-2">
-                                            <Label>Comune</Label>
+                                            <Label className={cn(errors.residenceCity && "text-red-500")}>Comune</Label>
                                             {isItaly(residenceCountry) ? (
                                                 <MunicipalityAutocomplete
                                                     value={residenceCity}
@@ -562,35 +634,43 @@ function CheckInDialog({ open, onOpenChange, booking, onClose, onSuccess }: {
                                                         if (!residenceCountry) setResidenceCountry("Italia");
                                                     }}
                                                     placeholder="Cerca comune..."
+                                                    className={cn(errors.residenceCity && "border-red-500 focus-visible:ring-red-500")}
                                                 />
                                             ) : (
                                                 <Input
                                                     placeholder="Roma"
                                                     value={residenceCity}
                                                     onChange={e => setResidenceCity(e.target.value)}
+                                                    className={cn(errors.residenceCity && "border-red-500 focus-visible:ring-red-500")}
                                                 />
                                             )}
                                         </div>
 
                                         <div className="space-y-2">
-                                            <Label>CAP</Label>
-                                            <Input placeholder="00100" value={residenceZip} onChange={e => setResidenceZip(e.target.value)} />
+                                            <Label className={cn(errors.residenceZip && "text-red-500")}>CAP</Label>
+                                            <Input
+                                                placeholder="00100"
+                                                value={residenceZip}
+                                                onChange={e => setResidenceZip(e.target.value)}
+                                                className={cn(errors.residenceZip && "border-red-500 focus-visible:ring-red-500")}
+                                            />
                                         </div>
 
                                         {/* Provincia Residenza */}
                                         <div className="space-y-2">
-                                            <Label>Provincia</Label>
+                                            <Label className={cn(errors.residenceProvince && "text-red-500")}>Provincia</Label>
                                             {isItaly(residenceCountry) ? (
                                                 <ProvinceAutocomplete
                                                     value={residenceProvince}
                                                     onSelect={(p) => setResidenceProvince(p.sigla)}
                                                     placeholder="RM"
+                                                    className={cn(errors.residenceProvince && "border-red-500 focus-visible:ring-red-500")}
                                                 />
                                             ) : (
                                                 <Input
                                                     placeholder="RM"
                                                     maxLength={2}
-                                                    className="uppercase"
+                                                    className={cn("uppercase", errors.residenceProvince && "border-red-500 focus-visible:ring-red-500")}
                                                     value={residenceProvince}
                                                     onChange={e => setResidenceProvince(e.target.value.toUpperCase())}
                                                 />
@@ -612,9 +692,12 @@ function CheckInDialog({ open, onOpenChange, booking, onClose, onSuccess }: {
                                 <div className="grid gap-4">
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className="space-y-2">
-                                            <Label>Tipo Documento</Label>
+                                            <Label className={cn(errors.docType && "text-red-500")}>Tipo Documento</Label>
                                             <select
-                                                className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                                className={cn(
+                                                    "flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
+                                                    errors.docType && "border-red-500 focus-visible:ring-red-500"
+                                                )}
                                                 value={docType}
                                                 onChange={e => setDocType(e.target.value)}
                                             >
@@ -625,23 +708,38 @@ function CheckInDialog({ open, onOpenChange, booking, onClose, onSuccess }: {
                                             </select>
                                         </div>
                                         <div className="space-y-2">
-                                            <Label>Numero Documento</Label>
-                                            <Input value={docNumber} onChange={e => setDocNumber(e.target.value)} placeholder="AX1234567" />
+                                            <Label className={cn(errors.docNumber && "text-red-500")}>Numero Documento</Label>
+                                            <Input
+                                                value={docNumber}
+                                                onChange={e => setDocNumber(e.target.value)}
+                                                placeholder="AX1234567"
+                                                className={cn(errors.docNumber && "border-red-500 focus-visible:ring-red-500")}
+                                            />
                                         </div>
                                     </div>
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className="space-y-2">
-                                            <Label>Data Rilascio</Label>
-                                            <Input type="date" value={docIssueDate} onChange={e => setDocIssueDate(e.target.value)} />
+                                            <Label className={cn(errors.docIssueDate && "text-red-500")}>Data Rilascio</Label>
+                                            <Input
+                                                type="date"
+                                                value={docIssueDate}
+                                                onChange={e => setDocIssueDate(e.target.value)}
+                                                className={cn(errors.docIssueDate && "border-red-500 focus-visible:ring-red-500")}
+                                            />
                                         </div>
 
                                         <div className="space-y-2">
-                                            <Label>Stato Rilascio</Label>
-                                            <Input placeholder="Italia" value={docIssueCountry} onChange={e => setDocIssueCountry(e.target.value)} />
+                                            <Label className={cn(errors.docIssueCountry && "text-red-500")}>Stato Rilascio</Label>
+                                            <Input
+                                                placeholder="Italia"
+                                                value={docIssueCountry}
+                                                onChange={e => setDocIssueCountry(e.target.value)}
+                                                className={cn(errors.docIssueCountry && "border-red-500 focus-visible:ring-red-500")}
+                                            />
                                         </div>
 
                                         <div className="space-y-2">
-                                            <Label>Comune Rilascio</Label>
+                                            <Label className={cn(errors.docIssueCity && "text-red-500")}>Comune Rilascio</Label>
                                             {isItaly(docIssueCountry) ? (
                                                 <MunicipalityAutocomplete
                                                     value={docIssueCity}
@@ -650,19 +748,26 @@ function CheckInDialog({ open, onOpenChange, booking, onClose, onSuccess }: {
                                                         if (!docIssueCountry) setDocIssueCountry("Italia");
                                                     }}
                                                     placeholder="Cerca comune..."
+                                                    className={cn(errors.docIssueCity && "border-red-500 focus-visible:ring-red-500")}
                                                 />
                                             ) : (
                                                 <Input
                                                     placeholder="Milano"
                                                     value={docIssueCity}
                                                     onChange={e => setDocIssueCity(e.target.value)}
+                                                    className={cn(errors.docIssueCity && "border-red-500 focus-visible:ring-red-500")}
                                                 />
                                             )}
                                         </div>
 
                                         <div className="space-y-2">
-                                            <Label>Ente Rilascio</Label>
-                                            <Input placeholder="Comune di..." value={docIssuer} onChange={e => setDocIssuer(e.target.value)} />
+                                            <Label className={cn(errors.docIssuer && "text-red-500")}>Ente Rilascio</Label>
+                                            <Input
+                                                placeholder="Comune"
+                                                value={docIssuer}
+                                                onChange={e => setDocIssuer(e.target.value)}
+                                                className={cn(errors.docIssuer && "border-red-500 focus-visible:ring-red-500")}
+                                            />
                                         </div>
                                     </div>
                                 </div>
