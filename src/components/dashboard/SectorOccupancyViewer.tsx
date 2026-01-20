@@ -718,7 +718,7 @@ export function SectorOccupancyViewer() {
                     <table className="w-full text-sm border-collapse">
                         <thead className="shadow-sm">
                             <tr>
-                                <th className="p-3 text-left border-b-2 border-r-2 font-bold min-w-[100px] w-[100px] bg-slate-200 dark:bg-slate-800 border-slate-300 dark:border-slate-700 sticky top-0 left-0 z-50 text-foreground shadow-[2px_2px_4px_rgba(0,0,0,0.1)]">
+                                <th className="p-3 text-left border-b border-neutral-800 min-w-[100px] w-[100px] bg-neutral-900 text-white sticky top-0 left-0 z-50 shadow-md">
                                     {selectedPitchType === 'piazzola' ? 'Piazzola' : 'Tenda'}
                                 </th>
                                 {displayDateRange.map(date => {
@@ -726,16 +726,16 @@ export function SectorOccupancyViewer() {
                                     const isToday = isSameDay(date, new Date());
 
                                     return (
-                                        <th key={date.toISOString()} className="p-0 border-b-2 border-r border-slate-300 dark:border-slate-700 min-w-[60px] text-center sticky top-0 z-30 bg-slate-200 dark:bg-slate-800 shadow-[0_2px_4px_rgba(0,0,0,0.05)]">
-                                            <div className={`p-2 flex flex-col items-center justify-center h-full w-full ${isToday ? 'bg-blue-100/50 text-blue-700' : ''}`}>
-                                                <span className={`text-[10px] uppercase font-bold tracking-wider ${isToday ? 'text-blue-600' : 'text-slate-500 dark:text-slate-400'}`}>
+                                        <th key={date.toISOString()} className="p-0 border-b border-r border-neutral-800 min-w-[60px] text-center sticky top-0 z-30 bg-neutral-900 text-white">
+                                            <div className={`p-2 flex flex-col items-center justify-center h-full w-full ${isToday ? 'bg-blue-900/30 text-blue-400' : ''}`}>
+                                                <span className={`text-[10px] uppercase font-bold tracking-wider ${isToday ? 'text-blue-400' : 'text-neutral-400'}`}>
                                                     {format(date, 'EEE', { locale: it })}
                                                 </span>
-                                                <span className={`text-sm font-extrabold ${isToday ? 'text-blue-700' : 'text-slate-700 dark:text-slate-200'}`}>
+                                                <span className={`text-sm font-extrabold ${isToday ? 'text-blue-400' : 'text-white'}`}>
                                                     {format(date, 'dd')}
                                                 </span>
                                                 {selectedTimeframe.days < 10 && (
-                                                    <span className="text-[9px] font-medium text-slate-500/80">
+                                                    <span className="text-[9px] font-medium text-neutral-500">
                                                         {format(date, 'MMM', { locale: it })}
                                                     </span>
                                                 )}
@@ -747,8 +747,8 @@ export function SectorOccupancyViewer() {
                         </thead>
                         <tbody>
                             {displayedData.map(item => (
-                                <tr key={item.pitch.id} className="group bg-card hover:bg-muted/5 transition-colors">
-                                    <td className="p-3 font-mono text-sm font-bold text-center border-b border-r-2 border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-900 sticky left-0 z-20 group-hover:bg-slate-200 transition-colors text-slate-700 dark:text-slate-300">
+                                <tr key={item.pitch.id} className="group bg-neutral-50 dark:bg-white/1 hover:bg-neutral-100 dark:hover:bg-white/10 transition-colors">
+                                    <td className="p-3 font-mono text-sm font-bold text-center border-b border-r border-neutral-800 bg-neutral-900 sticky left-0 z-20 text-white">
                                         {item.pitch.number}
                                     </td>
                                     {renderPitchRow(item)}

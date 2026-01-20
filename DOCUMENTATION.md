@@ -110,6 +110,7 @@ To facilitate testing, a migration script has been created to populate the datab
 ## Occupancy Matrix Enhancements
 - **Color Coding**: Implemented deterministic color assignment for reservations based on Booking ID.
 - **Merged Cells**: Unified consecutive days of the same reservation into a single visual block using `colSpan`.
+- **Visuals**: Implemented a "Total Black" high-contrast theme for headers and a transparent gray (`bg-muted/20`) for the body.
 - **Component**: `SectorOccupancyViewer.tsx`
 ## 📚 Aggiornamento DOCUMENTATION.md
 
