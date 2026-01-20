@@ -31,9 +31,9 @@ export function middleware(request: NextRequest) {
     const authToken = request.cookies.get('campflow_auth')?.value;
 
     if (!authToken) {
-        // Redirect to website if not authenticated
+        // Redirect to login if not authenticated (Standard App Behavior)
         const url = request.nextUrl.clone();
-        url.pathname = '/w';
+        url.pathname = '/login';
         return NextResponse.redirect(url);
     }
 
