@@ -14,9 +14,18 @@
     5.  Scrivere "RESET" e confermare.
     6.  Verificare che il sistema sia pulito (Dashboard vuota, nessuna prenotazione) e le piazzole siano resettate a 15.
 
-- [ ] Verificare "Clear Bookings":
-    1.  Creare una prenotazione qualsiasi.
-    2.  Andare su `/sys-monitor`.
-    3.  Cliccare su "CLEAR BOOKINGS".
-    4.  Confermare digitando "CLEAR".
-    5.  Verificare che le prenotazioni siano sparite ma le piazzole/stagioni siano rimaste invariate.
+- [ ] Verificare "Database Management":
+    1.  **Clear/Seed Pitches**:
+        -   Cliccare "Clear Pitches" -> Confermare "PITCHES".
+        -   Verificare che la home page non mostri piazzole.
+        -   Cliccare "Seed Pitches" -> Confermare "SEED".
+        -   Verificare che le piazzole siano tornate.
+    2.  **Clear/Seed Seasons**:
+        -   Cliccare "Clear Seasons" -> Confermare "SEASONS".
+        -   Cliccare "Seed Seasons" -> Confermare "SEED".
+    3.  **Clear Bookings**:
+        -   Verificare che cancelli solo le prenotazioni.
+    4.  **Clear Customers**:
+        -   Verificare che cancelli clienti e prenotazioni.
+    5.  **Factory Reset**:
+        -   Verificare che riporti tutto allo stato iniziale.

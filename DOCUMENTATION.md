@@ -63,19 +63,24 @@ A "System Reset" feature is available in the Developer Dashboard (`/sys-monitor`
 This feature performs a "Factory Reset" of the application database.
 
 
-## Functionality
-When triggered (after confirmation), the following actions are performed:
+## Database Management
+The `/sys-monitor` page now features a comprehensive **Database Management** widget.
 
-### 1. Clear Bookings
-- **Action**: Deletes all entries from the `bookings` table.
-- **Cascade**: Automatically removes associated guests.
-- **Preserves**: Pitches, Seasons, and Customers (unless strictly linked).
-- **Confirmation**: Requires typing "CLEAR".
+### Transactional Data
+- **Clear Bookings** (Yellow): Delete bookings & guests. Keeps customers.
+- **Clear Customers** (Blue): Delete customers (cascades to bookings).
+- **Clear Logs**: Delete system logs.
 
-### 2. System Reset (Factory Reset)
-- **Action**: Wipes `bookings`, `customers`, `app_logs`, `pitches`, `pricing_seasons`.
-- **Restoration**: Re-inserts default pitches and seasons.
-- **Confirmation**: Requires typing "RESET".
+### Configuration
+- **Clear Pitches** (Orange): Delete all pitch definitions.
+- **Clear Seasons** (Orange): Delete all season definitions.
+
+### Maintenance
+- **Seed Pitches** (Green): Restore default pitches (001-205) if table is empty.
+- **Seed Seasons** (Green): Restore default pricing seasons if table is empty.
+
+### Danger Zone
+- **Factory Reset** (Red): Wipes everything and restores default configuration.
 
 ## Security
 - Protected by Admin Authentication (same as the dashboard).

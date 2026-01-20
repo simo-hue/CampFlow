@@ -4,8 +4,7 @@ import { supabaseAdmin } from '@/lib/supabase/server';
 import { format } from 'date-fns';
 import { logoutAction } from './login/actions';
 import { getAuthStatus } from './login/actions';
-import SystemResetButton from './SystemResetButton';
-import ClearBookingsButton from './ClearBookingsButton';
+import DatabaseManagerWidget from './components/DatabaseManagerWidget';
 
 type LogEntry = {
     id: string;
@@ -142,28 +141,11 @@ export default async function SysMonitorPage() {
                 </div>
 
 
-                {/* Panel 3: Danger Zone */}
-                <div className="bg-gray-900 border border-red-900/20 rounded-lg p-4 flex flex-col">
-                    <h2 className="text-red-900/50 font-semibold mb-4 uppercase text-xs tracking-wider flex items-center justify-between">
-                        Danger Zone
-                        <span className="text-[10px] border border-red-900/30 px-1 rounded">ADMIN</span>
-                    </h2>
+            </div>
 
-                    <div className="flex-1 flex flex-col justify-end space-y-4">
-                        <div className="space-y-2">
-                            <p className="text-xs text-gray-600 leading-relaxed">
-                                <strong className="text-yellow-600">Clear Bookings:</strong> Remove all bookings but keep configuration.
-                            </p>
-                            <ClearBookingsButton />
-                        </div>
-                        <div className="border-t border-red-900/10 pt-4 space-y-2">
-                            <p className="text-xs text-gray-600 leading-relaxed">
-                                <strong className="text-red-800">System Reset:</strong> Full factory reset (wipes everything).
-                            </p>
-                            <SystemResetButton />
-                        </div>
-                    </div>
-                </div>
+            {/* Panel 3: Database Manager */}
+            <div className="mb-8">
+                <DatabaseManagerWidget />
             </div>
 
             {/* Panel 3: Logs */}

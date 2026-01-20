@@ -140,3 +140,80 @@ export async function clearBookingsAction() {
         return { success: false, error: error.message };
     }
 }
+
+export async function clearCustomersAction() {
+    // 1. Double check auth
+    const isAuthed = await getAuthStatus();
+    if (!isAuthed) {
+        throw new Error('Unauthorized');
+    }
+
+    console.log('[ClearCustomers] Starting...');
+    const supabase = supabaseAdmin;
+
+    try {
+        // Delete Customers (will cascade to Bookings)
+        await supabase.from('customers').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+
+        revalidatePath('/');
+        console.log('[ClearCustomers] Success');
+        return { success: true, message: 'All customers (and their bookings) have been successfully deleted.' };
+    } catch (error: any) {
+        console.error('Clear Customers Failed:', error);
+        return { success: false, error: error.message };
+    }
+}
+
+export async function clearPitchesAction() {
+    const isAuthed = await getAuthStatus();
+    if (!isAuthed) throw new Error('Unauthorized');
+    const supabase = supabaseAdmin;
+    try {
+        await supabase.from('pitches').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+        revalidatePath('/');
+        return { success: true, message: 'All pitches have been successfully deleted.' };
+    } catch (error: any) {
+        return { success: false, error: error.message };
+    }
+}
+
+export async function clearSeasonsAction() {
+    const isAuthed = await getAuthStatus();
+    if (!isAuthed) throw new Error('Unauthorized');
+    const supabase = supabaseAdmin;
+    try {
+        await supabase.from('pricing_seasons').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+        revalidatePath('/');
+        return { success: true, message: 'All pricing seasons have been successfully deleted.' };
+    } catch (error: any) {
+        return { success: false, error: error.message };
+    }
+}
+
+export async function seedPitchesAction() {
+    const isAuthed = await getAuthStatus();
+    if (!isAuthed) throw new Error('Unauthorized');
+    const supabase = supabaseAdmin;
+    try {
+        const { error } = await supabase.from('pitches').insert(DEFAULT_PITCHES);
+        if (error) throw error;
+        revalidatePath('/');
+        return { success: true, message: 'Default pitches seeded successfully.' };
+    } catch (error: any) {
+        return { success: false, error: error.message };
+    }
+}
+
+export async function seedSeasonsAction() {
+    const isAuthed = await getAuthStatus();
+    if (!isAuthed) throw new Error('Unauthorized');
+    const supabase = supabaseAdmin;
+    try {
+        const { error } = await supabase.from('pricing_seasons').insert(DEFAULT_SEASONS);
+        if (error) throw error;
+        revalidatePath('/');
+        return { success: true, message: 'Default seasons seeded successfully.' };
+    } catch (error: any) {
+        return { success: false, error: error.message };
+    }
+}
