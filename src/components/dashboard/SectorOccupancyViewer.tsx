@@ -523,9 +523,26 @@ export function SectorOccupancyViewer() {
 
                         <Popover>
                             <PopoverTrigger asChild>
-                                <Button variant="outline" className="min-w-[140px] font-mono">
+                                <Button variant="outline" className="min-w-[200px] font-mono justify-center">
                                     <Calendar className="mr-2 h-4 w-4" />
-                                    {format(viewStartDate, 'd MMM yyyy', { locale: it })}
+                                    {(() => {
+                                        const endDate = addDays(viewStartDate, selectedTimeframe.days - 1);
+                                        const startFormat = format(viewStartDate, 'd', { locale: it });
+                                        const endFormat = format(endDate, 'd MMM yyyy', { locale: it });
+
+                                        // Same Month & Year: 20 - 26 Gen 2026
+                                        if (viewStartDate.getMonth() === endDate.getMonth() && viewStartDate.getFullYear() === endDate.getFullYear()) {
+                                            return `${startFormat} - ${endFormat}`;
+                                        }
+
+                                        // Different Month, Same Year: 28 Gen - 03 Feb 2026
+                                        if (viewStartDate.getFullYear() === endDate.getFullYear()) {
+                                            return `${format(viewStartDate, 'd MMM', { locale: it })} - ${endFormat}`;
+                                        }
+
+                                        // Different Year: 28 Dic 2025 - 03 Gen 2026
+                                        return `${format(viewStartDate, 'd MMM yyyy', { locale: it })} - ${endFormat}`;
+                                    })()}
                                 </Button>
                             </PopoverTrigger>
                             <PopoverContent className="w-auto p-0" align="start">

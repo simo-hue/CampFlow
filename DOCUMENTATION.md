@@ -99,3 +99,10 @@ To facilitate testing, a migration script has been created to populate the datab
     - Randomly assigns pitches (tents or standard pitches).
     - Status is automatically calculated based on the date range (`checked_out` for past, `confirmed` for future, `checked_in` for current).
     - Checks for overlapping bookings to ensure data integrity (skips if overlap occurs).
+
+# UI/UX Improvements
+
+## Header Alignment
+- **Date**: 2026-01-20
+- **Change**: The "CampFlow" logo in the `Header` component has been aligned to the far left of the view port.
+- **Implementation**: Replaced the `container mx-auto` class constraint with `w-full` in `src/components/layout/Header.tsx` to utilize the full width of the screen.
