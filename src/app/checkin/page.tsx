@@ -22,6 +22,8 @@ import {
 } from "@/components/ui/dialog";
 import { MunicipalityAutocomplete, ProvinceAutocomplete } from './components/GeoAutocomplete';
 
+import { cn } from '@/lib/utils';
+
 // Helper to extract dates from PostgreSQL daterange string "[2024-01-01,2024-01-05)"
 const parseBookingPeriod = (period: string) => {
     if (!period) return { start: new Date(), end: new Date() };
@@ -44,6 +46,9 @@ export default function CheckInPage() {
     const [bookings, setBookings] = useState<any[]>([]);
     const [selectedBooking, setSelectedBooking] = useState<any | null>(null);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+    const [statusFilter, setStatusFilter] = useState<'all' | 'checked_in' | 'not_checked_in'>('all');
+    const [questuraFilter, setQuesturaFilter] = useState<'all' | 'sent' | 'not_sent'>('all');
 
     // Fetch bookings on mount
     const fetchBookings = async () => {
@@ -82,10 +87,26 @@ export default function CheckInPage() {
 
     // Filter displayed bookings
     const filteredBookings = bookings.filter((b: any) => {
-        if (!searchTerm) return true; // Show all if no search
+        // 1. Text Search
         const term = searchTerm.toLowerCase();
         const fullName = `${b.customer?.first_name} ${b.customer?.last_name}`.toLowerCase();
-        return fullName.includes(term);
+        const matchesSearch = !searchTerm || fullName.includes(term);
+
+        // 2. Status Filter
+        let matchesStatus = true;
+        if (statusFilter === 'checked_in') {
+            matchesStatus = b.status === 'checked_in';
+            // 3. Questura Filter (only if checked_in)
+            if (matchesStatus && questuraFilter !== 'all') {
+                const isSent = b.questura_sent === true;
+                if (questuraFilter === 'sent') matchesStatus = isSent;
+                if (questuraFilter === 'not_sent') matchesStatus = !isSent;
+            }
+        } else if (statusFilter === 'not_checked_in') {
+            matchesStatus = b.status !== 'checked_in';
+        }
+
+        return matchesSearch && matchesStatus;
     });
 
     return (
@@ -103,7 +124,7 @@ export default function CheckInPage() {
                     </p>
                 </div>
 
-                {/* Main Action Bar: Search Only */}
+                {/* Main Action Bar: Search & Filters */}
                 <div className="flex w-full max-w-2xl items-center gap-2">
                     <div className="relative flex-1">
                         <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -113,6 +134,33 @@ export default function CheckInPage() {
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
+                    </div>
+
+                    <div className="w-[180px]">
+                        <select
+                            className="flex h-10 w-full rounded-md border border-input bg-background/50 backdrop-blur-sm px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                            value={statusFilter}
+                            onChange={(e) => setStatusFilter(e.target.value as any)}
+                        >
+                            <option value="all">Tutti</option>
+                            <option value="not_checked_in">Da fare</option>
+                            <option value="checked_in">Checked-in</option>
+                        </select>
+                    </div>
+
+                    <div className={cn(
+                        "w-[180px] transition-all duration-200",
+                        statusFilter !== 'checked_in' && "opacity-0 invisible pointer-events-none"
+                    )}>
+                        <select
+                            className="flex h-10 w-full rounded-md border border-input bg-background/50 backdrop-blur-sm px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                            value={questuraFilter}
+                            onChange={(e) => setQuesturaFilter(e.target.value as any)}
+                        >
+                            <option value="all">Tutti (Alloggiati)</option>
+                            <option value="not_sent">Da inviare</option>
+                            <option value="sent">Inviati</option>
+                        </select>
                     </div>
                 </div>
             </div>
