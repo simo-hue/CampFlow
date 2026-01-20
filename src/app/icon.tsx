@@ -1,8 +1,5 @@
 import { ImageResponse } from 'next/og';
 
-// Route segment config
-export const runtime = 'edge';
-
 // Image metadata
 export const size = {
     width: 32,
@@ -17,7 +14,7 @@ export default function Icon() {
             // ImageResponse JSX element
             <div
                 style={{
-                    fontSize: 24,
+                    fontSize: 20,
                     background: 'black',
                     width: '100%',
                     height: '100%',
@@ -25,7 +22,7 @@ export default function Icon() {
                     alignItems: 'center',
                     justifyContent: 'center',
                     color: 'white',
-                    borderRadius: 8,
+                    borderRadius: 8, // Rounded corners like the app logo
                 }}
             >
                 {/* Lucide "Tent" icon SVG */}
@@ -36,7 +33,7 @@ export default function Icon() {
                     viewBox="0 0 24 24"
                     fill="none"
                     stroke="currentColor"
-                    strokeWidth="2"
+                    strokeWidth="2.5"
                     strokeLinecap="round"
                     strokeLinejoin="round"
                 >

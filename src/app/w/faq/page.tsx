@@ -5,6 +5,13 @@ import {
     AccordionTrigger,
 } from "@/components/ui/accordion"
 
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+    title: "FAQ | Domande Frequenti su CampFlow",
+    description: "Tutte le risposte sulle funzionalità, l'installazione e l'utilizzo di CampFlow. Scopri come gestire il tuo campeggio col nostro software open source.",
+};
+
 export default function FAQPage() {
     return (
         <div className="py-20 bg-background">

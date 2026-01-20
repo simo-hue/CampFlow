@@ -1,6 +1,12 @@
 import { Button } from '@/components/ui/button';
 import { Check, Github, Server, LifeBuoy } from 'lucide-react';
 import Link from 'next/link';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+    title: "Prezzi | CampFlow Cloud vs Self-Hosted",
+    description: "CampFlow è Gratis e Open Source. Offriamo piani Cloud gestiti per chiamate assistenza e setup server per chi preferisce una soluzione chiavi in mano.",
+};
 
 export default function PricingPage() {
     const tiers = [

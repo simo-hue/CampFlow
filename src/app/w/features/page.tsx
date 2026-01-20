@@ -20,6 +20,13 @@ import { DemoCheckInWidget } from '@/components/website/demos/DemoCheckInWidget'
 import { DemoCalendarWidget } from '@/components/website/demos/DemoCalendarWidget';
 import { DemoSystemWidget } from '@/components/website/demos/DemoSystemWidget';
 
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+    title: "Funzionalità | Gestionale Campeggio con Mappa Interattiva",
+    description: "Scopri le funzioni di CampFlow: Planning visivo, Check-in veloce, Schedine Alloggiati, Statistiche e CRM. Il PMS per campeggi completo e gratuito.",
+};
+
 export default function FeaturesPage() {
     const featureSections = [
         {

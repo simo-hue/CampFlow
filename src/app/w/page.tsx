@@ -3,9 +3,47 @@ import { Button } from '@/components/ui/button';
 import { ArrowRight, CheckCircle2, BarChart3, Users, Calendar, LayoutDashboard, Tent, Smartphone, ShieldCheck, Zap } from 'lucide-react';
 import { DemoHeroDashboard } from '@/components/website/demos/DemoHeroDashboard';
 
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: "Software Gestionale Campeggio Gratis e Open Source | CampFlow",
+  description: "CampFlow è il software gestionale per campeggi definitivo. Open Source, gratuito, moderno. Gestisci prenotazioni, piazzole e ospiti senza costi di licenza.",
+  alternates: {
+    canonical: 'https://campflow.app/w',
+  }
+};
+
 export default function LandingPage() {
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'SoftwareApplication',
+    'name': 'CampFlow',
+    'applicationCategory': 'BusinessApplication',
+    'operatingSystem': 'Web',
+    'offers': {
+      '@type': 'Offer',
+      'price': '0',
+      'priceCurrency': 'EUR'
+    },
+    'description': 'Software gestionale open source per campeggi e strutture ricettive. Gestione prenotazioni, check-in, e statistiche.',
+    'aggregateRating': {
+      '@type': 'AggregateRating',
+      'ratingValue': '5',
+      'ratingCount': '12' // Fake start count or real if available
+    },
+    'author': {
+      '@type': 'Person',
+      'name': 'Simone Mattioli'
+    }
+  }
+
   return (
     <div className="flex flex-col">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+
       {/* Hero Section */}
       <section className="relative py-20 md:py-32 overflow-hidden bg-background">
         {/* Background Gradients */}

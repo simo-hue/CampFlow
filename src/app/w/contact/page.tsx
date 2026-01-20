@@ -4,6 +4,13 @@ import { Button } from '@/components/ui/button';
 import { Mail, Phone, MapPin, MessageCircle, Linkedin, Github } from 'lucide-react';
 import { useState } from 'react';
 
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+    title: "Contattaci | Supporto CampFlow",
+    description: "Hai domande su CampFlow? Contatta Simone Mattioli per supporto tecnico, feature request o informazioni sul progetto open source.",
+};
+
 export default function ContactPage() {
     const handleSendMessage = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -90,6 +97,14 @@ export default function ContactPage() {
                                     className="bg-muted p-3 rounded-lg hover:bg-primary/10 hover:text-primary transition-colors"
                                 >
                                     <Github className="w-5 h-5" />
+                                </a>
+                                <a
+                                    href="https://simo-hue.github.io"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="bg-muted p-3 rounded-lg hover:bg-primary/10 hover:text-primary transition-colors flex items-center justify-center font-bold text-xs px-4"
+                                >
+                                    Portfolio
                                 </a>
                             </div>
                         </div>
