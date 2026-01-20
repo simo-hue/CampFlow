@@ -68,14 +68,15 @@ export default function WebsiteLayout({
             </main>
 
             {/* Footer */}
-            <footer className="border-t py-12 bg-muted/30">
-                <div className="container mx-auto px-4 mt-12 pt-8 border-t flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-muted-foreground">
-                    <li><Link href="/w/privacy">Privacy</Link></li>
-                    <li><Link href="/w/terms">Termini e Condizioni</Link></li>
-                    <p>© {new Date().getFullYear()} CampFlow. Tutti i diritti riservati.</p>
-                    <div className="flex gap-4">
-                        <a href="https://www.linkedin.com/in/simonemattioli2003/" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">LinkedIn</a>
+            <footer className="border-t py-8 bg-background">
+                <div className="container mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-muted-foreground">
+                    <p>© {new Date().getFullYear()} CampFlow. Open Source Project.</p>
+                    <div className="flex items-center gap-6">
+                        <Link href="/w/privacy" className="hover:text-primary transition-colors">Privacy Policy</Link>
+                        <Link href="/w/terms" className="hover:text-primary transition-colors">Termini & Condizioni</Link>
+                        <div className="h-4 w-px bg-border hidden md:block" />
                         <a href="https://github.com/simo-hue" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">GitHub</a>
+                        <a href="https://www.linkedin.com/in/simonemattioli2003/" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">LinkedIn</a>
                     </div>
                 </div>
             </footer>
