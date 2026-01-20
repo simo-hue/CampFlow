@@ -1,109 +1,124 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, CheckCircle2, BarChart3, Users, Calendar, LayoutDashboard, Tent } from 'lucide-react';
+import { ArrowRight, CheckCircle2, BarChart3, Users, Calendar, LayoutDashboard, Tent, Smartphone, ShieldCheck, Zap } from 'lucide-react';
+import { DemoHeroDashboard } from '@/components/website/demos/DemoHeroDashboard';
 
 export default function LandingPage() {
   return (
     <div className="flex flex-col">
       {/* Hero Section */}
-      <section className="relative py-20 md:py-32 overflow-hidden bg-gradient-to-b from-background to-muted/20">
+      <section className="relative py-20 md:py-32 overflow-hidden bg-background">
+        {/* Background Gradients */}
+        <div className="absolute top-0 center-0 -z-10 h-full w-full bg-background">
+          <div className="absolute top-0 h-[500px] w-full bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/10 via-background to-background" />
+        </div>
+
         <div className="container mx-auto px-4 text-center z-10 relative">
-          <div className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-primary/10 text-primary hover:bg-primary/20 mb-6">
-            Nuova Versione 2.0 Rilasciata
+          <div className="inline-flex items-center rounded-full border px-3 py-1 text-sm font-medium transition-colors focus:outline-none border-primary/20 bg-primary/5 text-primary mb-6 backdrop-blur-sm">
+            <span className="flex h-2 w-2 rounded-full bg-primary mr-2 animate-pulse"></span>
+            La Soluzione Open Source Definitiva
           </div>
-          <h1 className="text-4xl md:text-6xl font-bold tracking-tight mb-6 bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70">
-            Gestisci il tuo Campeggio <br className="hidden md:block" /> con Flow
+          <h1 className="text-5xl md:text-7xl font-bold tracking-tight mb-8 bg-clip-text text-transparent bg-gradient-to-b from-foreground to-foreground/60 leading-tight pb-2">
+            Il Tuo Campeggio, <br />
+            Gestito col Pilota Automatico.
           </h1>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-10">
-            La piattaforma all-in-one per ottimizzare prenotazioni, gestione ospiti e monitoraggio occupazione. Progettata per il turismo all'aria aperta moderno.
+          <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto mb-12 leading-relaxed">
+            Dimentica i vecchi software lenti e complessi. <br className="hidden sm:block" />
+            CampFlow ti dà il controllo totale su prenotazioni, ospiti e check-in.
           </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-20">
             <Link href="/w/contact">
-              <Button size="lg" className="h-12 px-8 text-base">
-                Prova Gratuita <ArrowRight className="ml-2 w-4 h-4" />
+              <Button size="lg" className="h-14 px-8 text-lg rounded-full shadow-lg hover:shadow-primary/25 transition-all">
+                Inizia Gratis Ora <ArrowRight className="ml-2 w-5 h-5" />
               </Button>
             </Link>
             <Link href="/w/features">
-              <Button size="lg" variant="outline" className="h-12 px-8 text-base">
-                Vedi Demo
+              <Button size="lg" variant="outline" className="h-14 px-8 text-lg rounded-full">
+                Esplora Funzionalità
               </Button>
             </Link>
           </div>
 
-          {/* Hero Image Mockup */}
-          <div className="mt-16 md:mt-24 rounded-xl border border-border/50 shadow-2xl overflow-hidden bg-background">
-            {/* Placeholder for App Screenshot */}
-            <div className="aspect-[16/9] bg-muted relative flex items-center justify-center group overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-tr from-primary/5 via-transparent to-primary/5 opacity-50"></div>
-              <div className="grid grid-cols-4 gap-4 p-8 w-full h-full opacity-30 scale-95 blur-[1px] group-hover:blur-0 group-hover:scale-100 transition-all duration-700">
-                {/* Abstract UI Representation */}
-                <div className="col-span-1 bg-foreground/10 rounded-lg h-full"></div>
-                <div className="col-span-3 flex flex-col gap-4">
-                  <div className="h-12 bg-foreground/10 rounded-lg w-full"></div>
-                  <div className="flex-1 bg-foreground/10 rounded-lg w-full"></div>
-                </div>
-              </div>
-              <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-muted-foreground font-medium bg-background/80 backdrop-blur px-4 py-2 rounded-full border shadow-sm">
-                  Anteprima Interfaccia
-                </span>
-              </div>
+          {/* Hero Dashboard Preview */}
+          <div className="relative mx-auto max-w-6xl perspective-1000">
+            {/* Glow Effect */}
+            <div className="absolute -inset-1 bg-gradient-to-r from-primary/30 to-blue-600/30 rounded-2xl blur-2xl opacity-50 -z-10" />
+
+            {/* The Dashboard Widget */}
+            <div className="rounded-xl ring-1 ring-border shadow-2xl bg-background/50 backdrop-blur-sm transform transition-all hover:scale-[1.01] duration-500">
+              <DemoHeroDashboard />
             </div>
           </div>
         </div>
       </section>
 
       {/* Features Grid */}
-      <section className="py-24 bg-background">
+      {/* Bento Grid Features */}
+      <section className="py-32 bg-background relative">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold tracking-tight mb-4">Tutto ciò che ti serve per gestire il tuo parco</h2>
-            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-              Strumenti potenti per gestire le operazioni quotidiane, dal check-in al check-out.
+          <div className="text-center mb-20">
+            <h2 className="text-4xl font-bold tracking-tight mb-6">Tutto quello che ti serve. <br /> E anche di più.</h2>
+            <p className="text-muted-foreground text-xl max-w-2xl mx-auto">
+              Non solo prenotazioni. CampFlow gestisce l'intero ciclo di vita del tuo ospite.
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8">
-            {[
-              {
-                icon: Calendar,
-                title: "Sistema di Prenotazione Intelligente",
-                description: "Calendario occupazione visivo con funzionalità drag-and-drop. Gestisci le prenotazioni con facilità."
-              },
-              {
-                icon: Users,
-                title: "Gestione Ospiti (CRM)",
-                description: "CRM completo per i tuoi ospiti. Traccia cronologia, preferenze e documenti in sicurezza."
-              },
-              {
-                icon: BarChart3,
-                title: "Analisi in Tempo Reale",
-                description: "Monitora tassi di occupazione, entrate e tendenze con la nostra dashboard interattiva."
-              },
-              {
-                icon: LayoutDashboard,
-                title: "Mappa Interattiva",
-                description: "Visualizza l'intera mappa del campeggio. Controlla lo stato delle piazzole a colpo d'occhio."
-              },
-              {
-                icon: CheckCircle2,
-                title: "Check-in Automatizzato",
-                description: "Velocizza gli arrivi con flussi di check-in digitale e comunicazioni email automatiche."
-              },
-              {
-                icon: Tent,
-                title: "Ottimizzazione Piazzole",
-                description: "Massimizza le entrate ottimizzando l'assegnazione delle piazzole in base a dimensioni, tipo e date."
-              }
-            ].map((feature, i) => (
-              <div key={i} className="p-6 rounded-2xl border bg-card hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
-                <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mb-4 text-primary">
-                  <feature.icon className="w-6 h-6" />
-                </div>
-                <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
-                <p className="text-muted-foreground">{feature.description}</p>
+          <div className="grid md:grid-cols-3 gap-6">
+            {/* Card Grande 1 - Calendar */}
+            <div className="md:col-span-2 p-8 rounded-3xl border bg-card hover:bg-muted/30 transition-colors group relative overflow-hidden">
+              <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-20 transition-opacity">
+                <Calendar className="w-48 h-48" />
               </div>
-            ))}
+              <div className="relative z-10">
+                <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center mb-6 text-primary">
+                  <Calendar className="w-6 h-6" />
+                </div>
+                <h3 className="text-2xl font-bold mb-3">Planning Visivo</h3>
+                <p className="text-muted-foreground text-lg max-w-md">
+                  Un calendario drag & drop che ti fa vedere tutto a colpo d'occhio.
+                  Sposta prenotazioni, blocca piazzole e gestisci gruppi con la semplicità di un disegno.
+                </p>
+              </div>
+            </div>
+
+            {/* Card 2 - Stats */}
+            <div className="p-8 rounded-3xl border bg-card hover:bg-muted/30 transition-colors group relative overflow-hidden">
+              <div className="w-12 h-12 bg-blue-500/10 rounded-2xl flex items-center justify-center mb-6 text-blue-600">
+                <BarChart3 className="w-6 h-6" />
+              </div>
+              <h3 className="text-xl font-bold mb-3">Analytics Pro</h3>
+              <p className="text-muted-foreground">
+                Previsioni di occupazione e report incassi in tempo reale. Prendi decisioni basate sui dati, non sull'istinto.
+              </p>
+            </div>
+
+            {/* Card 3 - Ops */}
+            <div className="p-8 rounded-3xl border bg-card hover:bg-muted/30 transition-colors group relative overflow-hidden">
+              <div className="w-12 h-12 bg-green-500/10 rounded-2xl flex items-center justify-center mb-6 text-green-600">
+                <Zap className="w-6 h-6" />
+              </div>
+              <h3 className="text-xl font-bold mb-3">Velocità Supersonica</h3>
+              <p className="text-muted-foreground">
+                Check-in in 30 secondi. Ricerca istantanea. Tutto è ottimizzato per non farti perdere tempo.
+              </p>
+            </div>
+
+            {/* Card Grande 2 - CRM */}
+            <div className="md:col-span-2 p-8 rounded-3xl border bg-card hover:bg-muted/30 transition-colors group relative overflow-hidden">
+              <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-20 transition-opacity">
+                <Users className="w-48 h-48" />
+              </div>
+              <div className="relative z-10">
+                <div className="w-12 h-12 bg-purple-500/10 rounded-2xl flex items-center justify-center mb-6 text-purple-600">
+                  <Users className="w-6 h-6" />
+                </div>
+                <h3 className="text-2xl font-bold mb-3">CRM Ospiti Integrato</h3>
+                <p className="text-muted-foreground text-lg max-w-md">
+                  Conosci i tuoi clienti. Storico soggiorni, preferenze, segnalazioni e invio automatico schede alloggiati.
+                  Fidelizza i tuoi ospiti migliori.
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -114,7 +129,7 @@ export default function LandingPage() {
         <div className="container mx-auto px-4 text-center relative z-10">
           <h2 className="text-3xl md:text-5xl font-bold mb-6">Pronto a migliorare il tuo campeggio?</h2>
           <p className="text-primary-foreground/80 text-lg md:text-xl max-w-2xl mx-auto mb-10">
-            Unisciti a oltre 500 campeggi che gestiscono le loro operazioni con CampFlow.
+            Unisciti agli altri campeggi che gestiscono le loro operazioni con CampFlow.
           </p>
           <Link href="/w/contact">
             <Button size="lg" variant="secondary" className="h-14 px-8 text-lg shadow-xl hover:shadow-2xl transition-all">
