@@ -106,6 +106,11 @@ To facilitate testing, a migration script has been created to populate the datab
 - **Date**: 2026-01-20
 - **Change**: The "CampFlow" logo in the `Header` component has been aligned to the far left of the view port.
 - **Implementation**: Replaced the `container mx-auto` class constraint with `w-full` in `src/components/layout/Header.tsx` to utilize the full width of the screen.
+
+## Occupancy Matrix Enhancements
+- **Color Coding**: Implemented deterministic color assignment for reservations based on Booking ID.
+- **Merged Cells**: Unified consecutive days of the same reservation into a single visual block using `colSpan`.
+- **Component**: `SectorOccupancyViewer.tsx`
 ## 📚 Aggiornamento DOCUMENTATION.md
 
 Aggiungi questa nuova sezione dopo la sezione "Anti-Overbooking" (dopo la riga 99):
@@ -173,3 +178,16 @@ E aggiungi questa voce al Changelog alla fine del documento:
 - ✅ Tutti i file sono idempotenti e con documentazione inline estesa
 - **Motivazione**: Facilita manutenzione, troubleshooting e deployment incrementale del database
 ```
+
+# Deployment
+
+## Vercel Deployment (Recommended)
+- **Automatic**: Connect your GitHub repository to Vercel.
+- **Environment Variables**: Remember to add the necessary environment variables in the Vercel Project Settings:
+    - `NEXT_PUBLIC_SUPABASE_URL`
+    - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+    - `SUPABASE_SERVICE_ROLE_KEY`
+    - `ADMIN_USERNAME`
+    - `ADMIN_PASSWORD`
+- **Build Command**: Default (`next build`)
+- **Output Directory**: Default (`.next`)

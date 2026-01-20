@@ -41,6 +41,30 @@ const PITCH_TYPES: { id: PitchType; name: string; icon: any }[] = [
     { id: 'tenda', name: 'Tende', icon: Tent },
 ];
 
+// Color Palette for Bookings
+const BOOKING_COLORS = [
+    { bg: 'bg-emerald-500', from: 'from-emerald-500', to: 'to-emerald-600', border: 'border-emerald-600', text: 'text-white', sub: 'text-emerald-100' },
+    { bg: 'bg-blue-500', from: 'from-blue-500', to: 'to-blue-600', border: 'border-blue-600', text: 'text-white', sub: 'text-blue-100' },
+    { bg: 'bg-violet-500', from: 'from-violet-500', to: 'to-violet-600', border: 'border-violet-600', text: 'text-white', sub: 'text-violet-100' },
+    { bg: 'bg-amber-500', from: 'from-amber-500', to: 'to-amber-600', border: 'border-amber-600', text: 'text-white', sub: 'text-amber-100' },
+    { bg: 'bg-rose-500', from: 'from-rose-500', to: 'to-rose-600', border: 'border-rose-600', text: 'text-white', sub: 'text-rose-100' },
+    { bg: 'bg-cyan-500', from: 'from-cyan-500', to: 'to-cyan-600', border: 'border-cyan-600', text: 'text-white', sub: 'text-cyan-100' },
+    { bg: 'bg-fuchsia-500', from: 'from-fuchsia-500', to: 'to-fuchsia-600', border: 'border-fuchsia-600', text: 'text-white', sub: 'text-fuchsia-100' },
+    { bg: 'bg-indigo-500', from: 'from-indigo-500', to: 'to-indigo-600', border: 'border-indigo-600', text: 'text-white', sub: 'text-indigo-100' },
+    { bg: 'bg-lime-500', from: 'from-lime-500', to: 'to-lime-600', border: 'border-lime-600', text: 'text-white', sub: 'text-lime-100' },
+    { bg: 'bg-orange-500', from: 'from-orange-500', to: 'to-orange-600', border: 'border-orange-600', text: 'text-white', sub: 'text-orange-100' },
+];
+
+function getBookingColor(bookingId: string) {
+    if (!bookingId) return BOOKING_COLORS[0];
+    let hash = 0;
+    for (let i = 0; i < bookingId.length; i++) {
+        hash = bookingId.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const index = Math.abs(hash) % BOOKING_COLORS.length;
+    return BOOKING_COLORS[index];
+}
+
 const CACHE_WINDOW_DAYS = 45; // Increased to allow smoother navigation buffering
 const CACHE_KEY_PREFIX = 'occupancy_cache_v2_';
 const CACHE_VERSION_KEY = 'occupancy_cache_version';
@@ -440,22 +464,115 @@ export function SectorOccupancyViewer() {
         return isDateInRange(date, selection.startDate, selection.endDate);
     };
 
-    const getCellClassName = (pitch: Pitch, date: string, isOccupied: boolean): string => {
+    const getCellClassName = (pitch: Pitch, date: string, isOccupied: boolean, isStart: boolean = false, isEnd: boolean = false): string => {
         const selected = isCellSelected(pitch.id, date);
         const isDraft = draftStart?.pitchId === pitch.id && draftStart.date === date;
 
-        // Base background for free cells (lighter hover)
-        // For occupied cells, we rely on the inner "pill" for the main color, 
-        // but keep a subtle tint on the cell itself just in case.
+        // Base styles
+        let classes = 'border-b relative h-[50px] ';
+
+        // Borders - we manually handle borders for merged cells in the render loop sometimes, 
+        // but here we define the base cell structure.
+        // If it's NOT occupied, we need right border.
+        // If it IS occupied, the "pill" handles the look, but we might still want the cell border 
+        // to main grid structure. However, for merged cells, we only want border on the far right of the span.
+        // Actually, <td> border-r works on the cell itself. If we span 3 cols, the right border is on the spanned cell.
+        classes += 'border-r ';
+
         const baseColor = isOccupied
-            ? '' // Unused effectively because content covers it, but kept for fallback
+            ? ''
             : 'hover:bg-muted/50 transition-colors duration-200';
 
-        // Reverting to previous logic but cleaner
-        if (selected) return 'p-0 border-r border-b relative bg-blue-500/20';
-        if (isDraft) return 'p-0 border-r border-b relative bg-blue-500/40 animate-pulse';
+        if (selected) return `${classes} p-0 bg-blue-500/20`;
+        if (isDraft) return `${classes} p-0 bg-blue-500/40 animate-pulse`;
 
-        return `p-0 border-r border-b relative h-[50px] ${isOccupied ? '' : baseColor}`;
+        return `${classes} p-0 ${isOccupied ? '' : baseColor}`;
+    };
+
+    // Helper to render a full row with Merged Cells
+    const renderPitchRow = (item: PitchWithDays) => {
+        const cells = [];
+        const days = item.days;
+
+        let i = 0;
+        while (i < days.length) {
+            const currentDay = days[i];
+
+            // If NOT occupied, render single cell
+            if (!currentDay.isOccupied) {
+                cells.push(
+                    <td
+                        key={currentDay.date}
+                        className={getCellClassName(item.pitch, currentDay.date, false)}
+                        onMouseDown={() => handleCellMouseDown(item.pitch, currentDay.date, false)}
+                        onMouseEnter={() => handleCellMouseEnter(item.pitch, currentDay.date, false)}
+                        onMouseUp={() => handleMouseUp(item.pitch, currentDay.date)}
+                    >
+                        {/* SELECTION OVERLAY */}
+                        {isCellSelected(item.pitch.id, currentDay.date) && (
+                            <div className="absolute inset-0 bg-blue-600/20 z-10 pointer-events-none border-2 border-blue-500" />
+                        )}
+
+                        {/* FREE CELL CONTENT */}
+                        <div className="absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 pointer-events-none">
+                            <Plus className="w-4 h-4 text-muted-foreground/50" />
+                        </div>
+                    </td>
+                );
+                i++;
+                continue;
+            }
+
+            // If OCCUPIED, find how many sequential days match this bookingId
+            const bookingId = currentDay.bookingId;
+            let span = 1;
+
+            // Look ahead
+            while (
+                i + span < days.length &&
+                days[i + span].isOccupied &&
+                days[i + span].bookingId === bookingId
+            ) {
+                span++;
+            }
+
+            // Render Merged Cell
+            const color = getBookingColor(bookingId || '');
+
+            // We need to render the cell. 
+            // Note: interactive handlers (MouseDown etc) usually take a single date.
+            // For a merged block, clicking anywhere should open the booking.
+            // We pass the start date of the block to the handler, but the ID is what matters.
+
+            cells.push(
+                <td
+                    key={`${currentDay.date}_merged`}
+                    colSpan={span}
+                    className="p-[1px] border-r border-b relative h-[50px]"
+                    onMouseDown={() => handleCellMouseDown(item.pitch, currentDay.date, true, bookingId)}
+                // Hover/Drag over occupied cells does nothing usually, or shows tooltip
+                >
+                    <div className={`w-full h-full rounded-md shadow-sm border flex items-center justify-center overflow-hidden hover:brightness-110 transition-all cursor-pointer group-hover:shadow-md z-0 ${color.bg} ${color.from} ${color.to} bg-gradient-to-br ${color.border}`}>
+                        <div className="flex flex-col items-center justify-center w-full px-2 overflow-hidden">
+                            <span className={`text-xs font-bold drop-shadow-sm truncate w-full text-center leading-tight ${color.text}`}>
+                                {currentDay.bookingInfo?.customer_name}
+                            </span>
+                            {/* Show details only if span is wide enough (e.g. > 1 day) */}
+                            {span > 1 && (
+                                <span className={`text-[10px] ${color.sub} hidden sm:block truncate`}>
+                                    {currentDay.bookingInfo?.guests_count} Ospiti
+                                </span>
+                            )}
+                        </div>
+                    </div>
+                </td>
+            );
+
+            // Advance index by span
+            i += span;
+        }
+
+        return cells;
     };
 
     return (
@@ -601,7 +718,7 @@ export function SectorOccupancyViewer() {
                     <table className="w-full text-sm border-collapse">
                         <thead className="shadow-sm">
                             <tr>
-                                <th className="p-3 text-left border-b font-medium min-w-[100px] w-[100px] bg-card sticky top-0 left-0 z-50 border-r shadow-[0_1px_2px_rgba(0,0,0,0.1)]">
+                                <th className="p-3 text-left border-b-2 border-r-2 font-bold min-w-[100px] w-[100px] bg-muted sticky top-0 left-0 z-50 text-muted-foreground shadow-sm">
                                     {selectedPitchType === 'piazzola' ? 'Piazzola' : 'Tenda'}
                                 </th>
                                 {displayDateRange.map(date => {
@@ -609,16 +726,16 @@ export function SectorOccupancyViewer() {
                                     const isToday = isSameDay(date, new Date());
 
                                     return (
-                                        <th key={date.toISOString()} className="p-0 border-b border-r min-w-[60px] text-center sticky top-0 z-30 bg-card">
-                                            <div className={`p-2 flex flex-col items-center justify-center h-full w-full ${isWeekend ? 'bg-muted/30' : ''} ${isToday ? 'bg-blue-50/50' : ''}`}>
-                                                <span className="text-[10px] uppercase text-muted-foreground font-semibold">
+                                        <th key={date.toISOString()} className="p-0 border-b-2 border-r min-w-[60px] text-center sticky top-0 z-30 bg-muted/80 backdrop-blur-sm">
+                                            <div className={`p-2 flex flex-col items-center justify-center h-full w-full ${isWeekend ? 'bg-black/5' : ''} ${isToday ? 'bg-blue-100/50 text-blue-700' : ''}`}>
+                                                <span className={`text-[10px] uppercase font-bold tracking-wider ${isToday ? 'text-blue-600' : 'text-muted-foreground'}`}>
                                                     {format(date, 'EEE', { locale: it })}
                                                 </span>
-                                                <span className={`text-sm font-bold ${isToday ? 'text-blue-600' : ''}`}>
+                                                <span className={`text-sm font-extrabold ${isToday ? 'text-blue-700' : 'text-foreground'}`}>
                                                     {format(date, 'dd')}
                                                 </span>
                                                 {selectedTimeframe.days < 10 && (
-                                                    <span className="text-[10px] text-muted-foreground">
+                                                    <span className="text-[9px] font-medium text-muted-foreground/80">
                                                         {format(date, 'MMM', { locale: it })}
                                                     </span>
                                                 )}
@@ -630,45 +747,11 @@ export function SectorOccupancyViewer() {
                         </thead>
                         <tbody>
                             {displayedData.map(item => (
-                                <tr key={item.pitch.id} className="group bg-card hover:bg-muted/10 transition-colors">
-                                    <td className="p-3 font-bold text-center border-b border-r bg-card sticky left-0 z-20 group-hover:bg-muted/10">
+                                <tr key={item.pitch.id} className="group bg-card hover:bg-muted/5 transition-colors">
+                                    <td className="p-3 font-mono text-sm font-bold text-center border-b border-r-2 bg-muted/30 sticky left-0 z-20 group-hover:bg-muted/50 text-muted-foreground">
                                         {item.pitch.number}
                                     </td>
-                                    {item.days.map(day => (
-                                        <td
-                                            key={day.date}
-                                            className={getCellClassName(item.pitch, day.date, day.isOccupied)}
-                                            onMouseDown={() => handleCellMouseDown(item.pitch, day.date, day.isOccupied, day.bookingId)}
-                                            onMouseEnter={() => handleCellMouseEnter(item.pitch, day.date, day.isOccupied)}
-                                            onMouseUp={() => handleMouseUp(item.pitch, day.date)}
-                                        >
-                                            {/* SELECTION OVERLAY */}
-                                            {isCellSelected(item.pitch.id, day.date) && (
-                                                <div className="absolute inset-0 bg-blue-600/20 z-10 pointer-events-none border-2 border-blue-500" />
-                                            )}
-
-                                            {/* BOOKING PILL */}
-                                            {day.isOccupied ? (
-                                                <div className="absolute inset-x-[1px] inset-y-[1px] rounded-md bg-gradient-to-br from-rose-500 to-rose-600 dark:from-rose-600 dark:to-rose-700 shadow-sm border border-rose-400/50 flex items-center justify-center overflow-hidden hover:brightness-110 transition-all cursor-pointer group-hover:shadow-md z-0">
-                                                    {selectedTimeframe.days < 10 && (
-                                                        <div className="flex flex-col items-center justify-center w-full px-1">
-                                                            <span className="text-[10px] font-bold text-white drop-shadow-sm truncate w-full text-center leading-tight">
-                                                                {day.bookingInfo?.customer_name}
-                                                            </span>
-                                                            <span className="text-[9px] text-rose-100/90 hidden sm:block">
-                                                                {day.bookingInfo?.guests_count} Ospiti
-                                                            </span>
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            ) : (
-                                                // FREE CELL CONTENT (Optional: dots or empty)
-                                                <div className="absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 pointer-events-none">
-                                                    <Plus className="w-4 h-4 text-muted-foreground/50" />
-                                                </div>
-                                            )}
-                                        </td>
-                                    ))}
+                                    {renderPitchRow(item)}
                                 </tr>
                             ))}
                         </tbody>
