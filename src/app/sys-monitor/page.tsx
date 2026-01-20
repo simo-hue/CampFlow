@@ -5,6 +5,7 @@ import { format } from 'date-fns';
 import { logoutAction } from './login/actions';
 import { getAuthStatus } from './login/actions';
 import DatabaseManagerWidget from './components/DatabaseManagerWidget';
+import SystemStatsWidget from './components/SystemStatsWidget';
 
 type LogEntry = {
     id: string;
@@ -64,6 +65,53 @@ async function checkDbConnection() {
     }
 }
 
+async function getStats() {
+    const supabase = supabaseAdmin;
+    let rpcData = null;
+
+    try {
+        const { data, error } = await supabase.rpc('get_db_stats');
+        if (!error && data) {
+            rpcData = data;
+        }
+    } catch (e) {
+        // Ignore RPC call errors
+    }
+
+    if (rpcData) {
+        return {
+            sizeBytes: rpcData.size_bytes,
+            customers: rpcData.customers,
+            bookings: rpcData.bookings,
+            logs: rpcData.logs,
+            pitches: rpcData.pitches,
+            source: 'rpc' as const
+        };
+    }
+
+    // Fallback: Parallel requests
+    const [
+        { count: customers },
+        { count: bookings },
+        { count: logs },
+        { count: pitches }
+    ] = await Promise.all([
+        supabase.from('customers').select('*', { count: 'exact', head: true }),
+        supabase.from('bookings').select('*', { count: 'exact', head: true }),
+        supabase.from('app_logs').select('*', { count: 'exact', head: true }),
+        supabase.from('pitches').select('*', { count: 'exact', head: true })
+    ]);
+
+    return {
+        sizeBytes: null,
+        customers: customers || 0,
+        bookings: bookings || 0,
+        logs: logs || 0,
+        pitches: pitches || 0,
+        source: 'fallback' as const
+    };
+}
+
 export default async function SysMonitorPage() {
     // 1. Auth Check
     const isAuthed = await getAuthStatus();
@@ -73,6 +121,7 @@ export default async function SysMonitorPage() {
 
     // 2. Load Data
     const dbHealth = await checkDbConnection();
+    const stats = await getStats();
     const logs = await getLogs();
 
     return (
@@ -142,6 +191,11 @@ export default async function SysMonitorPage() {
 
 
             </div>
+
+
+
+            {/* Panel 2b: System Stats */}
+            <SystemStatsWidget stats={stats} />
 
             {/* Panel 3: Database Manager */}
             <div className="mb-8">

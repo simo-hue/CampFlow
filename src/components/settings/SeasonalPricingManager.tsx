@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import { format, parseISO } from 'date-fns';
 import { it } from 'date-fns/locale';
 import { useSeasons } from '@/hooks/useSeasons';
+import { formatCurrency } from '@/lib/utils';
 
 export function SeasonalPricingManager() {
     const {
@@ -153,11 +154,11 @@ export function SeasonalPricingManager() {
                                         <div className="flex gap-4 mt-2">
                                             <div>
                                                 <span className="text-xs text-muted-foreground">Piazzola:</span>
-                                                <span className="ml-2 font-semibold">€{season.piazzola_price_per_day.toFixed(2)}/giorno</span>
+                                                <span className="ml-2 font-semibold">{formatCurrency(season.piazzola_price_per_day)}/giorno</span>
                                             </div>
                                             <div>
                                                 <span className="text-xs text-muted-foreground">Tenda:</span>
-                                                <span className="ml-2 font-semibold">€{season.tenda_price_per_day.toFixed(2)}/giorno</span>
+                                                <span className="ml-2 font-semibold">{formatCurrency(season.tenda_price_per_day)}/giorno</span>
                                             </div>
                                         </div>
                                     </div>

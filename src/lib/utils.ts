@@ -13,3 +13,14 @@ export function getTodayItaly(): string {
   return new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Rome' });
 }
 
+
+/**
+ * Formats a number as EUR currency using Italian locale
+ * Example: 1000.50 -> "1.000,50 €"
+ */
+export function formatCurrency(amount: number): string {
+  return new Intl.NumberFormat('it-IT', {
+    style: 'currency',
+    currency: 'EUR',
+  }).format(amount);
+}

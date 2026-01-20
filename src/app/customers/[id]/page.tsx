@@ -41,6 +41,7 @@ import Link from 'next/link';
 import { format } from 'date-fns';
 import { it } from 'date-fns/locale';
 import { toast } from 'sonner';
+import { formatCurrency } from '@/lib/utils';
 
 // Types
 type Customer = {
@@ -430,7 +431,7 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                                                 </div>
 
                                                 <div className="flex flex-col md:items-center">
-                                                    <div className="text-xl font-bold">€ {booking.total_price?.toFixed(2)}</div>
+                                                    <div className="text-xl font-bold">{formatCurrency(booking.total_price || 0)}</div>
                                                     <Badge variant={booking.status === 'checked_in' ? "secondary" : "outline"} className="w-fit mt-1">
                                                         {booking.status === 'checked_in' ? 'Checked-in' : booking.status}
                                                     </Badge>
@@ -474,7 +475,7 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                         />
                         <StatCard
                             label="Spesa Totale"
-                            value={`€ ${totalSpent.toFixed(2)}`}
+                            value={formatCurrency(totalSpent)}
                             icon={CreditCard}
                             subtext="Fatturato netto generato"
                         />

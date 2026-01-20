@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Calendar, Users, FileText, Loader2, Check, Dog, Plus, X, Euro } from 'lucide-react';
 import { calculateNights, formatDateLong } from '@/lib/dateUtils';
+import { formatCurrency } from '@/lib/utils';
 import type { PitchType, PriceBreakdownDay } from '@/lib/types';
 import { invalidateOccupancyCache } from './SectorOccupancyViewer';
 import { CustomerAutocomplete } from './CustomerAutocomplete';
@@ -427,7 +428,7 @@ export function BookingCreationModal({
                             </div>
                             <div className="text-right">
                                 <span className="font-bold text-2xl text-blue-600 dark:text-blue-400">
-                                    € {totalPrice.toFixed(2)}
+                                    {formatCurrency(totalPrice)}
                                 </span>
                                 <div className="text-xs text-muted-foreground">
                                     {nights === 0 ? "1 giorno" : `${nights} ${nights === 1 ? "notte" : "notti"}`}

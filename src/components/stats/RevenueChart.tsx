@@ -11,6 +11,7 @@ import {
 } from "recharts";
 import { format, parseISO } from "date-fns";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { formatCurrency } from "@/lib/utils";
 
 interface RevenueChartProps {
     data: { date: string; value: number }[];
@@ -51,10 +52,10 @@ export function RevenueChart({ data, action }: RevenueChartProps) {
                                 fontSize={12}
                                 tickLine={false}
                                 axisLine={false}
-                                tickFormatter={(value) => `€${value}`}
+                                tickFormatter={(value) => formatCurrency(value)}
                             />
                             <Tooltip
-                                formatter={(value: any) => [`€${value}`, "Ricavi"]}
+                                formatter={(value: any) => [formatCurrency(value), "Ricavi"]}
                                 labelFormatter={(label) => format(parseISO(label), "d MMMM yyyy")}
                                 contentStyle={{
                                     backgroundColor: 'hsl(var(--card))',

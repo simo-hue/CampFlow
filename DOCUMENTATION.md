@@ -85,3 +85,17 @@ The `/sys-monitor` page now features a comprehensive **Database Management** wid
 ## Security
 - Protected by Admin Authentication (same as the dashboard).
 - Requires an explicit text confirmation ("RESET") in the UI to prevent accidental clicks.
+
+# Test Data Seeding
+
+## Overview
+To facilitate testing, a migration script has been created to populate the database with realistic test data.
+
+## Migration Details
+- **File**: `20260120130000_seed_test_bookings.sql`
+- **Customers**: Generates 50 random customers with realistic Italian names and details.
+- **Bookings**: Generates ~300 bookings distributed over the last 3 months and the next 1 month.
+- **Logic**:
+    - Randomly assigns pitches (tents or standard pitches).
+    - Status is automatically calculated based on the date range (`checked_out` for past, `confirmed` for future, `checked_in` for current).
+    - Checks for overlapping bookings to ensure data integrity (skips if overlap occurs).

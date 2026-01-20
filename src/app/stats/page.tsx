@@ -18,7 +18,8 @@ import {
     TabsList,
     TabsTrigger,
 } from "@/components/ui/tabs";
-import { subDays, startOfYear, endOfDay } from "date-fns";
+import { subDays, startOfYear, endOfDay, endOfYear } from "date-fns";
+import { formatCurrency } from "@/lib/utils";
 
 type TimeRange = "7d" | "30d" | "90d" | "year";
 
@@ -26,7 +27,7 @@ export default function StatsPage() {
     const [range, setRange] = useState<TimeRange>("30d");
 
     const getDateRange = (r: TimeRange) => {
-        const end = endOfDay(new Date());
+        let end = endOfDay(new Date());
         let start = subDays(end, 30);
 
         switch (r) {
@@ -40,7 +41,9 @@ export default function StatsPage() {
                 start = subDays(end, 90);
                 break;
             case "year":
-                start = startOfYear(end);
+                const now = new Date();
+                start = startOfYear(now);
+                end = endOfYear(now);
                 break;
         }
         return { start, end };
@@ -91,7 +94,7 @@ export default function StatsPage() {
                         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                             <KPICard
                                 title="Ricavi Totali"
-                                value={`€${stats.kpi.revenue.toLocaleString()}`}
+                                value={formatCurrency(stats.kpi.revenue)}
                                 icon={Euro}
                                 description="Nel periodo selezionato"
                             />
