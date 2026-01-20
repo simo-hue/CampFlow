@@ -125,7 +125,7 @@ export default function CheckInPage() {
                 </div>
 
                 {/* Main Action Bar: Search & Filters */}
-                <div className="flex w-full max-w-2xl items-center gap-2">
+                <div className="flex flex-col md:flex-row w-full max-w-2xl items-stretch md:items-center gap-2">
                     <div className="relative flex-1">
                         <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
                         <Input
@@ -136,7 +136,7 @@ export default function CheckInPage() {
                         />
                     </div>
 
-                    <div className="w-[180px]">
+                    <div className="w-full md:w-[180px]">
                         <select
                             className="flex h-10 w-full rounded-md border border-input bg-background/50 backdrop-blur-sm px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                             value={statusFilter}
@@ -149,8 +149,8 @@ export default function CheckInPage() {
                     </div>
 
                     <div className={cn(
-                        "w-[180px] transition-all duration-200",
-                        statusFilter !== 'checked_in' && "opacity-0 invisible pointer-events-none"
+                        "w-full md:w-[180px] transition-all duration-200",
+                        statusFilter !== 'checked_in' && "hidden md:flex md:opacity-0 md:invisible md:pointer-events-none"
                     )}>
                         <select
                             className="flex h-10 w-full rounded-md border border-input bg-background/50 backdrop-blur-sm px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
