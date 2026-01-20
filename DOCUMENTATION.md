@@ -108,3 +108,16 @@ La pagina di Check-in è stata ridisegnata per allinearsi al nuovo stile "Dashbo
 - **Funzionalità Geografiche**:
     - **Autocomplete**: Integrata ricerca intelligente per Comuni e Province italiane.
     - **Auto-Fill**: Selezione comune compila provincia, CAP e normalizza il nome.
+
+## 2026-01-20: Full Screen UI - Customers Page
+### UI Refactoring
+- **Layout Full Screen**: Rimossa la limitazione "boxed" (Card centrale) per sfruttare l'intera larghezza dello schermo.
+- **Scroll Area**: Ottimizzata l'area di scroll per includere tutta la tabella mantenendo l'header fisso.
+- **Rimozione Card**: Eliminati bordi e ombreggiature per un look più pulito e integrato nel flusso della pagina.
+- **Padding**: Ridotti i margini esterni per massimizzare lo spazio utile dei dati.
+
+## 2026-01-20: Full Screen UI - Check-in Page
+### UI Refactoring
+- **Layout Full Screen**: Applicato lo stesso stile "full screen" della pagina Clienti anche alla sezione Check-in.
+- **Coerenza Visiva**: Rimossi i box e le spaziature eccessive per uniformare l'esperienza d'uso tra le diverse sezioni gestionali.
+- **Scroll Infinito**: La lista delle prenotazioni ora sfrutta tutta l'altezza disponibile, migliorando la consultazione su schermi di ogni dimensione.

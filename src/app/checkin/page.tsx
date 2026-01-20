@@ -89,10 +89,10 @@ export default function CheckInPage() {
     });
 
     return (
-        <div className="h-[calc(100vh-4rem)] flex flex-col bg-muted/5 p-4 md:p-6 gap-6 overflow-hidden">
+        <div className="h-[calc(100vh-4rem)] flex flex-col bg-muted/5 p-0 overflow-hidden">
 
             {/* Header: Centered & Professional */}
-            <div className="flex flex-col items-center justify-center text-center gap-4 shrink-0">
+            <div className="flex flex-col items-center justify-center text-center gap-4 shrink-0 py-6 px-4">
                 <div className="space-y-1">
                     <h1 className="text-3xl font-bold tracking-tight flex items-center justify-center gap-2">
                         <UserCheck className="h-8 w-8 text-primary" />
@@ -118,9 +118,9 @@ export default function CheckInPage() {
             </div>
 
             {/* Main Content Area */}
-            <div className="flex-1 w-full overflow-hidden max-w-7xl mx-auto">
-                <Card className="h-full flex flex-col border-0 shadow-sm bg-background/50 backdrop-blur-sm overflow-hidden">
-                    <CardContent className="p-0 flex-1 flex flex-col overflow-hidden">
+            <div className="flex-1 w-full overflow-hidden">
+                <div className="h-full flex flex-col pt-0">
+                    <div className="flex-1 flex flex-col overflow-hidden">
 
                         {/* Table Header Row (Sticky) */}
                         <div className="border-b bg-muted/30 px-6 py-3 grid grid-cols-12 gap-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
@@ -218,8 +218,8 @@ export default function CheckInPage() {
                                 </div>
                             )}
                         </ScrollArea>
-                    </CardContent>
-                </Card>
+                    </div>
+                </div>
             </div>
 
             {/* Modal Dialog */}
