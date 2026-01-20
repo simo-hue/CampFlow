@@ -77,7 +77,7 @@ export function canMergePitches(pitchA: Pitch, pitchB: Pitch): boolean {
     return (
         pitchA.number === pitchB.number &&
         ((pitchA.suffix === 'a' && pitchB.suffix === 'b') ||
-            (pitchA.suffix === 'b' && pitchA.suffix === 'a'))
+            (pitchA.suffix === 'b' && pitchB.suffix === 'a'))
     );
 }
 

@@ -18,8 +18,9 @@ import { Settings } from 'lucide-react';
 import { PitchManagement } from '@/components/settings/PitchManagement';
 import { SeasonalPricingManager } from '@/components/settings/SeasonalPricingManager';
 
-person_price_per_day: number;
-dog_price_per_day: number;
+interface PricingSettings {
+    person_price_per_day: number;
+    dog_price_per_day: number;
 }
 
 const DEFAULT_PRICING: PricingSettings = {

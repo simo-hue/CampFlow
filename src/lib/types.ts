@@ -151,6 +151,7 @@ export interface CreateCustomerRequest {
 
 export interface CreateBookingRequest {
     pitch_id: string;
+    customer_id?: string; // Optional: if selecting existing customer
     customer: CreateCustomerRequest;
 
     check_in: string; // YYYY-MM-DD

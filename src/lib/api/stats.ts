@@ -14,7 +14,7 @@ export interface StatsData {
     };
     charts: {
         revenueByDate: { date: string; value: number }[];
-        occupancyByDate: { date: string; value: number }[];
+        occupancyByDate: { date: string; piazzola: number; tenda: number; total: number }[];
         nationalityDistribution: { name: string; value: number; fill: string }[];
         guestTypeDistribution: { name: string; value: number; fill: string }[];
     };
@@ -30,10 +30,15 @@ const COLORS = [
 
 export async function fetchStats(startDate: Date, endDate: Date): Promise<StatsData> {
 
-    // 1. Fetch Bookings overlapping the range
-    // We check if booking_period overlaps with [startDate, endDate]
-    // Since booking_period is a string range, we might fetch more and filter in JS for simplicity unless dataset is huge.
-    // For now, let's fetch all active bookings (confirmed, checked_in, checked_out)
+    // 0. Calculate Previous Period
+    const durationInDays = differenceInCalendarDays(endDate, startDate) + 1; // +1 to include end date
+    const previousEndDate = subDays(startDate, 1);
+    const previousStartDate = subDays(previousEndDate, durationInDays - 1);
+
+    // 1. Fetch Bookings overlapping the EXTENDED range [previousStartDate, endDate]
+    // We check if booking_period overlaps with [previousStartDate, endDate]
+    const queryStartDate = previousStartDate;
+    const queryEndDate = endDate;
 
     const { data: bookingsData, error } = await supabase
         .from('bookings')
@@ -42,114 +47,130 @@ export async function fetchStats(startDate: Date, endDate: Date): Promise<StatsD
             pitch:pitches(*),
             customer:customers(*)
         `)
-        .in('status', ['confirmed', 'checked_in', 'checked_out']);
+        .in('status', ['confirmed', 'checked_in', 'checked_out']); // active statuses
 
     if (error) throw error;
 
     const bookings = bookingsData as BookingWithDetails[];
 
-    // Filter bookings relevant to the date range
-    const relevantBookings = bookings.filter(b => {
-        // Parse range "[2026-01-01 00:00:00, 2026-01-05 00:00:00)"
+    // Helper: Normalize booking dates
+    const getBookingDates = (b: Booking) => {
         const [startStr, endStr] = b.booking_period.replace(/[\[\)]/g, '').split(',');
-        const bStart = parseISO(startStr);
-        const bEnd = parseISO(endStr);
+        return { start: parseISO(startStr), end: parseISO(endStr) };
+    };
 
-        return (
-            (bStart <= endDate && bStart >= startDate) ||
-            (bEnd <= endDate && bEnd >= startDate) ||
-            (bStart <= startDate && bEnd >= endDate)
-        );
-    });
+    // Helper: Filter bookings overlapping a specific range
+    const filterBookings = (allBookings: BookingWithDetails[], start: Date, end: Date) => {
+        return allBookings.filter(b => {
+            const { start: bStart, end: bEnd } = getBookingDates(b);
+            return (
+                (bStart <= end && bStart >= start) ||
+                (bEnd <= end && bEnd >= start) ||
+                (bStart <= start && bEnd >= end)
+            );
+        });
+    };
 
-    // 2. Calculate KPIs
-    let totalRevenue = 0;
-    let totalNights = 0;
-    let totalStayDuration = 0;
+    const currentPeriodBookings = filterBookings(bookings, startDate, endDate);
+    const previousPeriodBookings = filterBookings(bookings, previousStartDate, previousEndDate);
 
-    const daysMap = new Map<string, { revenue: number; occupied: number }>();
+    // Helper: Calculate Revenue and Occupancy for a range using daily accrual
+    const calculateStatsForRange = (
+        rangeBookings: BookingWithDetails[],
+        rangeStart: Date,
+        rangeEnd: Date
+    ) => {
+        let revenue = 0;
+        let occupiedDays = 0;
+        // Updated map to track specific occupancy types
+        const daysMap = new Map<string, { revenue: number; occupiedPiazzola: number; occupiedTenda: number }>();
+        const days = eachDayOfInterval({ start: rangeStart, end: rangeEnd });
 
-    // Initialize days map
-    const days = eachDayOfInterval({ start: startDate, end: endDate });
-    days.forEach(day => {
-        daysMap.set(format(day, 'yyyy-MM-dd'), { revenue: 0, occupied: 0 });
-    });
+        // Init map
+        days.forEach(day => {
+            daysMap.set(format(day, 'yyyy-MM-dd'), { revenue: 0, occupiedPiazzola: 0, occupiedTenda: 0 });
+        });
 
-    relevantBookings.forEach(booking => {
-        const [startStr, endStr] = booking.booking_period.replace(/[\[\)]/g, '').split(',');
-        const bStart = parseISO(startStr);
-        const bEnd = parseISO(endStr);
+        rangeBookings.forEach(booking => {
+            const { start: bStart, end: bEnd } = getBookingDates(booking);
+            const nights = differenceInCalendarDays(bEnd, bStart);
+            const dailyRevenue = booking.total_price / Math.max(1, nights);
+            const pitchType = booking.pitch?.type; // 'piazzola' | 'tenda'
 
-        // Calculate revenue overlap
-        // Simplification: Pro-rate revenue per day? Or just verify if check-in is in range? 
-        // For accurate charts: Pro-rate revenue per day.
+            // Iterate days of booking
+            let current = bStart;
+            while (current < bEnd) {
+                // strict check: current day must be < bEnd (last day is checkout, usually not counting as occupied night)
+                // AND current day must be within our range
+                if (current >= rangeStart && current <= rangeEnd) {
+                    const dayStr = format(current, 'yyyy-MM-dd');
+                    if (daysMap.has(dayStr)) {
+                        const entry = daysMap.get(dayStr)!;
+                        entry.revenue += dailyRevenue;
 
-        const nights = differenceInCalendarDays(bEnd, bStart);
-        const dailyRevenue = booking.total_price / Math.max(1, nights);
+                        // Increment specific counter
+                        if (pitchType === 'piazzola') {
+                            entry.occupiedPiazzola += 1;
+                        } else if (pitchType === 'tenda') {
+                            entry.occupiedTenda += 1;
+                        }
 
-        // Iterate days of booking
-        let current = bStart;
-        while (current < bEnd) {
-            const dayStr = format(current, 'yyyy-MM-dd');
-            if (daysMap.has(dayStr)) {
-                const entry = daysMap.get(dayStr)!;
-                entry.revenue += dailyRevenue;
-                entry.occupied += 1;
-                daysMap.set(dayStr, entry);
+                        daysMap.set(dayStr, entry);
+                    }
+                }
+                current = new Date(current.setDate(current.getDate() + 1));
             }
-            current = new Date(current.setDate(current.getDate() + 1));
-        }
+        });
 
-        // For total KPI, just sum total_price if check-in is in range? 
-        // Or sum daily revenue for days in range? 
-        // "Accrual basis" is better for charts.
-    });
+        revenue = Array.from(daysMap.values()).reduce((sum, d) => sum + d.revenue, 0);
+        // Total occupied days is sum of both types
+        occupiedDays = Array.from(daysMap.values()).reduce((sum, d) => sum + d.occupiedPiazzola + d.occupiedTenda, 0);
 
-    // Aggregate Map to Arrays
-    const revenueByDate = Array.from(daysMap.entries()).map(([date, data]) => ({
+        return { revenue, occupiedDays, daysMap, daysCount: days.length };
+    };
+
+    // 2. Calculate Current Stats
+    const currentStats = calculateStatsForRange(currentPeriodBookings, startDate, endDate);
+    const previousStats = calculateStatsForRange(previousPeriodBookings, previousStartDate, previousEndDate);
+
+    // 3. KPIs
+    const totalRevenue = currentStats.revenue;
+    const previousRevenue = previousStats.revenue;
+
+    // Revenue Trend
+    let revenueTrend = 0;
+    if (previousRevenue > 0) {
+        revenueTrend = ((totalRevenue - previousRevenue) / previousRevenue) * 100;
+    } else if (totalRevenue > 0) {
+        revenueTrend = 100;
+    }
+
+    // Occupancy Rate
+    const { count: pitchesCount } = await supabase.from('pitches').select('*', { count: 'exact', head: true });
+    const totalCapacity = (pitchesCount || 1) * currentStats.daysCount;
+    const occupancyRate = (currentStats.occupiedDays / totalCapacity) * 100;
+
+    // Avg Stay
+    const rangeBookingsCount = currentPeriodBookings.length;
+    const totalDuration = currentPeriodBookings.reduce((sum, b) => {
+        const { start, end } = getBookingDates(b);
+        return sum + differenceInCalendarDays(end, start);
+    }, 0);
+    const averageStay = rangeBookingsCount > 0 ? totalDuration / rangeBookingsCount : 0;
+
+    // Charts Data
+    const revenueByDate = Array.from(currentStats.daysMap.entries()).map(([date, data]) => ({
         date,
         value: Math.round(data.revenue * 100) / 100
     }));
 
-    const occupancyByDate = Array.from(daysMap.entries()).map(([date, data]) => ({
+    // Updated Occupancy Data structure with separate values
+    const occupancyByDate = Array.from(currentStats.daysMap.entries()).map(([date, data]) => ({
         date,
-        value: data.occupied
+        piazzola: data.occupiedPiazzola,
+        tenda: data.occupiedTenda,
+        total: data.occupiedPiazzola + data.occupiedTenda // Optional total if needed
     }));
-
-    // KPIs sums from the map (precise for the range)
-    totalRevenue = Array.from(daysMap.values()).reduce((sum, d) => sum + d.revenue, 0);
-    // Occupancy Rate: Total Occupied Pitch-Days / (Total Pitches * Days in Range)
-    // We need total pitches count.
-    const { count: pitchesCount } = await supabase.from('pitches').select('*', { count: 'exact', head: true });
-    const totalCapacity = (pitchesCount || 1) * days.length;
-    const totalOccupiedParam = Array.from(daysMap.values()).reduce((sum, d) => sum + d.occupied, 0);
-    const occupancyRate = (totalOccupiedParam / totalCapacity) * 100;
-
-    const rangeBookingsCount = relevantBookings.length; // Approximate, bookings touching the range
-
-    // Avg Stay
-    const totalDuration = relevantBookings.reduce((sum, b) => {
-        const [startStr, endStr] = b.booking_period.replace(/[\[\)]/g, '').split(',');
-        return sum + differenceInCalendarDays(parseISO(endStr), parseISO(startStr));
-    }, 0);
-    const averageStay = rangeBookingsCount > 0 ? totalDuration / rangeBookingsCount : 0;
-
-    // Demographics
-    const countryStats: Record<string, number> = {};
-    for (const b of relevantBookings) {
-        // Use customer residence country or passport country
-        const country = b.customer?.residence_country || b.customer?.citizenship || 'Unknown';
-        countryStats[country] = (countryStats[country] || 0) + 1;
-    }
-
-    const nationalityDistribution = Object.entries(countryStats)
-        .sort(([, a], [, b]) => b - a)
-        .slice(0, 5) // Top 5
-        .map(([name, value], index) => ({
-            name,
-            value,
-            fill: COLORS[index % COLORS.length]
-        }));
 
     return {
         kpi: {
@@ -157,15 +178,15 @@ export async function fetchStats(startDate: Date, endDate: Date): Promise<StatsD
             occupancyRate: Math.round(occupancyRate),
             totalBookings: rangeBookingsCount,
             averageStay: Math.round(averageStay * 10) / 10,
-            revenueTrend: 0, // TODO: calculate previous period
-            occupancyTrend: 0,
+            revenueTrend: Math.round(revenueTrend),
+            occupancyTrend: 0, // Not requested but logic is similar
             bookingsTrend: 0
         },
         charts: {
             revenueByDate,
             occupancyByDate,
-            nationalityDistribution,
-            guestTypeDistribution: [] // TODO if we have guest data
+            nationalityDistribution: [], // Disabled
+            guestTypeDistribution: []
         }
     };
 }

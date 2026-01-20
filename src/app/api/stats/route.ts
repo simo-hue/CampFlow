@@ -15,52 +15,32 @@ export async function GET() {
     try {
         const today = getTodayItaly(); // YYYY-MM-DD in Italy
 
-        // Get arrivals today: bookings where lower(booking_period)::date = today
-        const { data: arrivalsData, error: arrivalsError } = await supabaseAdmin
-            .rpc('count_arrivals_today', { target_date: today });
+        // Call the optimized RPC function
+        const { data, error } = await supabaseAdmin
+            .rpc('get_dashboard_stats', { target_date: today });
 
-        if (arrivalsError) {
-            console.error('Error fetching arrivals:', arrivalsError);
+        if (error) {
+            console.error('Error fetching dashboard stats:', error);
+            throw error;
         }
 
-        // Get departures today: bookings where upper(booking_period)::date = today
-        const { data: departuresData, error: departuresError } = await supabaseAdmin
-            .rpc('count_departures_today', { target_date: today });
+        // data is returned as an array of objects, take the first one
+        const statsRow = data && data[0] ? data[0] : {
+            arrivals_today: 0,
+            departures_today: 0,
+            current_occupancy: 0,
+            total_pitches: 0
+        };
 
-        if (departuresError) {
-            console.error('Error fetching departures:', departuresError);
-        }
-
-        // Get current occupancy: active bookings where booking_period contains today
-        const { count: occupancyCount, error: occupancyError } = await supabaseAdmin
-            .from('bookings')
-            .select('*', { count: 'exact', head: true })
-            .in('status', ['confirmed', 'checked_in'])
-            .contains('booking_period', today);
-
-        if (occupancyError) {
-            console.error('Error fetching occupancy:', occupancyError);
-        }
-
-        // Get total pitches count from database
-        const { count: totalPitchesCount, error: pitchesError } = await supabaseAdmin
-            .from('pitches')
-            .select('*', { count: 'exact', head: true })
-            .in('status', ['available', 'maintenance', 'blocked']);
-
-        if (pitchesError) {
-            console.error('Error fetching total pitches:', pitchesError);
-        }
-
-        const totalPitches = totalPitchesCount || 0;
-        const currentOccupancy = occupancyCount || 0;
+        const totalPitches = statsRow.total_pitches || 0;
+        const currentOccupancy = statsRow.current_occupancy || 0;
         const occupancyPercentage = totalPitches > 0
-            ? Math.round((currentOccupancy / totalPitches) * 100)
+            ? Math.round((Number(currentOccupancy) / Number(totalPitches)) * 100)
             : 0;
 
         const stats: DashboardStats = {
-            arrivals_today: arrivalsData || 0,
-            departures_today: departuresData || 0,
+            arrivals_today: statsRow.arrivals_today || 0,
+            departures_today: statsRow.departures_today || 0,
             current_occupancy: currentOccupancy,
             occupancy_percentage: occupancyPercentage,
             total_pitches: totalPitches,

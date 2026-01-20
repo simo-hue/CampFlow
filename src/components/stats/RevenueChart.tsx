@@ -14,13 +14,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface RevenueChartProps {
     data: { date: string; value: number }[];
+    action?: React.ReactNode;
 }
 
-export function RevenueChart({ data }: RevenueChartProps) {
+export function RevenueChart({ data, action }: RevenueChartProps) {
     return (
         <Card className="col-span-4 flex flex-col h-full min-w-0">
-            <CardHeader>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle>Andamento Ricavi</CardTitle>
+                {action}
             </CardHeader>
             <CardContent className="pl-2 flex-1 min-h-0">
                 <div className="h-[300px] w-full min-w-0">

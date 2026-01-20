@@ -2,7 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { fetchStats } from "@/lib/api/stats";
-import { OccupancyLineChart } from "@/components/stats/OccupancyLineChart";
+import { OccupancyChart } from "@/components/stats/OccupancyChart";
 import { addDays, startOfDay, endOfDay, subDays } from "date-fns";
 import { Loader2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -55,7 +55,7 @@ export function WeeklyOccupancyWidget() {
           
           I will refactor OccupancyChart first to accept an optional title.
       */}
-            <OccupancyLineChart data={stats.charts.occupancyByDate} title="Panoramica Settimanale" />
+            <OccupancyChart data={stats.charts.occupancyByDate} title="Panoramica Settimanale" />
         </div>
     );
 }
