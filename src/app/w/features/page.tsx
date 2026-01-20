@@ -15,6 +15,10 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import { DemoStatsWidget } from '@/components/website/demos/DemoStatsWidget';
+import { DemoCheckInWidget } from '@/components/website/demos/DemoCheckInWidget';
+import { DemoCalendarWidget } from '@/components/website/demos/DemoCalendarWidget';
+import { DemoSystemWidget } from '@/components/website/demos/DemoSystemWidget';
 
 export default function FeaturesPage() {
     const featureSections = [
@@ -22,6 +26,7 @@ export default function FeaturesPage() {
             title: "Controllo Totale",
             description: "Una dashboard potente per avere sempre il polso della situazione.",
             icon: LayoutDashboard,
+            demo: <DemoStatsWidget />,
             features: [
                 {
                     title: "Dashboard Intuitiva",
@@ -44,6 +49,7 @@ export default function FeaturesPage() {
             title: "Operatività Semplificata",
             description: "Strumenti pensati per velocizzare il lavoro quotidiano in reception.",
             icon: UserCheck,
+            demo: <DemoCheckInWidget />,
             features: [
                 {
                     title: "Smart Check-in",
@@ -68,9 +74,33 @@ export default function FeaturesPage() {
             ]
         },
         {
+            title: "Pianificazione Visiva",
+            description: "Il cuore del tuo campeggio: un calendario interattivo per la gestione delle piazzole.",
+            icon: Calendar,
+            demo: <DemoCalendarWidget />,
+            features: [
+                {
+                    title: "Drag & Drop (Coming Soon)",
+                    description: "Sposta le prenotazioni con rapidità (feature in arrivo).",
+                    icon: BarChart3
+                },
+                {
+                    title: "Vista Matrice",
+                    description: "Incrocia piazzole e giorni per trovare subito i buchi liberi.",
+                    icon: Database
+                },
+                {
+                    title: "Filtri Avanzati",
+                    description: "Filtra per tipologia (Tenda, Camper, Bungalow) o per zona del campeggio.",
+                    icon: Globe
+                }
+            ]
+        },
+        {
             title: "Tecnologia & Controllo",
             description: "Sotto il cofano, strumenti per sviluppatori e amministratori esigenti.",
             icon: Database,
+            demo: <DemoSystemWidget />,
             features: [
                 {
                     title: "System Monitor",
@@ -151,25 +181,42 @@ export default function FeaturesPage() {
                             </div>
 
                             {/* Visual Placeholder / Abstract Representation */}
+                            {/* Visual Representation or Live Demo */}
                             <div className="flex-1 w-full relative">
                                 <div className="absolute inset-0 bg-gradient-to-tr from-primary/20 to-transparent blur-3xl rounded-full opacity-30" />
-                                <div className="relative bg-card border rounded-2xl shadow-2xl p-8 aspect-square md:aspect-auto md:min-h-[500px] flex flex-col items-center justify-center text-center space-y-6">
-                                    <div className="p-4 bg-muted/30 rounded-full mb-4">
-                                        <section.icon className="w-24 h-24 text-primary/40 stroke-1" />
+                                {section.demo ? (
+                                    <div className="relative bg-card border rounded-2xl shadow-2xl overflow-hidden min-h-[400px] flex flex-col">
+                                        <div className="p-1 bg-muted/50 border-b flex gap-1.5 px-4 items-center h-10">
+                                            <div className="w-3 h-3 rounded-full bg-red-400/50" />
+                                            <div className="w-3 h-3 rounded-full bg-yellow-400/50" />
+                                            <div className="w-3 h-3 rounded-full bg-green-400/50" />
+                                            <div className="ml-4 text-xs text-muted-foreground font-mono bg-background/50 px-2 py-0.5 rounded-md flex-1 text-center">
+                                                campflow-demo.app
+                                            </div>
+                                        </div>
+                                        <div className="flex-1 bg-muted/10 p-4 flex flex-col justify-center">
+                                            {section.demo}
+                                        </div>
                                     </div>
-                                    <div className="space-y-2 max-w-sm">
-                                        <h4 className="text-xl font-medium text-foreground">Progettato per l'efficienza</h4>
-                                        <p className="text-muted-foreground text-sm">
-                                            Ogni interfaccia è studiata per ridurre i click e massimizzare la velocità operativa.
-                                        </p>
+                                ) : (
+                                    <div className="relative bg-card border rounded-2xl shadow-2xl p-8 aspect-square md:aspect-auto md:min-h-[500px] flex flex-col items-center justify-center text-center space-y-6">
+                                        <div className="p-4 bg-muted/30 rounded-full mb-4">
+                                            <section.icon className="w-24 h-24 text-primary/40 stroke-1" />
+                                        </div>
+                                        <div className="space-y-2 max-w-sm">
+                                            <h4 className="text-xl font-medium text-foreground">Progettato per l'efficienza</h4>
+                                            <p className="text-muted-foreground text-sm">
+                                                Ogni interfaccia è studiata per ridurre i click e massimizzare la velocità operativa.
+                                            </p>
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-4 w-full max-w-xs mt-8 opacity-50">
+                                            <div className="h-2 bg-primary/20 rounded"></div>
+                                            <div className="h-2 bg-primary/20 rounded"></div>
+                                            <div className="h-2 bg-primary/20 rounded col-span-2"></div>
+                                            <div className="h-20 bg-primary/10 rounded col-span-2"></div>
+                                        </div>
                                     </div>
-                                    <div className="grid grid-cols-2 gap-4 w-full max-w-xs mt-8 opacity-50">
-                                        <div className="h-2 bg-primary/20 rounded"></div>
-                                        <div className="h-2 bg-primary/20 rounded"></div>
-                                        <div className="h-2 bg-primary/20 rounded col-span-2"></div>
-                                        <div className="h-20 bg-primary/10 rounded col-span-2"></div>
-                                    </div>
-                                </div>
+                                )}
                             </div>
                         </div>
                     ))}
