@@ -1,4 +1,3 @@
-# TO_SIMO_DO (Manuale per il Deploy)
+# TO_SIMO_DO
 
-## 4. Google Search Console
-- [ ] Segui la guida `LAUNCH_AND_SEO.md` per indicizzare il sito su Google.
+Lista delle cose da fare.
