@@ -15,18 +15,9 @@ export interface StatsData {
     charts: {
         revenueByDate: { date: string; value: number }[];
         occupancyByDate: { date: string; piazzola: number; tenda: number; total: number }[];
-        nationalityDistribution: { name: string; value: number; fill: string }[];
-        guestTypeDistribution: { name: string; value: number; fill: string }[];
     };
 }
 
-const COLORS = [
-    'var(--color-chart-1)',
-    'var(--color-chart-2)',
-    'var(--color-chart-3)',
-    'var(--color-chart-4)',
-    'var(--color-chart-5)',
-];
 
 export async function fetchStats(startDate: Date, endDate: Date): Promise<StatsData> {
 
@@ -194,8 +185,6 @@ export async function fetchStats(startDate: Date, endDate: Date): Promise<StatsD
         charts: {
             revenueByDate,
             occupancyByDate,
-            nationalityDistribution: [], // Disabled
-            guestTypeDistribution: []
         }
     };
 }
