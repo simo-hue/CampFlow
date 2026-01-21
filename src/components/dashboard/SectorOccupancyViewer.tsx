@@ -324,7 +324,8 @@ export function SectorOccupancyViewer() {
         const end = new Date(endDate);
 
         // Iterate through days in range
-        for (let d = start; d < end; d = addDays(d, 1)) {
+        // Iterate through days in range (Inclusive check to prevent +1 day overlap)
+        for (let d = start; d <= end; d = addDays(d, 1)) {
             const dateStr = format(d, 'yyyy-MM-dd');
             const dayInfo = pitchData.days.find(day => day.date === dateStr);
 
@@ -772,7 +773,7 @@ export function SectorOccupancyViewer() {
                     pitchId={selection.pitchId}
                     pitchType={selectedPitchType}
                     checkIn={selection.startDate}
-                    checkOut={selection.endDate}
+                    checkOut={format(addDays(parseISO(selection.endDate), 1), 'yyyy-MM-dd')}
                     onSuccess={handleBookingSuccess}
                 />
             )}

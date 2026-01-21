@@ -309,3 +309,14 @@ Stabilized the height of the calendar date picker to prevent layout shifts.
 - **Behavior**: The `Calendar` component now enforces a fixed display of **6 weeks** for every month.
 - **Component**: `src/components/ui/calendar.tsx`
 - **Benefit**: Prevents the calendar popover from "jumping" or resizing when navigating between months with different numbers of weeks (e.g., February vs. August).
+
+# Occupancy Page Fixes (2026-01-21)
+
+## Overview
+Fixed visual layout issues and logic inconsistencies on the `/occupancy` page.
+
+## Changes
+1.  **Column Width Fixed (Responsive)**: Switched to `table-fixed` CSS layout. This guarantees that all date columns (after the first pitch column) are mathematically identical in width. Added `min-w-[40px]` to maintain readability on small screens.
+2.  **Booking Logic Correction (Safe)**: Fixed an off-by-one error in drag-and-drop booking creation.
+    -   **Checkout Logic**: Selecting day X to Y now results in a booking with checkout on Y+1.
+    -   **Validation Fix**: Updated `checkOverlap` to be **inclusive** of the end date. This prevents the "API 409 Conflict" error by blocking invalid selections (which would overlap due to the +1 logic) directly in the UI.
