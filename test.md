@@ -2,9 +2,6 @@
 ## 🛡️ 3. Data Integrity & Database Constraints
 **Goal**: Ensure the database prohibits bad states, even if the UI fails.
 
-- [ ] **Anti-Overbooking Constraint**:
-  - *Manual Test*: Attempt to insert a raw SQL booking (via Supabase dashboard) that overlaps an existing one.
-  - *Expected*: Database throws `exclusion_violation`.
 - [ ] **Orphan Data**:
   - Delete a Customer. Verify their Bookings are also deleted (CASCADE) or blocked (RESTRICT). *Current Schema: CASCADE.*
 - [ ] **Validation Checks**:

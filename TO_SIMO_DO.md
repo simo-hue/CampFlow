@@ -1,9 +1,5 @@
 # TO_SIMO_DO
 
-Implementare come variabili dei prezzi:
-- macchina
-- bambini
-
 - [ ] **Configurazione Prezzi**: Vai su `Impostazioni > Prezzi` e configura i nuovi campi:
     - Prezzo Auto (€/giorno)
     - Prezzo Bambino (€/giorno)
@@ -16,3 +12,7 @@ Implementare come variabili dei prezzi:
 - [ ] Esegui il deploy.
 - [ ] (Opzionale) Se vuoi massimizzare le performance, applica la migration SQL: copiare il contenuto di `supabase/migrations/20260120140000_get_weekly_occupancy.sql` nell'Editor SQL di Supabase.
 - [ ] **Verifica validazione Check-in**: Prova a fare un check-in lasciando dei campi vuoti (es. Numero Documento o Data Nascita) e controlla che il sistema blocchi l'operazione e **evidenzi i campi mancanti in rosso**.
+- [ ] **Verifica Dettagli Cliente**: Vai su `/customers` e clicca su un cliente. Verifica che:
+    - I dati anagrafici siano caricati correttamente.
+    - La lista delle prenotazioni sia visibile e non vuota.
+    - I campi "Statistiche" mostrino i totali corretti.

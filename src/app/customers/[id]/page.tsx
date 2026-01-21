@@ -38,7 +38,7 @@ import {
     BarChart3
 } from 'lucide-react';
 import Link from 'next/link';
-import { format } from 'date-fns';
+import { format, differenceInCalendarDays } from 'date-fns';
 import { it } from 'date-fns/locale';
 import { toast } from 'sonner';
 import { formatCurrency } from '@/lib/utils';
@@ -93,7 +93,7 @@ type Booking = {
         number: string;
         type: string;
     };
-    guests: any[];
+    guests?: any[];
 };
 
 const parseBookingPeriod = (period: string) => {
@@ -101,10 +101,15 @@ const parseBookingPeriod = (period: string) => {
     try {
         const clean = period.replace(/[\[\]\(\)]/g, '');
         const [startStr, endStr] = clean.split(',');
-        return {
-            start: new Date(startStr),
-            end: new Date(endStr)
-        };
+        const start = new Date(startStr);
+        const end = new Date(endStr);
+
+        // Validate dates
+        if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+            return { start: null, end: null };
+        }
+
+        return { start, end };
     } catch (e) {
         return { start: null, end: null };
     }
@@ -133,6 +138,8 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
 
             return { customer: json.customer, bookings };
         },
+        staleTime: 5 * 60 * 1000, // 5 minutes
+        gcTime: 10 * 60 * 1000,   // 10 minutes
     });
 
     // Sync formData when data loads
@@ -186,6 +193,17 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
     const { customer, bookings } = data;
     const totalBookings = bookings.length;
     const totalSpent = bookings.reduce((acc: number, b: Booking) => acc + (b.total_price || 0), 0);
+
+    // Calculate Statistics
+    const totalPresenceDays = bookings.reduce((acc: number, b: Booking) => {
+        if (b.start && b.end) {
+            const days = differenceInCalendarDays(b.end, b.start);
+            return acc + (days > 0 ? days : 0);
+        }
+        return acc;
+    }, 0);
+
+    const averageStay = totalBookings > 0 ? (totalPresenceDays / totalBookings).toFixed(1) : 0;
 
     const handleSave = () => {
         updateCustomerMutation.mutate(formData);
@@ -482,15 +500,15 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                         {/* Placeholder for future stats */}
                         <StatCard
                             label="Giorni di Presenza"
-                            value="-"
+                            value={totalPresenceDays}
                             icon={Calendar}
-                            subtext="Dato non ancora disponibile"
+                            subtext="Totale notti trascorse"
                         />
                         <StatCard
                             label="Media Soggiorno"
-                            value="-"
+                            value={`${averageStay} notti`}
                             icon={BarChart3}
-                            subtext="Dato non ancora disponibile"
+                            subtext="Durata media prenotazione"
                         />
                     </div>
                 </TabsContent>

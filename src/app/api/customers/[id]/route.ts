@@ -24,8 +24,7 @@ export async function GET(
             .from('bookings')
             .select(`
                 *,
-                pitch:pitches(name, number, type),
-                guests:booking_guests(count)
+                pitch:pitches(number, type)
             `)
             .eq('customer_id', id)
             .order('created_at', { ascending: false });

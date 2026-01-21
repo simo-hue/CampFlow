@@ -256,3 +256,32 @@ Added support for new persistent pricing variables to the Settings and Booking f
     - Added "Bambini" input with info tooltip showing the configured max age.
     - Added "Auto" input.
 - **Calculation**: Returns total price including extra costs for children and cars.
+
+# Overbooking Protection (2026-01-21)
+
+## Overview
+The system implements a robust double-layer protection against overbooking to ensure data integrity.
+
+## Layers of Protection
+1.  **Database Constraint (Primary)**:
+    -   **Mechanism**: A PostgreSQL Exclusion Constraint (`prevent_overbooking`) is active on the `bookings` table.
+    -   **Logic**: It physically prevents two rows from having overlapping `booking_period` ranges for the same `pitch_id`.
+    -   **Error Code**: If a violation occurs, Postgres returns error code `23P01`.
+
+2.  **API Error Handling**:
+    -   **Endpoint**: `/api/bookings` catches the `23P01` error.
+    -   **Response**: Returns a `409 Conflict` status with a clearer message: "Piazzola già occupata in questo periodo".
+
+3.  **User Feedback**:
+
+# Customer Details Optimization (2026-01-21)
+
+## Overview
+Fixed an issue where "Anagrafica", "Prenotazioni", and "Statistiche" tabs were empty in the Customer Details page (`/customers/[id]`).
+
+## Fixes Implemented
+- **API**: Resolved a silent failure in `GET /api/customers/[id]` caused by querying non-existent columns (`booking_guests(count)`, `pitch(name)`).
+- **Frontend**: 
+    - Implemented **Intelligent Caching** (staleTime 5 min) prevents unnecessary re-fetches.
+    - Improved **Date Parsing** robustness for booking periods.
+    - Optimized data structure handling.
