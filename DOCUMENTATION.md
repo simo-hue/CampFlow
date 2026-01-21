@@ -299,3 +299,13 @@ Improved UX for the "Search Available Pitches" box on the dashboard.
 - **Behavior**: When opening the "Departure Date" calendar, it now defaults to the month of the selected "Arrival Date" (if set), rather than the current month.
 - **Component**: `AvailabilityModule.tsx`
 - **Benefit**: Reduces scrolling when booking dates in the future.
+
+# Calendar UI Stabilization (2026-01-21)
+
+## Overview
+Stabilized the height of the calendar date picker to prevent layout shifts.
+
+## Change
+- **Behavior**: The `Calendar` component now enforces a fixed display of **6 weeks** for every month.
+- **Component**: `src/components/ui/calendar.tsx`
+- **Benefit**: Prevents the calendar popover from "jumping" or resizing when navigating between months with different numbers of weeks (e.g., February vs. August).
