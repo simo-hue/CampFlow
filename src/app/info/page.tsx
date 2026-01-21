@@ -51,16 +51,12 @@ export default function InfoPage() {
                             </h3>
                             <div className="space-y-3 text-sm">
                                 <div>
-                                    <span className="text-muted-foreground block">Email Principale:</span>
-                                    <span className="font-medium select-all">info@campflow.it</span>
-                                </div>
-                                <div>
-                                    <span className="text-muted-foreground block">Email Amministrazione:</span>
-                                    <span className="font-medium select-all">admin@campflow.it</span>
+                                    <span className="text-muted-foreground block">Email:</span>
+                                    <span className="font-medium select-all">areadisostavaldirabbi@gmail.com</span>
                                 </div>
                                 <div>
                                     <span className="text-muted-foreground block">Sito Web:</span>
-                                    <a href="#" className="text-primary hover:underline">www.campflow.it</a>
+                                    <a href="#" className="text-primary hover:underline">www.areadisostavaldirabbi.it</a>
                                 </div>
                             </div>
                         </div>
@@ -96,13 +92,9 @@ export default function InfoPage() {
                             </h3>
                             <div className="text-sm space-y-2">
                                 <p className="font-medium">
-                                    Via del Campeggio, 42<br />
-                                    00100 Roma (RM)
+                                    Localita Plan, <br />
+                                    38020 Rabbi (TN)
                                 </p>
-                                <div className="mt-4 p-2 bg-muted rounded text-xs font-mono">
-                                    LAT: 41.9027835<br />
-                                    LON: 12.4963655
-                                </div>
                             </div>
                         </div>
                     </div>
