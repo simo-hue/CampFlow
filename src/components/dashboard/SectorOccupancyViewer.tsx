@@ -715,7 +715,7 @@ export function SectorOccupancyViewer() {
                         </div>
                     </div>
                 ) : (
-                    <table className="w-full text-sm border-collapse">
+                    <table className="w-full text-sm border-collapse table-fixed">
                         <thead className="shadow-sm">
                             <tr>
                                 <th className="p-3 text-left border-b border-neutral-800 min-w-[100px] w-[100px] bg-neutral-900 text-white sticky top-0 left-0 z-50 shadow-md">
@@ -726,7 +726,7 @@ export function SectorOccupancyViewer() {
                                     const isToday = isSameDay(date, new Date());
 
                                     return (
-                                        <th key={date.toISOString()} className="p-0 border-b border-r border-neutral-800 min-w-[60px] text-center sticky top-0 z-30 bg-neutral-900 text-white">
+                                        <th key={date.toISOString()} className="p-0 border-b border-r border-neutral-800 text-center sticky top-0 z-30 bg-neutral-900 text-white min-w-[40px]">
                                             <div className={`p-2 flex flex-col items-center justify-center h-full w-full ${isToday ? 'bg-blue-900/30 text-blue-400' : ''}`}>
                                                 <span className={`text-[10px] uppercase font-bold tracking-wider ${isToday ? 'text-blue-400' : 'text-neutral-400'}`}>
                                                     {format(date, 'EEE', { locale: it })}
