@@ -47,6 +47,8 @@ import { cleanupOldLogs } from '@/lib/logger-server';
 import { revalidatePath } from 'next/cache';
 
 export async function cleanLogsAction() {
+    const isAuthed = await getAuthStatus();
+    if (!isAuthed) throw new Error('Unauthorized');
     const result = await cleanupOldLogs();
     revalidatePath('/sys-monitor');
     return result;
@@ -55,6 +57,8 @@ export async function cleanLogsAction() {
 import { clearAllLogs } from '@/lib/logger-server';
 
 export async function clearAllLogsAction() {
+    const isAuthed = await getAuthStatus();
+    if (!isAuthed) throw new Error('Unauthorized');
     const result = await clearAllLogs();
     revalidatePath('/sys-monitor');
     return result;

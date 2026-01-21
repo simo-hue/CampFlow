@@ -7,13 +7,14 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, Users, FileText, Loader2, Check, Dog, Plus, X, Euro } from 'lucide-react';
+import { Calendar, Users, FileText, Loader2, Check, Dog, Plus, X, Euro, Car, Baby, Info } from 'lucide-react';
 import { calculateNights, formatDateLong } from '@/lib/dateUtils';
 import { formatCurrency } from '@/lib/utils';
 import type { PitchType, PriceBreakdownDay } from '@/lib/types';
 import { invalidateOccupancyCache } from './SectorOccupancyViewer';
 import { CustomerAutocomplete } from './CustomerAutocomplete';
 import { toast } from "sonner";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface BookingCreationModalProps {
     open: boolean;
@@ -41,11 +42,14 @@ export function BookingCreationModal({
     const [customerEmail, setCustomerEmail] = useState('');
     const [customerPhone, setCustomerPhone] = useState('');
     const [guestsCount, setGuestsCount] = useState(2);
+    const [childrenCount, setChildrenCount] = useState(0);
+    const [carsCount, setCarsCount] = useState(0);
     const [guestNames, setGuestNames] = useState<string[]>(['']);
     const [dogsCount, setDogsCount] = useState(0);
     const [notes, setNotes] = useState('');
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
+    const [childAgeMax, setChildAgeMax] = useState(12);
 
     // Autocomplete State
     const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(null);
@@ -62,6 +66,9 @@ export function BookingCreationModal({
             try {
                 let personPrice = 10;
                 let dogPrice = 5;
+                let childPrice = 5;
+                let carPrice = 5;
+                let childMaxAge = 12;
 
                 if (typeof window !== 'undefined') {
                     const savedPricing = localStorage.getItem('pricing');
@@ -69,11 +76,15 @@ export function BookingCreationModal({
                         const parsed = JSON.parse(savedPricing);
                         personPrice = parsed.person_price_per_day ?? 10;
                         dogPrice = parsed.dog_price_per_day ?? 5;
+                        childPrice = parsed.child_price_per_day ?? 5;
+                        carPrice = parsed.car_price_per_day ?? 5;
+                        childMaxAge = parsed.child_age_max ?? 12;
                     }
                 }
+                setChildAgeMax(childMaxAge);
 
                 const res = await fetch(
-                    `/api/pricing/calculate?checkIn=${checkIn}&checkOut=${checkOut}&pitchType=${pitchType}&guests=${guestsCount}&dogs=${dogsCount}&guestPrice=${personPrice}&dogPrice=${dogPrice}`
+                    `/api/pricing/calculate?checkIn=${checkIn}&checkOut=${checkOut}&pitchType=${pitchType}&guests=${guestsCount}&children=${childrenCount}&dogs=${dogsCount}&cars=${carsCount}&guestPrice=${personPrice}&childPrice=${childPrice}&dogPrice=${dogPrice}&carPrice=${carPrice}`
                 );
 
                 if (!res.ok) throw new Error("Failed to calculate price");
@@ -95,7 +106,7 @@ export function BookingCreationModal({
         };
 
         fetchPrice();
-    }, [checkIn, checkOut, pitchType, nights, guestsCount, dogsCount]);
+    }, [checkIn, checkOut, pitchType, nights, guestsCount, childrenCount, dogsCount, carsCount]);
 
     const handleCustomerSelect = (customer: any) => {
         setSelectedCustomerId(customer.id);
@@ -140,8 +151,10 @@ export function BookingCreationModal({
                 pitch_id: pitchId,
                 check_in: checkIn,
                 check_out: checkOut,
-                guests_count: guestsCount,
+                guests_count: guestsCount + childrenCount, // Total people for booking table logic
+                children_count: childrenCount, // Store specifically if DB supports checks
                 dogs_count: dogsCount,
+                cars_count: carsCount, // Store specifically if DB supports checks
                 notes: notes,
                 customer: {
                     first_name: firstName,
@@ -192,6 +205,8 @@ export function BookingCreationModal({
         setCustomerEmail('');
         setCustomerPhone('');
         setGuestsCount(2);
+        setChildrenCount(0);
+        setCarsCount(0);
         setGuestNames(['']);
         setDogsCount(0);
         setNotes('');
@@ -322,7 +337,7 @@ export function BookingCreationModal({
                             <div className="space-y-2">
                                 <Label htmlFor="guests" className="flex items-center gap-2">
                                     <Users className="h-4 w-4" />
-                                    Ospiti
+                                    Adulti
                                 </Label>
                                 <Input
                                     id="guests"
@@ -331,6 +346,34 @@ export function BookingCreationModal({
                                     max="10"
                                     value={guestsCount}
                                     onChange={(e) => setGuestsCount(parseInt(e.target.value) || 1)}
+                                    disabled={loading}
+                                />
+                            </div>
+
+                            <div className="space-y-2">
+                                <div className="flex items-center gap-2">
+                                    <Label htmlFor="children" className="flex items-center gap-2">
+                                        <Baby className="h-4 w-4" />
+                                        Bambini
+                                    </Label>
+                                    <TooltipProvider>
+                                        <Tooltip>
+                                            <TooltipTrigger>
+                                                <Info className="h-3 w-3 text-muted-foreground cursor-help" />
+                                            </TooltipTrigger>
+                                            <TooltipContent>
+                                                <p>Età massima: {childAgeMax} anni</p>
+                                            </TooltipContent>
+                                        </Tooltip>
+                                    </TooltipProvider>
+                                </div>
+                                <Input
+                                    id="children"
+                                    type="number"
+                                    min="0"
+                                    max="10"
+                                    value={childrenCount}
+                                    onChange={(e) => setChildrenCount(parseInt(e.target.value) || 0)}
                                     disabled={loading}
                                 />
                             </div>
@@ -350,6 +393,22 @@ export function BookingCreationModal({
                                     disabled={loading}
                                 />
                             </div>
+
+                            <div className="space-y-2">
+                                <Label htmlFor="cars" className="flex items-center gap-2">
+                                    <Car className="h-4 w-4" />
+                                    Auto
+                                </Label>
+                                <Input
+                                    id="cars"
+                                    type="number"
+                                    min="0"
+                                    max="5"
+                                    value={carsCount}
+                                    onChange={(e) => setCarsCount(parseInt(e.target.value) || 0)}
+                                    disabled={loading}
+                                />
+                            </div>
                         </div>
 
                         <div className="space-y-2">
@@ -357,7 +416,7 @@ export function BookingCreationModal({
                                 <Label className="text-sm text-muted-foreground">
                                     Nomi Ospiti (opzionale - compilare al check-in)
                                 </Label>
-                                {guestNames.length < guestsCount && (
+                                {guestNames.length < (guestsCount + childrenCount) && (
                                     <Button
                                         type="button"
                                         variant="ghost"

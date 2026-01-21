@@ -19,8 +19,8 @@ export function middleware(request: NextRequest) {
         return NextResponse.next();
     }
 
-    // 3. Allow access to login page and auth apis
-    if (pathname === '/login' || pathname.startsWith('/api/auth')) {
+    // 3. Allow access to login page, auth apis, and system monitor (it has its own auth)
+    if (pathname === '/login' || pathname.startsWith('/api/auth') || pathname.startsWith('/sys-monitor')) {
         return NextResponse.next();
     }
 
@@ -31,6 +31,11 @@ export function middleware(request: NextRequest) {
     const authToken = request.cookies.get('campflow_auth')?.value;
 
     if (!authToken) {
+        // If it's an API route (and not in the allows list), return 401 (JSON), else Redirect
+        if (pathname.startsWith('/api')) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+
         // Redirect to login if not authenticated (Standard App Behavior)
         const url = request.nextUrl.clone();
         url.pathname = '/login';

@@ -30,12 +30,7 @@ export async function loginAction(formData: FormData) {
         // I will rely on the new middleware for everything, but let's be safe.
         // Actually, sys-monitor/login/actions.ts checks 'sys_monitor_auth'.
         // I should probably unify this. For now, I'll set both to be safe.
-        cookieStore.set('sys_monitor_auth', 'true', {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            path: '/',
-            maxAge: 60 * 60 * 24 * 7,
-        });
+
 
         // Redirect to original destination if possible, else /
         // For now, redirect to /

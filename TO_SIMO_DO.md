@@ -1,6 +1,14 @@
 # TO_SIMO_DO
 
-Lista delle cose da fare.
+Implementare come variabili dei prezzi:
+- macchina
+- bambini
+
+- [ ] **Configurazione Prezzi**: Vai su `Impostazioni > Prezzi` e configura i nuovi campi:
+    - Prezzo Auto (€/giorno)
+    - Prezzo Bambino (€/giorno)
+    - Età Massima Bambino (anni) - definisce fino a quale età si applica la tariffa ridotta.
+    - Clicca su "Salva Modifiche".
 
 - [ ] Crea un account su [Vercel](https://vercel.com) (login con GitHub).
 - [ ] Importa il repository `CampFlow` in un nuovo progetto Vercel.

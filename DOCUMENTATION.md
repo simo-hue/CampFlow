@@ -223,3 +223,36 @@ The system now prevents check-in if ANY of the following fields are empty:
 - **Client-Side**: `validateForm()` helper in `CheckInPage` checks all fields before allowing the API call.
 - **Visual Feedback**: Invalid fields are highlighted with a **red border** to immediately attract the user's attention.
 - **Toast Feedback**: A clear error message lists specifically which fields are missing.
+
+# System Monitor Security Update (2026-01-20)
+
+## Overview
+Improved the security posture of the System Monitor (`/sys-monitor`) by decoupling its authentication from the main application and enforcing strict access controls on sensitive server actions.
+
+## Changes
+- **Authentication Decoupling**: Logging into the main application (`/login`) NO LONGER automatically grants access to `/sys-monitor`.
+    - **Why**: Keeps the "God Mode" developer dashboard isolated from standard operational workflows.
+    - **Effect**: You must log in specifically at `/sys-monitor/login` with admin credentials to access the monitor.
+- **Middleware Update**: The global middleware now explicitly whitelists `/sys-monitor` based on its own internal authentication logic, preventing loop redirects and allowing independent access.
+- **Server Action Security**: All sensitive actions (cleaning logs, clearing databases) now perform a rigorous server-side check of the `sys_monitor_auth` cookie before execution. This prevents "Unauthorized" execution even if someone bypasses the client-side UI.
+
+## Verification
+- Accessing `/sys-monitor` without being logged into the **monitor itself** will now correctly redirect to the monitor login page, even if you are logged into the main app.
+
+# Pricing Variables Update (2026-01-21)
+
+## Overview
+Added support for new persistent pricing variables to the Settings and Booking flow.
+
+## New Variables
+- **Car Price** (€/day): Cost for an additional car.
+- **Child Price** (€/day): Cost for children.
+- **Child Max Age**: The maximum age (inclusive) for a guest to be considered a child.
+
+## Implementation
+- **Settings**: New fields in `Settings > Prices` saved to `localStorage`.
+- **Booking Popup**: 
+    - Renamed "Ospiti" to "Adulti".
+    - Added "Bambini" input with info tooltip showing the configured max age.
+    - Added "Auto" input.
+- **Calculation**: Returns total price including extra costs for children and cars.

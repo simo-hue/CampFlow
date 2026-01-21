@@ -13,11 +13,17 @@ import { Save, Check } from 'lucide-react';
 interface PricingSettings {
     person_price_per_day: number;
     dog_price_per_day: number;
+    car_price_per_day: number;
+    child_price_per_day: number;
+    child_age_max: number;
 }
 
 const DEFAULT_PRICING: PricingSettings = {
     person_price_per_day: 10,
     dog_price_per_day: 5,
+    car_price_per_day: 5,
+    child_price_per_day: 5,
+    child_age_max: 12,
 };
 
 export default function SettingsPage() {
@@ -111,6 +117,39 @@ export default function SettingsPage() {
                             </p>
                         </div>
 
+                        {/* Prezzo Bambino */}
+                        <div className="grid gap-2">
+                            <Label htmlFor="child-price">Bambino (€/giorno)</Label>
+                            <Input
+                                id="child-price"
+                                type="number"
+                                min="0"
+                                step="0.5"
+                                value={pricing.child_price_per_day}
+                                onChange={(e) => updatePricing('child_price_per_day', e.target.value)}
+                            />
+                            <p className="text-xs text-muted-foreground">
+                                Costo per bambino al giorno
+                            </p>
+                        </div>
+
+                        {/* Età Massima Bambino */}
+                        <div className="grid gap-2">
+                            <Label htmlFor="child-age">Età Massima Bambino (anni)</Label>
+                            <Input
+                                id="child-age"
+                                type="number"
+                                min="0"
+                                max="17"
+                                step="1"
+                                value={pricing.child_age_max}
+                                onChange={(e) => updatePricing('child_age_max', e.target.value)}
+                            />
+                            <p className="text-xs text-muted-foreground">
+                                Età massima (inclusa) per essere considerato bambino. Oltre questa età verrà applicata la tariffa persona.
+                            </p>
+                        </div>
+
                         {/* Prezzo Cane */}
                         <div className="grid gap-2">
                             <Label htmlFor="dog-price">Cane (€/giorno)</Label>
@@ -124,6 +163,22 @@ export default function SettingsPage() {
                             />
                             <p className="text-xs text-muted-foreground">
                                 Costo per cane al giorno
+                            </p>
+                        </div>
+
+                        {/* Prezzo Auto */}
+                        <div className="grid gap-2">
+                            <Label htmlFor="car-price">Auto (€/giorno)</Label>
+                            <Input
+                                id="car-price"
+                                type="number"
+                                min="0"
+                                step="0.5"
+                                value={pricing.car_price_per_day}
+                                onChange={(e) => updatePricing('car_price_per_day', e.target.value)}
+                            />
+                            <p className="text-xs text-muted-foreground">
+                                Costo per auto al giorno
                             </p>
                         </div>
 

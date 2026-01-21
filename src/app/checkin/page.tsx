@@ -126,23 +126,23 @@ export default function CheckInPage() {
 
                 {/* Main Action Bar: Search & Filters */}
                 {/* Main Action Bar: Search & Filters - redesign premium */}
-                <div className="flex flex-col md:flex-row w-full max-w-4xl items-stretch md:items-center gap-3 bg-background/60 backdrop-blur-md p-2 rounded-2xl border shadow-sm mx-auto">
+                <div className="flex flex-col md:flex-row w-full max-w-4xl items-stretch md:items-center gap-3 bg-background/60 backdrop-blur-md p-1.5 rounded-xl border shadow-sm mx-auto">
                     <div className="relative flex-1 group">
-                        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
                         <Input
                             placeholder="Cerca prenotazione per nome o cognome..."
-                            className="pl-11 h-12 text-base bg-transparent border-transparent focus-visible:ring-0 placeholder:text-muted-foreground/70"
+                            className="pl-10 h-10 text-sm bg-transparent border-transparent focus-visible:ring-0 placeholder:text-muted-foreground/70"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
                     </div>
 
-                    <div className="h-8 w-[1px] bg-border hidden md:block" />
+                    <div className="h-6 w-[1px] bg-border hidden md:block" />
 
                     <div className="flex gap-2 w-full md:w-auto">
                         <div className="relative flex-1 md:w-[180px]">
                             <select
-                                className="appearance-none flex h-12 w-full rounded-xl bg-muted/50 hover:bg-muted/80 transition-colors px-4 py-2 pr-8 text-sm font-medium focus:outline-none cursor-pointer"
+                                className="appearance-none flex h-10 w-full rounded-lg bg-muted/50 hover:bg-muted/80 transition-colors px-3 py-2 pr-8 text-sm font-medium focus:outline-none cursor-pointer"
                                 value={statusFilter}
                                 onChange={(e) => setStatusFilter(e.target.value as any)}
                             >
@@ -156,7 +156,7 @@ export default function CheckInPage() {
                         {statusFilter === 'checked_in' && (
                             <div className="relative flex-1 md:w-[180px] animate-in fade-in slide-in-from-left-4 duration-300">
                                 <select
-                                    className="appearance-none flex h-12 w-full rounded-xl bg-muted/50 hover:bg-muted/80 transition-colors px-4 py-2 pr-8 text-sm font-medium focus:outline-none cursor-pointer"
+                                    className="appearance-none flex h-10 w-full rounded-lg bg-muted/50 hover:bg-muted/80 transition-colors px-3 py-2 pr-8 text-sm font-medium focus:outline-none cursor-pointer"
                                     value={questuraFilter}
                                     onChange={(e) => setQuesturaFilter(e.target.value as any)}
                                 >

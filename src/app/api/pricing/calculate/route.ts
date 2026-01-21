@@ -17,17 +17,26 @@ export async function GET(request: Request) {
         const pitchType = searchParams.get('pitchType') as PitchType;
 
         const guestsStr = searchParams.get('guests');
+        const childrenStr = searchParams.get('children');
         const dogsStr = searchParams.get('dogs');
+        const carsStr = searchParams.get('cars');
         const guestPriceStr = searchParams.get('guestPrice');
+        const childPriceStr = searchParams.get('childPrice');
         const dogPriceStr = searchParams.get('dogPrice');
+        const carPriceStr = searchParams.get('carPrice');
 
         const guestsCount = guestsStr ? parseInt(guestsStr) : 0;
+        const childrenCount = childrenStr ? parseInt(childrenStr) : 0;
         const dogsCount = dogsStr ? parseInt(dogsStr) : 0;
+        const carsCount = carsStr ? parseInt(carsStr) : 0;
         const guestPrice = guestPriceStr ? parseFloat(guestPriceStr) : 0;
+        const childPrice = childPriceStr ? parseFloat(childPriceStr) : 0;
         const dogPrice = dogPriceStr ? parseFloat(dogPriceStr) : 0;
+        const carPrice = carPriceStr ? parseFloat(carPriceStr) : 0;
 
         // Calculate daily extra cost
-        const dailyExtraCost = (guestsCount * guestPrice) + (dogsCount * dogPrice);
+        // Guests usually means ADULTS in the UI now, but API param name kept as guests for consistency with frontend hook
+        const dailyExtraCost = (guestsCount * guestPrice) + (childrenCount * childPrice) + (dogsCount * dogPrice) + (carsCount * carPrice);
 
         // Validation
         if (!checkIn || !checkOut || !pitchType) {
