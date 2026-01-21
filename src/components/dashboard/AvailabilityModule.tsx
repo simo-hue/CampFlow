@@ -144,6 +144,7 @@ export function AvailabilityModule() {
                                         const minDate = checkInDate || new Date(new Date().setHours(0, 0, 0, 0));
                                         return date <= minDate;
                                     }}
+                                    defaultMonth={checkOutDate || checkInDate || new Date()}
                                     initialFocus
                                 />
                             </PopoverContent>

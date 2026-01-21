@@ -289,3 +289,13 @@ Fixed an issue where "Anagrafica", "Prenotazioni", and "Statistiche" tabs were e
 ### UI Refinement (2026-01-21)
 - **Aesthetics**: Improved readability of the customer details page by increasing contrast.
 - **Components**: Updated inputs and cards to have distinct backgrounds, solving the "Total Black" visibility issue.
+
+# Smart Date Picker (2026-01-21)
+
+## Overview
+Improved UX for the "Search Available Pitches" box on the dashboard.
+
+## Change
+- **Behavior**: When opening the "Departure Date" calendar, it now defaults to the month of the selected "Arrival Date" (if set), rather than the current month.
+- **Component**: `AvailabilityModule.tsx`
+- **Benefit**: Reduces scrolling when booking dates in the future.
