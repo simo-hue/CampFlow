@@ -38,10 +38,19 @@ import {
     BarChart3
 } from 'lucide-react';
 import Link from 'next/link';
+import {
+    BarChart,
+    Bar,
+    XAxis,
+    YAxis,
+    CartesianGrid,
+    Tooltip,
+    ResponsiveContainer
+} from 'recharts';
 import { format, differenceInCalendarDays } from 'date-fns';
 import { it } from 'date-fns/locale';
 import { toast } from 'sonner';
-import { formatCurrency } from '@/lib/utils';
+import { cn, formatCurrency } from '@/lib/utils';
 
 // Types
 type Customer = {
@@ -119,6 +128,7 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
     const { id } = use(params);
     const queryClient = useQueryClient();
     const [isEditing, setIsEditing] = useState(false);
+    const [activeTab, setActiveTab] = useState("anagrafica");
 
     // Form state
     const [formData, setFormData] = useState<Partial<Customer>>({});
@@ -203,7 +213,22 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
         return acc;
     }, 0);
 
+
     const averageStay = totalBookings > 0 ? (totalPresenceDays / totalBookings).toFixed(1) : 0;
+
+    // Prepare Chart Data (Yearly Spending)
+    const yearlySpendingMap = bookings.reduce((acc: Record<string, number>, b: Booking) => {
+        if (b.start && b.total_price) {
+            const year = b.start.getFullYear().toString();
+            acc[year] = (acc[year] || 0) + b.total_price;
+        }
+        return acc;
+    }, {});
+
+    const chartData = Object.entries(yearlySpendingMap)
+        .map(([year, amount]) => ({ year, amount }))
+        .sort((a, b) => a.year.localeCompare(b.year));
+
 
     const handleSave = () => {
         updateCustomerMutation.mutate(formData);
@@ -211,25 +236,24 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
 
     const handleInputChange = (field: string, value: string) => {
         setFormData(prev => ({ ...prev, [field]: value }));
-    };
-
-    const StatCard = ({ label, value, icon: Icon, subtext }: { label: string, value: string | number, icon: any, subtext?: string }) => (
-        <Card>
-            <CardContent className="p-6 flex items-center gap-4">
-                <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center text-primary">
-                    <Icon className="h-6 w-6" />
+    }
+    const StatCard = ({ label, value, icon: Icon, subtext, onClick, className }: { label: string, value: string | number, icon: any, subtext?: string, onClick?: () => void, className?: string }) => (
+        <Card onClick={onClick} className={cn(className, onClick && "cursor-pointer hover:border-primary/50 transition-colors")}>
+            <CardContent className="p-4 flex items-center gap-4">
+                <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary shrink-0">
+                    <Icon className="h-5 w-5" />
                 </div>
                 <div>
-                    <p className="text-sm font-medium text-muted-foreground">{label}</p>
-                    <p className="text-2xl font-bold">{value}</p>
-                    {subtext && <p className="text-xs text-muted-foreground mt-1">{subtext}</p>}
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{label}</p>
+                    <p className="text-2xl font-bold leading-tight decoration-primary underline decoration-2 underline-offset-4 decoration-transparent">{value}</p>
+                    {subtext && <p className="text-xs text-muted-foreground/80 mt-1">{subtext}</p>}
                 </div>
             </CardContent>
         </Card>
     );
 
     return (
-        <div className="flex flex-col bg-muted/10 p-4 md:p-8 gap-6 min-h-screen">
+        <div className="flex flex-col bg-muted/10 p-4 md:p-8 gap-6 h-screen overflow-hidden">
 
             {/* Header: Identity & Navigation - Centered */}
             <div className="flex flex-col items-center justify-center text-center gap-2 shrink-0">
@@ -251,7 +275,7 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
             </div>
 
             {/* Main Content Tabs - Full Height & Width */}
-            <Tabs defaultValue="anagrafica" className="flex-1 flex flex-col w-full">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col w-full">
 
                 {/* Custom Pill-shaped Tab List - Centered */}
                 <div className="flex justify-center shrink-0 mb-6">
@@ -480,13 +504,16 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                 </TabsContent>
 
                 {/* TAB 3: STATISTICHE (Stats Only) */}
-                <TabsContent value="stats" className="flex-1 w-full mt-0">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto w-full">
+                {/* TAB 3: STATISTICHE (Stats Only) */}
+                <TabsContent value="stats" className="flex-1 w-full mt-0 flex flex-col min-h-0">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 max-w-7xl mx-auto w-full shrink-0">
                         <StatCard
                             label="Prenotazioni Totali"
                             value={totalBookings}
                             icon={History}
                             subtext="Soggiorni completati o futuri"
+                            onClick={() => setActiveTab("prenotazioni")}
+                            className="hover:bg-accent/50"
                         />
                         <StatCard
                             label="Spesa Totale"
@@ -507,6 +534,55 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                             icon={BarChart3}
                             subtext="Durata media prenotazione"
                         />
+                    </div>
+
+                    {/* Charts Section - Flexible Height */}
+                    <div className="mt-4 flex-1 max-w-7xl mx-auto w-full min-h-0 pb-2">
+                        <Card className="flex flex-col shadow-sm border bg-card h-full">
+                            <CardHeader className="pb-2">
+                                <CardTitle className="text-lg">Andamento Spesa Annuale</CardTitle>
+                                <CardDescription>Totale speso per anno solare</CardDescription>
+                            </CardHeader>
+                            <CardContent className="w-full h-full min-h-[150px]">
+                                {chartData.length > 0 ? (
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <BarChart data={chartData} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
+                                            <CartesianGrid strokeDasharray="3 3" vertical={false} className="stroke-muted/20" />
+                                            <XAxis
+                                                dataKey="year"
+                                                stroke="#888888"
+                                                fontSize={12}
+                                                tickLine={false}
+                                                axisLine={false}
+                                            />
+                                            <YAxis
+                                                stroke="#888888"
+                                                fontSize={12}
+                                                tickLine={false}
+                                                axisLine={false}
+                                                tickFormatter={(value) => `€${value}`}
+                                            />
+                                            <Tooltip
+                                                cursor={{ fill: 'transparent' }}
+                                                contentStyle={{ backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))', borderRadius: '8px' }}
+                                                itemStyle={{ color: 'hsl(var(--foreground))' }}
+                                                formatter={(value: any) => [formatCurrency(value || 0), 'Spesa']}
+                                            />
+                                            <Bar
+                                                dataKey="amount"
+                                                fill="#22c55e"
+                                                radius={[4, 4, 0, 0]}
+                                                barSize={60}
+                                            />
+                                        </BarChart>
+                                    </ResponsiveContainer>
+                                ) : (
+                                    <div className="h-full flex items-center justify-center text-muted-foreground">
+                                        Nessun dato disponibile per il grafico
+                                    </div>
+                                )}
+                            </CardContent>
+                        </Card>
                     </div>
                 </TabsContent>
             </Tabs>
