@@ -285,3 +285,7 @@ Fixed an issue where "Anagrafica", "Prenotazioni", and "Statistiche" tabs were e
     - Implemented **Intelligent Caching** (staleTime 5 min) prevents unnecessary re-fetches.
     - Improved **Date Parsing** robustness for booking periods.
     - Optimized data structure handling.
+
+### UI Refinement (2026-01-21)
+- **Aesthetics**: Improved readability of the customer details page by increasing contrast.
+- **Components**: Updated inputs and cards to have distinct backgrounds, solving the "Total Black" visibility issue.

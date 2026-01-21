@@ -229,7 +229,7 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
     );
 
     return (
-        <div className="h-[calc(100vh-4rem)] flex flex-col bg-muted/5 p-4 md:p-6 gap-6 overflow-hidden">
+        <div className="h-[calc(100vh-4rem)] flex flex-col bg-muted/10 p-4 md:p-8 gap-6 overflow-hidden">
 
             {/* Header: Identity & Navigation - Centered */}
             <div className="flex flex-col items-center justify-center text-center gap-2 shrink-0">
@@ -270,7 +270,7 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
 
                 {/* TAB 1: ANAGRAFICA (Form & Editing) */}
                 <TabsContent value="anagrafica" className="flex-1 w-full h-full data-[state=inactive]:hidden mt-0">
-                    <Card className="h-full flex flex-col border-0 shadow-sm bg-background/50 backdrop-blur-sm">
+                    <Card className="h-full flex flex-col border shadow-sm bg-card">
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
                             <div>
                                 <CardTitle>Dati Personali</CardTitle>
@@ -296,38 +296,38 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         <div className="space-y-2">
                                             <Label>Nome</Label>
-                                            <Input disabled={!isEditing} value={formData.first_name || ''} onChange={e => handleInputChange('first_name', e.target.value)} />
+                                            <Input className="bg-background" disabled={!isEditing} value={formData.first_name || ''} onChange={e => handleInputChange('first_name', e.target.value)} />
                                         </div>
                                         <div className="space-y-2">
                                             <Label>Cognome</Label>
-                                            <Input disabled={!isEditing} value={formData.last_name || ''} onChange={e => handleInputChange('last_name', e.target.value)} />
+                                            <Input className="bg-background" disabled={!isEditing} value={formData.last_name || ''} onChange={e => handleInputChange('last_name', e.target.value)} />
                                         </div>
                                         <div className="space-y-2">
                                             <Label>Email</Label>
-                                            <Input disabled={!isEditing} value={formData.email || ''} onChange={e => handleInputChange('email', e.target.value)} />
+                                            <Input className="bg-background" disabled={!isEditing} value={formData.email || ''} onChange={e => handleInputChange('email', e.target.value)} />
                                         </div>
                                         <div className="space-y-2">
                                             <Label>Telefono</Label>
-                                            <Input disabled={!isEditing} value={formData.phone || ''} onChange={e => handleInputChange('phone', e.target.value)} />
+                                            <Input className="bg-background" disabled={!isEditing} value={formData.phone || ''} onChange={e => handleInputChange('phone', e.target.value)} />
                                         </div>
                                         <div className="space-y-2">
                                             <Label>Data di Nascita</Label>
-                                            <Input type="date" disabled={!isEditing} value={formData.birth_date ? format(new Date(formData.birth_date), 'yyyy-MM-dd') : ''} onChange={e => handleInputChange('birth_date', e.target.value)} />
+                                            <Input className="bg-background" type="date" disabled={!isEditing} value={formData.birth_date ? format(new Date(formData.birth_date), 'yyyy-MM-dd') : ''} onChange={e => handleInputChange('birth_date', e.target.value)} />
                                         </div>
                                         <div className="space-y-2">
                                             <Label>Sesso</Label>
-                                            <Input disabled={!isEditing} value={formData.gender || ''} onChange={e => handleInputChange('gender', e.target.value)} placeholder="M/F" />
+                                            <Input className="bg-background" disabled={!isEditing} value={formData.gender || ''} onChange={e => handleInputChange('gender', e.target.value)} placeholder="M/F" />
                                         </div>
                                     </div>
 
                                     <div className="grid grid-cols-2 gap-6 pt-2">
                                         <div className="space-y-2">
                                             <Label>Comune Nascita</Label>
-                                            <Input disabled={!isEditing} value={formData.birth_city || ''} onChange={e => handleInputChange('birth_city', e.target.value)} />
+                                            <Input className="bg-background" disabled={!isEditing} value={formData.birth_city || ''} onChange={e => handleInputChange('birth_city', e.target.value)} />
                                         </div>
                                         <div className="space-y-2">
                                             <Label>Provincia</Label>
-                                            <Input disabled={!isEditing} value={formData.birth_province || ''} onChange={e => handleInputChange('birth_province', e.target.value)} />
+                                            <Input className="bg-background" disabled={!isEditing} value={formData.birth_province || ''} onChange={e => handleInputChange('birth_province', e.target.value)} />
                                         </div>
                                     </div>
                                 </section>
@@ -342,26 +342,26 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                                     <div className="space-y-4">
                                         <div className="space-y-2">
                                             <Label>Indirizzo</Label>
-                                            <Input disabled={!isEditing} value={formData.address || ''} onChange={e => handleInputChange('address', e.target.value)} placeholder="Via Roma, 1" />
+                                            <Input className="bg-background" disabled={!isEditing} value={formData.address || ''} onChange={e => handleInputChange('address', e.target.value)} placeholder="Via Roma, 1" />
                                         </div>
                                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                             <div className="md:col-span-1 space-y-2">
                                                 <Label>CAP</Label>
-                                                <Input disabled={!isEditing} value={formData.residence_zip || ''} onChange={e => handleInputChange('residence_zip', e.target.value)} />
+                                                <Input className="bg-background" disabled={!isEditing} value={formData.residence_zip || ''} onChange={e => handleInputChange('residence_zip', e.target.value)} />
                                             </div>
                                             <div className="md:col-span-2 space-y-2">
                                                 <Label>Città</Label>
-                                                <Input disabled={!isEditing} value={formData.residence_city || ''} onChange={e => handleInputChange('residence_city', e.target.value)} />
+                                                <Input className="bg-background" disabled={!isEditing} value={formData.residence_city || ''} onChange={e => handleInputChange('residence_city', e.target.value)} />
                                             </div>
                                         </div>
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                             <div className="space-y-2">
                                                 <Label>Provincia</Label>
-                                                <Input disabled={!isEditing} value={formData.residence_province || ''} onChange={e => handleInputChange('residence_province', e.target.value)} />
+                                                <Input className="bg-background" disabled={!isEditing} value={formData.residence_province || ''} onChange={e => handleInputChange('residence_province', e.target.value)} />
                                             </div>
                                             <div className="space-y-2">
                                                 <Label>Stato</Label>
-                                                <Input disabled={!isEditing} value={formData.residence_country || ''} onChange={e => handleInputChange('residence_country', e.target.value)} />
+                                                <Input className="bg-background" disabled={!isEditing} value={formData.residence_country || ''} onChange={e => handleInputChange('residence_country', e.target.value)} />
                                             </div>
                                         </div>
                                     </div>
@@ -377,19 +377,19 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         <div className="space-y-2">
                                             <Label>Tipo</Label>
-                                            <Input disabled={!isEditing} value={formData.document_type || ''} onChange={e => handleInputChange('document_type', e.target.value)} placeholder="carta_identita" />
+                                            <Input className="bg-background" disabled={!isEditing} value={formData.document_type || ''} onChange={e => handleInputChange('document_type', e.target.value)} placeholder="carta_identita" />
                                         </div>
                                         <div className="space-y-2">
                                             <Label>Numero</Label>
-                                            <Input disabled={!isEditing} value={formData.document_number || ''} onChange={e => handleInputChange('document_number', e.target.value)} />
+                                            <Input className="bg-background" disabled={!isEditing} value={formData.document_number || ''} onChange={e => handleInputChange('document_number', e.target.value)} />
                                         </div>
                                         <div className="space-y-2">
                                             <Label>Rilasciato da</Label>
-                                            <Input disabled={!isEditing} value={formData.document_issuer || ''} onChange={e => handleInputChange('document_issuer', e.target.value)} />
+                                            <Input className="bg-background" disabled={!isEditing} value={formData.document_issuer || ''} onChange={e => handleInputChange('document_issuer', e.target.value)} />
                                         </div>
                                         <div className="space-y-2">
                                             <Label>Data Rilascio</Label>
-                                            <Input type="date" disabled={!isEditing} value={formData.document_issue_date ? format(new Date(formData.document_issue_date), 'yyyy-MM-dd') : ''} onChange={e => handleInputChange('document_issue_date', e.target.value)} />
+                                            <Input className="bg-background" type="date" disabled={!isEditing} value={formData.document_issue_date ? format(new Date(formData.document_issue_date), 'yyyy-MM-dd') : ''} onChange={e => handleInputChange('document_issue_date', e.target.value)} />
                                         </div>
                                     </div>
                                 </section>
@@ -399,7 +399,7 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                                 {/* Notes */}
                                 <div className="space-y-2">
                                     <Label>Note Interne</Label>
-                                    <Input disabled={!isEditing} value={formData.notes || ''} onChange={e => handleInputChange('notes', e.target.value)} placeholder="Note visibili solo allo staff..." />
+                                    <Input className="bg-background" disabled={!isEditing} value={formData.notes || ''} onChange={e => handleInputChange('notes', e.target.value)} placeholder="Note visibili solo allo staff..." />
                                 </div>
                             </CardContent>
                         </ScrollArea>
@@ -419,13 +419,13 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                     <ScrollArea className="h-full">
                         <div className="space-y-4 max-w-5xl mx-auto w-full pb-8">
                             {bookings.length === 0 ? (
-                                <Card className="p-12 text-center text-muted-foreground border-dashed bg-background/50">
+                                <Card className="p-12 text-center text-muted-foreground border-dashed bg-card">
                                     <History className="h-10 w-10 mx-auto mb-4 opacity-20" />
                                     <p>Nessuna prenotazione trovata.</p>
                                 </Card>
                             ) : (
                                 bookings.map((booking: Booking) => (
-                                    <Card key={booking.id} className="overflow-hidden border-0 shadow-sm bg-background/50 backdrop-blur-sm">
+                                    <Card key={booking.id} className="overflow-hidden border shadow-sm bg-card hover:bg-card/80 transition-colors">
                                         <div className="flex flex-col md:flex-row">
                                             {/* Date Box */}
                                             <div className="bg-muted/30 p-4 md:w-48 flex flex-col items-center justify-center border-b md:border-b-0 md:border-r">
