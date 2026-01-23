@@ -81,12 +81,13 @@ CREATE TABLE bookings (
 
 -- Constraint anti-overbooking usando GIST con DATERANGE
 -- Previene prenotazioni sovrapposte sulla stessa piazzola
+-- Esclude anche 'checked_out' per liberare la piazzola dopo il check-out
 ALTER TABLE bookings 
 ADD CONSTRAINT prevent_overbooking 
 EXCLUDE USING GIST (
   pitch_id WITH =,
   booking_period WITH &&
-) WHERE (status NOT IN ('cancelled'));
+) WHERE (status NOT IN ('cancelled', 'checked_out'));
 
 -- =====================================================
 -- TABLE: booking_guests

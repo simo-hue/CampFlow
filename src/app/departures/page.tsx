@@ -165,7 +165,7 @@ export default function DeparturesPage() {
                                             </h3>
                                             <div className="space-y-3">
                                                 {groupedDepartures[date].map(departure => (
-                                                    <GuestCard key={departure.id} event={departure} type="departure" />
+                                                    <GuestCard key={departure.id} event={departure} type="departure" onRefresh={loadDepartures} />
                                                 ))}
                                             </div>
                                         </div>
@@ -174,7 +174,7 @@ export default function DeparturesPage() {
                             ) : (
                                 <div className="space-y-3">
                                     {filteredDepartures.map((departure) => (
-                                        <GuestCard key={departure.id} event={departure} type="departure" />
+                                        <GuestCard key={departure.id} event={departure} type="departure" onRefresh={loadDepartures} />
                                     ))}
                                 </div>
                             )}

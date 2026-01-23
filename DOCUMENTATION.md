@@ -320,3 +320,56 @@ Fixed visual layout issues and logic inconsistencies on the `/occupancy` page.
 2.  **Booking Logic Correction (Safe)**: Fixed an off-by-one error in drag-and-drop booking creation.
     -   **Checkout Logic**: Selecting day X to Y now results in a booking with checkout on Y+1.
     -   **Validation Fix**: Updated `checkOverlap` to be **inclusive** of the end date. This prevents the "API 409 Conflict" error by blocking invalid selections (which would overlap due to the +1 logic) directly in the UI.
+
+# Check-out Functionality (2026-01-23)
+
+## Overview
+Implemented complete check-out functionality on the `/departures` page, allowing staff to process guest departures with automatic pitch liberation.
+
+## User Flow
+1. Navigate to `/departures` page
+2. Click the "Check-out" button on a departure card
+3. Review confirmation dialog showing:
+   - Guest name and number of guests
+   - Pitch number
+   - Booking period
+4. Click "Conferma Check-out" to process
+5. Success toast notification appears
+6. Card is removed from the list automatically
+
+## Implementation Details
+
+### Database Changes
+- **Migration**: `20260123_update_checkout_constraint.sql`
+- **Constraint Update**: Modified `prevent_overbooking` exclusion constraint to exclude both `cancelled` AND `checked_out` statuses
+- **Result**: Pitches are automatically freed when a booking status changes to `checked_out`
+- **Customer Data**: Customers remain in the database permanently for historical tracking and statistics
+
+### Frontend Components
+1. **CheckOutDialog** (`src/components/shared/CheckOutDialog.tsx`):
+   - Confirmation modal with booking details
+   - API integration to update booking status
+   - Loading state management
+   - Success/error toast notifications
+
+2. **GuestCard** (`src/components/shared/GuestCard.tsx`):
+   - Added `onRefresh` optional callback prop
+   - Click handler for check-out button
+   - State management for dialog visibility
+   - Conditional rendering of CheckOutDialog for departures
+
+3. **Departures Page** (`src/app/departures/page.tsx`):
+   - Passes `loadDepartures` callback to GuestCard components
+   - Automatic list refresh after successful check-out
+
+### API Usage
+- **Endpoint**: `PATCH /api/bookings/[id]`
+- **Payload**: `{ status: 'checked_out' }`
+- **Response**: Updated booking object
+
+## Benefits
+- **Instant Pitch Liberation**: No manual intervention needed to free pitches
+- **Data Integrity**: Database constraint prevents accidental overbooking
+- **Historical Records**: Complete booking history preserved
+- **Customer Retention**: Customer data maintained for analytics and future bookings
+- **User Experience**: Simple, clear confirmation flow with immediate feedback
