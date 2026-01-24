@@ -253,7 +253,7 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
     );
 
     return (
-        <div className="flex flex-col bg-muted/10 p-4 md:p-8 gap-6 h-screen overflow-hidden">
+        <div className="flex flex-col bg-muted/10 p-4 md:p-8 gap-6 min-h-screen">
 
             {/* Header: Identity & Navigation - Centered */}
             <div className="flex flex-col items-center justify-center text-center gap-2 shrink-0">

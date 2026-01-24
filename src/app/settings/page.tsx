@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { useTheme } from 'next-themes';
 import { SettingsLayout } from '@/components/settings/SettingsLayout';
 import { PitchManagement } from '@/components/settings/PitchManagement';
 import { SeasonalPricingManager } from '@/components/settings/SeasonalPricingManager';
@@ -27,17 +28,9 @@ const DEFAULT_PRICING: PricingSettings = {
 };
 
 export default function SettingsPage() {
+    const { theme, setTheme } = useTheme();
     const [activeSection, setActiveSection] = useState('campeggio');
     const [isSaved, setIsSaved] = useState(false);
-
-    // Dark mode state
-    const [darkMode, setDarkMode] = useState(() => {
-        if (typeof window !== 'undefined') {
-            const saved = localStorage.getItem('darkMode');
-            return saved === 'true';
-        }
-        return false;
-    });
 
     // Pricing state
     const [pricing, setPricing] = useState<PricingSettings>(() => {
@@ -49,16 +42,6 @@ export default function SettingsPage() {
         }
         return DEFAULT_PRICING;
     });
-
-    // Auto-save dark mode
-    useEffect(() => {
-        if (darkMode) {
-            document.documentElement.classList.add('dark');
-        } else {
-            document.documentElement.classList.remove('dark');
-        }
-        localStorage.setItem('darkMode', darkMode.toString());
-    }, [darkMode]);
 
     // Manual Save Pricing
     const savePricing = () => {
@@ -229,8 +212,8 @@ export default function SettingsPage() {
                             </div>
                             <Switch
                                 id="dark-mode"
-                                checked={darkMode}
-                                onCheckedChange={setDarkMode}
+                                checked={theme === 'dark'}
+                                onCheckedChange={(checked) => setTheme(checked ? 'dark' : 'light')}
                             />
                         </div>
 
