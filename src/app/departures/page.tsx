@@ -158,24 +158,54 @@ export default function DeparturesPage() {
                         <div className="pb-10">
                             {view === 'week' ? (
                                 <div className="space-y-8">
-                                    {sortedDates.map(date => (
-                                        <div key={date}>
-                                            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3 sticky top-0 bg-background/95 backdrop-blur py-2 z-10">
-                                                {format(new Date(date), 'EEEE d MMMM', { locale: it })}
-                                            </h3>
-                                            <div className="space-y-3">
-                                                {groupedDepartures[date].map(departure => (
+                                    {sortedDates.map(date => {
+                                        // Sort: Pending first, then Checked Out
+                                        const dailyDepartures = groupedDepartures[date].sort((a, b) => {
+                                            if (a.status === 'checked_out' && b.status !== 'checked_out') return 1;
+                                            if (a.status !== 'checked_out' && b.status === 'checked_out') return -1;
+                                            return 0;
+                                        });
+
+                                        return (
+                                            <div key={date}>
+                                                <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3 sticky top-0 bg-background/95 backdrop-blur py-2 z-10">
+                                                    {format(new Date(date), 'EEEE d MMMM', { locale: it })}
+                                                </h3>
+                                                <div className="space-y-3">
+                                                    {dailyDepartures.map(departure => (
+                                                        <GuestCard key={departure.id} event={departure} type="departure" onRefresh={loadDepartures} />
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            ) : (
+                                <div className="space-y-8">
+                                    {/* Pending Departures */}
+                                    <div className="space-y-3">
+                                        {filteredDepartures.filter(d => d.status !== 'checked_out').map((departure) => (
+                                            <GuestCard key={departure.id} event={departure} type="departure" onRefresh={loadDepartures} />
+                                        ))}
+                                    </div>
+
+                                    {/* Completed Departures */}
+                                    {filteredDepartures.some(d => d.status === 'checked_out') && (
+                                        <>
+                                            <div className="flex items-center gap-4 py-2">
+                                                <div className="h-px bg-border flex-1" />
+                                                <span className="text-xs font-semibold text-muted-foreground tracking-wider uppercase">
+                                                    Completati
+                                                </span>
+                                                <div className="h-px bg-border flex-1" />
+                                            </div>
+                                            <div className="space-y-3 opacity-75">
+                                                {filteredDepartures.filter(d => d.status === 'checked_out').map((departure) => (
                                                     <GuestCard key={departure.id} event={departure} type="departure" onRefresh={loadDepartures} />
                                                 ))}
                                             </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            ) : (
-                                <div className="space-y-3">
-                                    {filteredDepartures.map((departure) => (
-                                        <GuestCard key={departure.id} event={departure} type="departure" onRefresh={loadDepartures} />
-                                    ))}
+                                        </>
+                                    )}
                                 </div>
                             )}
 

@@ -65,6 +65,7 @@ export async function GET(request: Request) {
                 pitch_id,
                 guests_count,
                 booking_period,
+                status,
                 pitches!inner(number, suffix, type),
                 customers!inner(first_name, last_name)
             `)

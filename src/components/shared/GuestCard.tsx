@@ -96,9 +96,15 @@ export function GuestCard({ event, type, onRefresh }: GuestCardProps) {
                             {event.pitches.number}
                         </Badge>
 
-                        <Button size="sm" className={`${theme.button} px-6`} onClick={handleButtonClick}>
-                            {isArrival ? 'Check-in' : 'Check-out'}
-                        </Button>
+                        {(!isArrival && event.status === 'checked_out') ? (
+                            <Badge variant="secondary" className="px-4 py-2 bg-green-100 text-green-700 hover:bg-green-100">
+                                Completato
+                            </Badge>
+                        ) : (
+                            <Button size="sm" className={`${theme.button} px-6`} onClick={handleButtonClick}>
+                                {isArrival ? 'Check-in' : 'Check-out'}
+                            </Button>
+                        )}
                     </div>
 
                 </div>
