@@ -429,4 +429,19 @@ Modified the layout to exclude the main Application Header from the Login Page (
 ## Changes
 - **Component**: `src/components/layout/Header.tsx`
 - **Logic**: Added a check `if (pathname === '/login') return null;`.
-- **Result**: The login page now displays only the authentication box centered on the screen, without the navigation bar meant for authenticated users.
+- **Result**: 
+# SEO & Social Sharing (2026-01-25)
+
+## Open Graph Image
+Per garantire che i link condivisi (es. su WhatsApp, LinkedIn, Twitter) mostrino un'anteprima corretta, Next.js App Router utilizza il file convenzionale `opengraph-image.png`.
+
+### Configurazione
+- **File**: `src/app/opengraph-image.png`
+- **Risoluzione Consigliata**: 1200x630 pixels
+- **Formato**: PNG o JPG
+- **Comportamento**: Next.js genera automaticamente i tag `<meta property="og:image">` corretti nel layout root.
+
+### Prompt Generazione Immagine
+Un prompt efficace per generare questa immagine con AI (Midjourney/DALL-E):
+> "Minimalist and modern dashboard interface of a camping management software, dark mode, displaying stylized map of pitches and occupancy charts. High-tech, clean lines, professional. Vector art style, vibrant green and blue tech accent colors, dark background. 1200x630 resolution."
+
