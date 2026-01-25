@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
+import { SECTORS } from '@/lib/pitchUtils';
 import type { Pitch, CreatePitchRequest, UpdatePitchRequest, PitchAttributes, PitchType, PitchStatus } from '@/lib/types';
 import { toast } from "sonner";
 
@@ -42,6 +43,7 @@ export function PitchDialog({ open, onOpenChange, onSubmit, initialData }: Pitch
     const [type, setType] = useState<PitchType>('piazzola');
     const [status, setStatus] = useState<PitchStatus>('available');
     const [createDouble, setCreateDouble] = useState(false);
+    const [sectorId, setSectorId] = useState<string>('');
 
     // Reset or populate form
     useEffect(() => {
@@ -51,11 +53,13 @@ export function PitchDialog({ open, onOpenChange, onSubmit, initialData }: Pitch
                 setNumber(initialData.number);
                 setType(initialData.type);
                 setStatus(initialData.status);
+                setSectorId(initialData.sector_id || '');
             } else {
                 setNumber('');
                 setType('piazzola');
                 setStatus('available');
                 setCreateDouble(false);
+                setSectorId('');
             }
         }
     }, [open, initialData]);
@@ -69,11 +73,14 @@ export function PitchDialog({ open, onOpenChange, onSubmit, initialData }: Pitch
             // Attributes are no longer used as per user request
             const attributes: PitchAttributes = {};
 
+            const submitSectorId = sectorId || undefined;
+
             if (isEditing) {
                 await onSubmit({
                     type,
                     status,
                     attributes,
+                    sector_id: submitSectorId,
                 } as UpdatePitchRequest);
             } else {
                 await onSubmit({
@@ -81,6 +88,7 @@ export function PitchDialog({ open, onOpenChange, onSubmit, initialData }: Pitch
                     type,
                     attributes,
                     create_double: createDouble,
+                    sector_id: submitSectorId,
                 } as CreatePitchRequest);
             }
             onOpenChange(false);
@@ -90,9 +98,9 @@ export function PitchDialog({ open, onOpenChange, onSubmit, initialData }: Pitch
             // Assuming onSubmit might throw an Error with the message.
             if (err instanceof Error) {
                 setError(err.message);
-            
-            toast.error("Errore imprevisto", { description: err instanceof Error ? err.message : "Riprova più tardi" });
-        } else {
+
+                toast.error("Errore imprevisto", { description: err instanceof Error ? err.message : "Riprova più tardi" });
+            } else {
                 setError('Si è verificato un errore. Riprova.');
             }
         } finally {
@@ -112,7 +120,7 @@ export function PitchDialog({ open, onOpenChange, onSubmit, initialData }: Pitch
                     </DialogDescription>
                 </DialogHeader>
 
-                <form onSubmit={handleSubmit} className="space-y-4 py-4">
+                <form id="pitch-form" onSubmit={handleSubmit} className="space-y-4 py-4">
                     {error && (
                         <div className="bg-destructive/15 text-destructive text-sm p-3 rounded-md">
                             {error}
@@ -171,6 +179,27 @@ export function PitchDialog({ open, onOpenChange, onSubmit, initialData }: Pitch
                         </select>
                     </div>
 
+                    {type !== 'tenda' && (
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="sector" className="text-right">
+                                Settore
+                            </Label>
+                            <select
+                                id="sector"
+                                value={sectorId}
+                                onChange={(e) => setSectorId(e.target.value)}
+                                className="col-span-3 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                            >
+                                <option value="">Automatico (basato sul numero)</option>
+                                {SECTORS.map((s) => (
+                                    <option key={s.id} value={s.id}>
+                                        {s.name} ({s.range.min}-{s.range.max})
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                    )}
+
                     {isEditing && (
                         <div className="grid grid-cols-4 items-center gap-4">
                             <Label htmlFor="status" className="text-right">
@@ -196,7 +225,7 @@ export function PitchDialog({ open, onOpenChange, onSubmit, initialData }: Pitch
                     <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
                         Annulla
                     </Button>
-                    <Button type="submit" disabled={loading}>
+                    <Button type="submit" form="pitch-form" disabled={loading}>
                         {loading ? 'Salvataggio...' : 'Salva'}
                     </Button>
                 </DialogFooter>

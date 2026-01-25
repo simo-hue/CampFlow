@@ -45,7 +45,7 @@ export async function POST(request: Request) {
     try {
         const body: CreatePitchRequest = await request.json();
 
-        const { number, suffix = '', type, attributes = {}, create_double = false } = body;
+        const { number, suffix = '', type, attributes = {}, create_double = false, sector_id } = body;
 
         if (!number || !type) {
             return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
@@ -96,8 +96,8 @@ export async function POST(request: Request) {
             const { data, error } = await supabaseAdmin
                 .from('pitches')
                 .insert([
-                    { number, suffix: 'a', type, attributes, status: 'available' },
-                    { number, suffix: 'b', type, attributes, status: 'available' },
+                    { number, suffix: 'a', type, attributes, status: 'available', sector_id },
+                    { number, suffix: 'b', type, attributes, status: 'available', sector_id },
                 ])
                 .select();
 
@@ -111,7 +111,7 @@ export async function POST(request: Request) {
             // Create single pitch
             const { data, error } = await supabaseAdmin
                 .from('pitches')
-                .insert({ number, suffix, type, attributes, status: 'available' })
+                .insert({ number, suffix, type, attributes, status: 'available', sector_id })
                 .select()
                 .single();
 
@@ -143,9 +143,14 @@ export async function PUT(request: Request) {
 
         const body: UpdatePitchRequest = await request.json();
 
+        // Extract allowed fields including sector_id
+        const updateData: any = { ...body };
+        // We generally shouldn't allow updating 'number' or 'suffix' easily as it breaks references, 
+        // but 'sector_id' is fine.
+
         const { data, error } = await supabaseAdmin
             .from('pitches')
-            .update(body)
+            .update(updateData)
             .eq('id', pitchId)
             .select()
             .single();

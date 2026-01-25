@@ -56,6 +56,7 @@ export interface Pitch {
     type: PitchType;
     attributes: PitchAttributes;
     status: PitchStatus;
+    sector_id?: string; // Optional manual override
     created_at: string;
     updated_at: string;
 }
@@ -210,12 +211,14 @@ export interface CreatePitchRequest {
     type: PitchType;
     attributes?: PitchAttributes;
     create_double?: boolean; // If true, creates both 'a' and 'b' variants
+    sector_id?: string;
 }
 
 export interface UpdatePitchRequest {
     type?: PitchType;
     attributes?: PitchAttributes;
     status?: PitchStatus;
+    sector_id?: string;
 }
 
 export interface SplitPitchRequest {

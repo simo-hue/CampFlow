@@ -25,6 +25,7 @@ import {
 import type { Pitch, CreatePitchRequest, UpdatePitchRequest } from '@/lib/types';
 import { getPitchDisplayNumber, canSplitPitch, getSiblingPitch, SECTORS, getPitchSector } from '@/lib/pitchUtils';
 import { PitchDialog } from './PitchDialog';
+import { ConfirmationDialog } from '@/components/shared/ConfirmationDialog';
 import { toast } from "sonner";
 
 // ... imports
@@ -49,6 +50,21 @@ export function PitchManagement() {
     const [dialogOpen, setDialogOpen] = useState(false);
     const [editingPitch, setEditingPitch] = useState<Pitch | null>(null);
 
+    // Confirmation State
+    const [confirmOpen, setConfirmOpen] = useState(false);
+    const [confirmConfig, setConfirmConfig] = useState<{
+        title: string;
+        description: string;
+        onConfirm: () => Promise<void>;
+        variant?: 'default' | 'destructive';
+        actionLabel?: string;
+    }>({
+        title: '',
+        description: '',
+        onConfirm: async () => { },
+        variant: 'default'
+    });
+
     const handleAdd = () => {
         setEditingPitch(null);
         setDialogOpen(true);
@@ -60,43 +76,54 @@ export function PitchManagement() {
     };
 
     const handleSave = async (data: CreatePitchRequest | UpdatePitchRequest) => {
-        try {
-            if (editingPitch) {
-                // Update
-                await updatePitch.mutateAsync({
-                    id: editingPitch.id,
-                    data: data as UpdatePitchRequest
-                });
-            } else {
-                // Create
-                await createPitch.mutateAsync(data as CreatePitchRequest);
-            }
-            setDialogOpen(false);
-        } catch (error) {
-            console.error('Error saving pitch:', error);
-            // Toast handled in hook
+        if (editingPitch) {
+            // Update
+            await updatePitch.mutateAsync({
+                id: editingPitch.id,
+                data: data as UpdatePitchRequest
+            });
+        } else {
+            // Create
+            await createPitch.mutateAsync(data as CreatePitchRequest);
         }
+        setDialogOpen(false);
     };
 
-    const handleSplit = async (pitch: Pitch) => {
-        if (!confirm(`Vuoi sdoppiare la piazzola ${getPitchDisplayNumber(pitch)} in ${pitch.number}a e ${pitch.number}b?`)) {
-            return;
-        }
-        await splitPitch.mutateAsync(pitch.id);
+    const handleSplit = (pitch: Pitch) => {
+        setConfirmConfig({
+            title: 'Sdoppia Piazzola',
+            description: `Vuoi sdoppiare la piazzola ${getPitchDisplayNumber(pitch)} in ${pitch.number}a e ${pitch.number}b?`,
+            onConfirm: async () => {
+                await splitPitch.mutateAsync(pitch.id);
+            },
+            actionLabel: 'Sdoppia'
+        });
+        setConfirmOpen(true);
     };
 
-    const handleMerge = async (pitchA: Pitch, pitchB: Pitch) => {
-        if (!confirm(`Vuoi unire ${getPitchDisplayNumber(pitchA)} e ${getPitchDisplayNumber(pitchB)} in una singola piazzola ${pitchA.number}?`)) {
-            return;
-        }
-        await mergePitches.mutateAsync({ pitchAId: pitchA.id, pitchBId: pitchB.id });
+    const handleMerge = (pitchA: Pitch, pitchB: Pitch) => {
+        setConfirmConfig({
+            title: 'Unisci Piazzole',
+            description: `Vuoi unire ${getPitchDisplayNumber(pitchA)} e ${getPitchDisplayNumber(pitchB)} in una singola piazzola ${pitchA.number}?`,
+            onConfirm: async () => {
+                await mergePitches.mutateAsync({ pitchAId: pitchA.id, pitchBId: pitchB.id });
+            },
+            actionLabel: 'Unisci'
+        });
+        setConfirmOpen(true);
     };
 
-    const handleDelete = async (pitch: Pitch) => {
-        if (!confirm(`Sei sicuro di voler eliminare la piazzola ${getPitchDisplayNumber(pitch)}?`)) {
-            return;
-        }
-        await deletePitch.mutateAsync(pitch.id);
+    const handleDelete = (pitch: Pitch) => {
+        setConfirmConfig({
+            title: 'Elimina Piazzola',
+            description: `Sei sicuro di voler eliminare la piazzola ${getPitchDisplayNumber(pitch)}? Questa azione non può essere annullata.`,
+            variant: 'destructive',
+            onConfirm: async () => {
+                await deletePitch.mutateAsync(pitch.id);
+            },
+            actionLabel: 'Elimina'
+        });
+        setConfirmOpen(true);
     };
 
     const filteredPitches = pitches.filter(pitch => {
@@ -105,7 +132,7 @@ export function PitchManagement() {
         const matchesType = typeFilter === 'all' || pitch.type === typeFilter;
 
         // Filter by sector
-        const sector = getPitchSector(pitch.number);
+        const sector = getPitchSector(pitch);
         const matchesSector = sectorFilter === 'all' || (sector && sector.id === sectorFilter);
 
         return matchesSearch && matchesType && matchesSector;
@@ -299,6 +326,16 @@ export function PitchManagement() {
                 onOpenChange={setDialogOpen}
                 onSubmit={handleSave}
                 initialData={editingPitch}
+            />
+
+            <ConfirmationDialog
+                open={confirmOpen}
+                onOpenChange={setConfirmOpen}
+                title={confirmConfig.title}
+                description={confirmConfig.description}
+                onConfirm={confirmConfig.onConfirm}
+                variant={confirmConfig.variant}
+                actionLabel={confirmConfig.actionLabel}
             />
         </div>
     );

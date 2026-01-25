@@ -82,11 +82,19 @@ export function canMergePitches(pitchA: Pitch, pitchB: Pitch): boolean {
 }
 
 /**
- * Get sector for a given pitch number
- * @param pitchNumber Pitch number string (e.g. "001" or "T001")
+ * Get sector for a given pitch number or pitch object
+ * @param pitchOrNumber Pitch number string (e.g. "001" or "T001") or Pitch object
  * @returns Sector object or undefined
  */
-export function getPitchSector(pitchNumber: string) {
+export function getPitchSector(pitchOrNumber: string | Pitch) {
+    // If a full pitch object is passed and it has an explicit sector_id, use it
+    if (typeof pitchOrNumber !== 'string' && pitchOrNumber.sector_id) {
+        const manualSector = SECTORS.find(s => s.id === pitchOrNumber.sector_id);
+        if (manualSector) return manualSector;
+    }
+
+    const pitchNumber = typeof pitchOrNumber === 'string' ? pitchOrNumber : pitchOrNumber.number;
+
     // Handle tent pitches (T001-T012) - they don't belong to sectors
     if (pitchNumber.startsWith('T')) {
         return undefined;
