@@ -88,6 +88,7 @@ export async function POST(request: NextRequest) {
                         email: body.customer.email,
                         address: body.customer.address,
                         notes: body.customer.notes,
+                        license_plate: body.customer.license_plate,
                         // We do NOT update names here to preserve integrity of the selected record
                     })
                     .eq('id', customerId);
@@ -123,6 +124,7 @@ export async function POST(request: NextRequest) {
                         email: body.customer.email,
                         address: body.customer.address,
                         notes: body.customer.notes,
+                        license_plate: body.customer.license_plate,
                     })
                     .eq('id', customerId);
 
@@ -139,6 +141,7 @@ export async function POST(request: NextRequest) {
                         phone: targetPhone,
                         address: body.customer.address,
                         notes: body.customer.notes,
+                        license_plate: body.customer.license_plate,
                     })
                     .select('id')
                     .single();

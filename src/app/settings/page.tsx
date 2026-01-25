@@ -68,7 +68,7 @@ export default function SettingsPage() {
                     <div className="mb-6">
                         <h2 className="text-2xl font-bold">Gestione Campeggio</h2>
                         <p className="text-muted-foreground mt-1">
-                            Configura piazzole, tende e strutture del campeggio
+                            Configura il tuo campeggio
                         </p>
                     </div>
                     <Tabs defaultValue="pitches" className="w-full">

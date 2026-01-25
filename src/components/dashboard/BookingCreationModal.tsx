@@ -41,6 +41,7 @@ export function BookingCreationModal({
     const [lastName, setLastName] = useState('');
     const [customerEmail, setCustomerEmail] = useState('');
     const [customerPhone, setCustomerPhone] = useState('');
+    const [licensePlate, setLicensePlate] = useState('');
     const [guestsCount, setGuestsCount] = useState(2);
     const [childrenCount, setChildrenCount] = useState(0);
     const [carsCount, setCarsCount] = useState(0);
@@ -113,6 +114,7 @@ export function BookingCreationModal({
         setLastName(customer.last_name);
         setCustomerEmail(customer.email || '');
         setCustomerPhone(customer.phone);
+        setLicensePlate(customer.license_plate || '');
         toast.success("Dati cliente caricati");
     };
 
@@ -160,7 +162,8 @@ export function BookingCreationModal({
                     last_name: lastName,
                     email: customerEmail || null,
                     phone: customerPhone,
-                    notes: notes
+                    notes: notes,
+                    license_plate: licensePlate || null
                 },
             };
 
@@ -202,6 +205,7 @@ export function BookingCreationModal({
         setLastName('');
         setCustomerEmail('');
         setCustomerPhone('');
+        setLicensePlate('');
         setGuestsCount(2);
         setChildrenCount(0);
         setCarsCount(0);
@@ -318,6 +322,35 @@ export function BookingCreationModal({
 
                         <div className="grid grid-cols-2 gap-3">
                             <div className="space-y-2">
+                                <Label htmlFor="cars" className="flex items-center gap-2">
+                                    <Car className="h-4 w-4" />
+                                    Auto
+                                </Label>
+                                <Input
+                                    id="cars"
+                                    type="number"
+                                    min="0"
+                                    max="5"
+                                    value={carsCount}
+                                    onChange={(e) => setCarsCount(parseInt(e.target.value) || 0)}
+                                    disabled={loading}
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="license_plate">Targa</Label>
+                                <Input
+                                    id="license_plate"
+                                    placeholder="AA000AA"
+                                    value={licensePlate}
+                                    onChange={(e) => setLicensePlate(e.target.value.toUpperCase())}
+                                    disabled={loading}
+                                    className="uppercase font-mono"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-3">
+                            <div className="space-y-2">
                                 <Label htmlFor="guests" className="flex items-center gap-2">
                                     <Users className="h-4 w-4" />
                                     Adulti
@@ -373,22 +406,6 @@ export function BookingCreationModal({
                                     max="5"
                                     value={dogsCount}
                                     onChange={(e) => setDogsCount(parseInt(e.target.value) || 0)}
-                                    disabled={loading}
-                                />
-                            </div>
-
-                            <div className="space-y-2">
-                                <Label htmlFor="cars" className="flex items-center gap-2">
-                                    <Car className="h-4 w-4" />
-                                    Auto
-                                </Label>
-                                <Input
-                                    id="cars"
-                                    type="number"
-                                    min="0"
-                                    max="5"
-                                    value={carsCount}
-                                    onChange={(e) => setCarsCount(parseInt(e.target.value) || 0)}
                                     disabled={loading}
                                 />
                             </div>
@@ -450,6 +467,6 @@ export function BookingCreationModal({
                     </DialogFooter>
                 )}
             </DialogContent>
-        </Dialog>
+        </Dialog >
     );
 }
