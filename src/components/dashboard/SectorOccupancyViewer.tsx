@@ -10,7 +10,7 @@ import { BookingCreationModal } from './BookingCreationModal';
 import { BookingDetailsDialog } from './BookingDetailsDialog';
 import { isDateInRange } from '@/lib/dateUtils';
 import type { Pitch, PitchType } from '@/lib/types';
-import { SECTORS } from '@/lib/pitchUtils';
+import { useSectors, Sector } from '@/hooks/useSectors';
 import { addDays, subDays, format, startOfDay, parseISO, isSameDay } from 'date-fns';
 import { it } from 'date-fns/locale';
 import { toast } from "sonner";
@@ -65,60 +65,78 @@ function getBookingColor(bookingId: string) {
     return BOOKING_COLORS[index];
 }
 
-const CACHE_WINDOW_DAYS = 45; // Increased to allow smoother navigation buffering
-const CACHE_KEY_PREFIX = 'occupancy_cache_v2_';
-const CACHE_VERSION_KEY = 'occupancy_cache_version';
+import { getCachedData, setCachedData, invalidateOccupancyCache } from '@/lib/occupancyCache';
+import { CACHE_WINDOW_DAYS } from '@/lib/occupancyCache';
 
-function getCacheVersion(): string {
-    if (typeof window === 'undefined') return '0';
-    return localStorage.getItem(CACHE_VERSION_KEY) || '0';
-}
 
-export function invalidateOccupancyCache() {
-    if (typeof window === 'undefined') return;
-    const newVersion = (parseInt(getCacheVersion()) + 1).toString();
-    localStorage.setItem(CACHE_VERSION_KEY, newVersion);
-    console.log('🗑️ Occupancy cache invalidated - version:', newVersion);
-}
 
-function getCachedData(key: string): PitchWithDays[] | null {
-    if (typeof window === 'undefined') return null;
-    try {
-        const item = localStorage.getItem(CACHE_KEY_PREFIX + key);
-        if (!item) return null;
 
-        const parsed = JSON.parse(item);
-        if (parsed.version !== getCacheVersion()) {
-            localStorage.removeItem(CACHE_KEY_PREFIX + key);
-            return null;
+// Error Boundary to catch runtime errors
+import React from 'react';
+
+class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { hasError: boolean, error: Error | null }> {
+    constructor(props: { children: React.ReactNode }) {
+        super(props);
+        this.state = { hasError: false, error: null };
+    }
+
+    static getDerivedStateFromError(error: Error) {
+        return { hasError: true, error };
+    }
+
+    componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+        console.error("OccupancyViewer Crash:", error, errorInfo);
+    }
+
+    render() {
+        if (this.state.hasError) {
+            return (
+                <div className="p-4 bg-red-50 border border-red-200 rounded-lg m-4">
+                    <h3 className="text-lg font-bold text-red-800 mb-2">Si è verificato un errore nel componente</h3>
+                    <pre className="text-xs font-mono bg-red-100 p-2 rounded overflow-auto max-h-[200px] text-red-900 border border-red-200">
+                        {this.state.error?.toString()}
+                        {'\n\nStack:\n'}
+                        {this.state.error?.stack}
+                    </pre>
+                    <Button
+                        variant="outline"
+                        className="mt-4 border-red-300 text-red-700 hover:bg-red-100"
+                        onClick={() => {
+                            invalidateOccupancyCache();
+                            window.location.reload();
+                        }}
+                    >
+                        Svuota Cache e Ricarica
+                    </Button>
+                </div>
+            );
         }
 
-        console.log('📦 Cache HIT:', key);
-        return parsed.data;
-    } catch (error) {
-        console.error('Error reading cache:', error);
-        return null;
-    }
-}
-
-function setCachedData(key: string, data: PitchWithDays[]) {
-    if (typeof window === 'undefined') return;
-    try {
-        const cacheObject = {
-            version: getCacheVersion(),
-            timestamp: Date.now(),
-            data,
-        };
-        localStorage.setItem(CACHE_KEY_PREFIX + key, JSON.stringify(cacheObject));
-    } catch (error) {
-        console.error('Error writing cache:', error);
+        return this.props.children;
     }
 }
 
 export function SectorOccupancyViewer() {
-    const [selectedSector, setSelectedSector] = useState(SECTORS[0]);
+    return (
+        <ErrorBoundary>
+            <SectorOccupancyViewerContent />
+        </ErrorBoundary>
+    );
+}
+
+function SectorOccupancyViewerContent() {
+
+    const { sectors, isLoading: isLoadingSectors } = useSectors();
+    const [selectedSector, setSelectedSector] = useState<Sector | null>(null);
     const [selectedTimeframe, setSelectedTimeframe] = useState(TIMEFRAMES[1]);
     const [selectedPitchType, setSelectedPitchType] = useState<PitchType>('piazzola');
+
+    // Initialize selectedSector when sectors are loaded
+    useEffect(() => {
+        if (sectors.length > 0 && !selectedSector) {
+            setSelectedSector(sectors[0]);
+        }
+    }, [sectors, selectedSector]);
 
     // View State
     const [viewStartDate, setViewStartDate] = useState<Date>(startOfDay(new Date()));
@@ -162,7 +180,7 @@ export function SectorOccupancyViewer() {
 
     const cacheKey = useMemo(() => {
         const dateKey = format(fullDateRange[0], 'yyyy-MM-dd');
-        const sectorPart = selectedPitchType === 'tenda' ? 'all' : selectedSector.id;
+        const sectorPart = selectedPitchType === 'tenda' ? 'all' : (selectedSector?.id || 'none');
         return `${sectorPart}_${selectedPitchType}_${dateKey}`;
     }, [selectedSector, selectedPitchType, fullDateRange]);
 
@@ -170,9 +188,12 @@ export function SectorOccupancyViewer() {
     const loadSectorOccupancy = useCallback(async (forceRefresh: boolean = false) => {
         if (!forceRefresh && cacheKey) {
             const cached = getCachedData(cacheKey);
-            if (cached) {
+            if (cached && cached.length > 0) {
+                console.log(`📦 Cache HIT (Valid Data): ${cached.length} items`);
                 setFullDataCache(cached);
                 return;
+            } else if (cached) {
+                console.warn(`⚠️ Cache HIT but EMPTY: forcing refresh for ${cacheKey}`);
             }
         }
 
@@ -184,9 +205,8 @@ export function SectorOccupancyViewer() {
             console.log(`⚡ Loading ${startDate} to ${endDate}`);
 
             const params: any = { date_from: startDate, date_to: endDate };
-            if (selectedPitchType === 'piazzola') {
-                params.sector_min = selectedSector.range.min.toString();
-                params.sector_max = selectedSector.range.max.toString();
+            if (selectedPitchType === 'piazzola' && selectedSector) {
+                params.sector_id = selectedSector.id;
             }
 
             const response = await fetch('/api/occupancy/batch?' + new URLSearchParams(params));
@@ -197,17 +217,32 @@ export function SectorOccupancyViewer() {
             const bookings = data.bookings || [];
 
             const filteredPitches = pitches.filter(p => p.type === selectedPitchType);
+            console.log(`📥 API Response: ${pitches.length} total pitches, ${filteredPitches.length} filtered by type ${selectedPitchType}`);
+
+            if (filteredPitches.length === 0) {
+                console.warn("⚠️ API returned 0 pitches for this sector/type!");
+            }
 
             const pitchesWithOccupancy: PitchWithDays[] = filteredPitches.map((pitch) => {
                 const daysOccupancy = fullDateRange.map((date) => {
                     const dateStr = format(date, 'yyyy-MM-dd');
                     const booking = bookings.find((b: any) => {
                         if (b.pitch_id !== pitch.id) return false;
-                        const checkIn = parseISO(b.check_in);
-                        // Fix: Check-out day is free for next arrival, so strictly less than
-                        const checkOut = parseISO(b.check_out);
-                        const currentDate = parseISO(dateStr);
-                        return currentDate >= checkIn && currentDate < checkOut;
+                        if (!b.check_in || !b.check_out) return false;
+
+                        try {
+                            const checkIn = parseISO(b.check_in);
+                            // Fix: Check-out day is free for next arrival, so strictly less than
+                            const checkOut = parseISO(b.check_out);
+                            const currentDate = parseISO(dateStr);
+
+                            // Safety: Check for Invalid Date
+                            if (isNaN(checkIn.getTime()) || isNaN(checkOut.getTime())) return false;
+
+                            return currentDate >= checkIn && currentDate < checkOut;
+                        } catch (e) {
+                            return false;
+                        }
                     });
 
                     return {
@@ -239,11 +274,14 @@ export function SectorOccupancyViewer() {
 
     // Derived Display Data
     const displayedData = useMemo(() => {
+        console.log(`📊 Recalculating Display Data. Cache Size: ${fullDataCache.length}. Timeframe: ${selectedTimeframe.days}`);
         if (fullDataCache.length === 0) return [];
-        return fullDataCache.map(item => ({
+        const mapped = fullDataCache.map(item => ({
             pitch: item.pitch,
             days: item.days.slice(0, selectedTimeframe.days)
         }));
+        console.log(`✅ Display Data Ready. Rows: ${mapped.length}`);
+        return mapped;
     }, [fullDataCache, selectedTimeframe]);
 
 
@@ -495,9 +533,18 @@ export function SectorOccupancyViewer() {
         const cells = [];
         const days = item.days;
 
+        if (!days || !Array.isArray(days)) return <td className="p-2 text-red-500">Error: No Data</td>;
+
         let i = 0;
         while (i < days.length) {
             const currentDay = days[i];
+
+            // Safety check for undefined day
+            if (!currentDay) {
+                cells.push(<td key={`err_${i}`} className="bg-red-500/10"></td>);
+                i++;
+                continue;
+            }
 
             // If NOT occupied, render single cell
             if (!currentDay.isOccupied) {
@@ -531,6 +578,7 @@ export function SectorOccupancyViewer() {
             // Look ahead
             while (
                 i + span < days.length &&
+                days[i + span] &&
                 days[i + span].isOccupied &&
                 days[i + span].bookingId === bookingId
             ) {
@@ -601,17 +649,21 @@ export function SectorOccupancyViewer() {
 
                         {selectedPitchType === 'piazzola' && (
                             <div className="flex gap-1">
-                                {SECTORS.map(sector => (
-                                    <Button
-                                        key={sector.id}
-                                        variant={selectedSector.id === sector.id ? 'secondary' : 'ghost'}
-                                        size="sm"
-                                        className="text-xs"
-                                        onClick={() => setSelectedSector(sector)}
-                                    >
-                                        {sector.name}
-                                    </Button>
-                                ))}
+                                {isLoadingSectors ? (
+                                    <div className="text-xs text-muted-foreground px-2 py-1">Caricamento settori...</div>
+                                ) : (
+                                    sectors.map(sector => (
+                                        <Button
+                                            key={sector.id}
+                                            variant={selectedSector?.id === sector.id ? 'secondary' : 'ghost'}
+                                            size="sm"
+                                            className="text-xs"
+                                            onClick={() => setSelectedSector(sector)}
+                                        >
+                                            {sector.name}
+                                        </Button>
+                                    ))
+                                )}
                             </div>
                         )}
                     </div>
@@ -708,11 +760,22 @@ export function SectorOccupancyViewer() {
 
             {/* Matrix */}
             <div className="flex-1 overflow-auto bg-muted/5">
-                {loading && displayedData.length === 0 ? (
+                {loading ? (
                     <div className="flex items-center justify-center h-full">
                         <div className="flex flex-col items-center gap-3">
                             <RefreshCw className="h-8 w-8 animate-spin text-primary" />
                             <p className="text-sm text-muted-foreground">Caricamento disponibilità...</p>
+                        </div>
+                    </div>
+                ) : displayedData.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center h-full text-muted-foreground gap-4">
+                        <div className="p-4 bg-yellow-50 dark:bg-yellow-950/30 rounded-full">
+                            <Tent className="h-8 w-8 text-yellow-600" />
+                        </div>
+                        <div className="text-center">
+                            <p className="font-medium">Nessuna piazzola trovata</p>
+                            <p className="text-sm">Non ci sono piazzole visualizzabili per i filtri selezionati.</p>
+                            <Button variant="link" onClick={() => loadSectorOccupancy(true)}>Riprova</Button>
                         </div>
                     </div>
                 ) : (

@@ -22,12 +22,23 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE EXTENSION IF NOT EXISTS btree_gist;
 
 -- =====================================================
+-- TABLE: sectors
+-- Logical grouping of pitches (e.g. "Settore 1", "Near Lake")
+-- =====================================================
+CREATE TABLE sectors (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name VARCHAR(100) NOT NULL UNIQUE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- =====================================================
 -- TABLE: pitches
 -- Stores information about each campsite pitch
 -- Supports single pitches (suffix='') and split pitches (suffix='a'/'b')
 -- =====================================================
 CREATE TABLE pitches (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  sector_id UUID REFERENCES sectors(id) ON DELETE SET NULL, -- Link to sector
   number VARCHAR(10) NOT NULL, -- Base number e.g. "001", "102"
   suffix VARCHAR(1) NOT NULL DEFAULT '' CHECK (suffix IN ('', 'a', 'b')),
   type VARCHAR(50) NOT NULL CHECK (type IN ('piazzola', 'tenda')),
@@ -40,6 +51,7 @@ CREATE TABLE pitches (
   -- Unique constraint on number + suffix combination
   CONSTRAINT pitches_number_suffix_key UNIQUE (number, suffix)
 );
+
 
 -- =====================================================
 -- TABLE: customers
@@ -237,3 +249,60 @@ COMMENT ON TABLE bookings IS 'Reservations using DATERANGE with anti-overbooking
 COMMENT ON TABLE booking_guests IS 'Individual guest details recorded during check-in';
 COMMENT ON COLUMN bookings.booking_period IS 'DATERANGE type ensures efficient date range queries and prevents overlaps via GIST exclusion';
 COMMENT ON CONSTRAINT prevent_overbooking ON bookings IS 'GIST exclusion constraint that physically prevents double-booking at database level';
+COMMENT ON TABLE sectors IS 'Campground sectors for pitch organization';
+
+-- =====================================================
+-- SEED DATA: Sectors & Organization
+-- =====================================================
+
+-- 1. Create Sectors
+INSERT INTO sectors (name) VALUES 
+('Settore 1'),
+('Settore 2'),
+('Settore 3'),
+('Settore 4')
+ON CONFLICT (name) DO NOTHING;
+
+-- 2. Organize Pitches into Sectors
+DO $$
+DECLARE
+    id_S1 uuid;
+    id_S2 uuid;
+    id_S3 uuid;
+    id_S4 uuid;
+BEGIN
+    -- Retrieve IDs
+    SELECT id INTO id_S1 FROM sectors WHERE name = 'Settore 1' LIMIT 1;
+    SELECT id INTO id_S2 FROM sectors WHERE name = 'Settore 2' LIMIT 1;
+    SELECT id INTO id_S3 FROM sectors WHERE name = 'Settore 3' LIMIT 1;
+    SELECT id INTO id_S4 FROM sectors WHERE name = 'Settore 4' LIMIT 1;
+
+    -- Range 1: 1-25 -> Settore 1
+    UPDATE pitches 
+    SET sector_id = id_S1 
+    WHERE type = 'piazzola' 
+    AND (NULLIF(regexp_replace(number, '\D', '', 'g'), '')::int) BETWEEN 1 AND 25;
+
+    -- Range 2: 26-50 -> Settore 2
+    UPDATE pitches 
+    SET sector_id = id_S2 
+    WHERE type = 'piazzola' 
+    AND (NULLIF(regexp_replace(number, '\D', '', 'g'), '')::int) BETWEEN 26 AND 50;
+
+    -- Range 3: 51-100 (extended to 101 in req, but typically pitches go to 100) -> Settore 3
+    UPDATE pitches 
+    SET sector_id = id_S3 
+    WHERE type = 'piazzola' 
+    AND (NULLIF(regexp_replace(number, '\D', '', 'g'), '')::int) BETWEEN 51 AND 101;
+
+    -- Range 4: 102+ -> Settore 4
+    UPDATE pitches 
+    SET sector_id = id_S4 
+    WHERE type = 'piazzola' 
+    AND (NULLIF(regexp_replace(number, '\D', '', 'g'), '')::int) >= 102;
+
+    -- Tents have NULL sector
+    UPDATE pitches
+    SET sector_id = NULL
+    WHERE type = 'tenda';
+END $$;

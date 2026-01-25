@@ -389,6 +389,7 @@ Implemented a dynamic system for managing campsite sectors and global configurat
 - **Pitch Association**: Pitches are linked to sectors via `sector_id`.
 - **Validation**: Prevents deletion of sectors that still contain pitches (UI warning/logic).
 - **UI**: New "Configurazione Settori" section in `SettingsPage`.
+- **UX Improvement**: Implemented a Tabbed interface in `SettingsPage` to switch views between "Piazzole" and "Settori", eliminating excessive vertical scrolling.
 
 ## Global Settings
 ### Pricing Configuration

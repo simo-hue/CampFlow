@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Search, Loader2, Check, UserCheck, AlertCircle, Calendar, Users, FileText, Info, ChevronRight, Mail, Phone, ChevronDown } from 'lucide-react';
+import { Search, Loader2, Check, UserCheck, AlertCircle, Calendar, Users, FileText, ChevronRight, ChevronDown, Plus, Info, Crown } from 'lucide-react';
 import { format } from 'date-fns';
 import { it } from 'date-fns/locale';
 import { toast } from "sonner";
@@ -20,9 +20,8 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
-import { MunicipalityAutocomplete, ProvinceAutocomplete } from './components/GeoAutocomplete';
-
 import { cn } from '@/lib/utils';
+import { GuestForm, GuestData } from './components/GuestForm';
 
 // Helper to extract dates from PostgreSQL daterange string "[2024-01-01,2024-01-05)"
 const parseBookingPeriod = (period: string) => {
@@ -125,7 +124,6 @@ export default function CheckInPage() {
                 </div>
 
                 {/* Main Action Bar: Search & Filters */}
-                {/* Main Action Bar: Search & Filters - redesign premium */}
                 <div className="flex flex-col md:flex-row w-full max-w-4xl items-stretch md:items-center gap-3 bg-background/60 backdrop-blur-md p-1.5 rounded-xl border shadow-sm mx-auto">
                     <div className="relative flex-1 group">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
@@ -296,143 +294,241 @@ function CheckInDialog({ open, onOpenChange, booking, onClose, onSuccess }: {
     onSuccess: () => void
 }) {
     const [sending, setSending] = useState(false);
-    const [errors, setErrors] = useState<Record<string, boolean>>({});
-
-    // States initialized when booking changes
     const [questuraSent, setQuesturaSent] = useState(false);
 
-    // Anagrafica
-    const [birthDate, setBirthDate] = useState('');
-    const [gender, setGender] = useState('');
-    const [birthCountry, setBirthCountry] = useState('');
-    const [birthProvince, setBirthProvince] = useState('');
-    const [birthCity, setBirthCity] = useState('');
-    const [citizenship, setCitizenship] = useState('');
-
-    // Residenza
-    const [address, setAddress] = useState('');
-    const [residenceCity, setResidenceCity] = useState('');
-    const [residenceZip, setResidenceZip] = useState('');
-    const [residenceProvince, setResidenceProvince] = useState('');
-    const [residenceCountry, setResidenceCountry] = useState('');
-
-    // Documento
-    const [docType, setDocType] = useState('carta_identita');
-    const [docNumber, setDocNumber] = useState('');
-    const [docIssueDate, setDocIssueDate] = useState('');
-    const [docIssuer, setDocIssuer] = useState('');
-    const [docIssueCity, setDocIssueCity] = useState('');
-    const [docIssueCountry, setDocIssueCountry] = useState('');
+    // Guests Management
+    const [currentGuestIndex, setCurrentGuestIndex] = useState(0);
+    const [guests, setGuests] = useState<GuestData[]>([]);
+    const [errors, setErrors] = useState<Record<string, Record<string, boolean>>>({});
 
     useEffect(() => {
         if (booking) {
             setQuesturaSent(booking.questura_sent || false);
-            const c = booking.customer || {};
 
-            // Anagrafica
-            setBirthDate(c.birth_date || '');
-            setGender(c.gender || '');
-            setBirthCountry(c.birth_country || '');
-            setBirthProvince(c.birth_province || '');
-            setBirthCity(c.birth_city || '');
-            setCitizenship(c.citizenship || '');
+            // Initialize Guests
+            let initialGuests: GuestData[] = [];
 
-            // Residenza
-            setAddress(c.address || '');
-            setResidenceCity(c.residence_city || '');
-            setResidenceZip(c.residence_zip || '');
-            setResidenceProvince(c.residence_province || '');
-            setResidenceCountry(c.residence_country || '');
+            if (booking.guests && booking.guests.length > 0) {
+                // Use existing guests from DB
+                initialGuests = booking.guests.map((g: any) => ({
+                    id: g.id,
+                    first_name: g.first_name || '',
+                    last_name: g.last_name || '',
+                    birth_date: g.birth_date || '',
+                    gender: g.gender || '',
+                    birth_country: g.birth_country || '',
+                    birth_province: g.birth_province || '',
+                    birth_city: g.birth_city || '',
+                    citizenship: g.citizenship || '',
+                    is_head_of_family: g.is_head_of_family || false,
+                    // Full fields logic (if any)
+                    address: g.address || (g.is_head_of_family ? booking.customer?.address : '') || '',
+                    residence_country: g.residence_country || (g.is_head_of_family ? booking.customer?.residence_country : '') || '',
+                    residence_province: g.residence_province || (g.is_head_of_family ? booking.customer?.residence_province : '') || '',
+                    residence_city: g.residence_city || (g.is_head_of_family ? booking.customer?.residence_city : '') || '',
+                    residence_zip: g.residence_zip || (g.is_head_of_family ? booking.customer?.residence_zip : '') || '',
+                    document_type: g.document_type || (g.is_head_of_family ? booking.customer?.document_type : '') || 'carta_identita',
+                    document_number: g.document_number || (g.is_head_of_family ? booking.customer?.document_number : '') || '',
+                    document_issue_date: g.document_issue_date || (g.is_head_of_family ? booking.customer?.document_issue_date : '') || '',
+                    document_issuer: g.document_issuer || (g.is_head_of_family ? booking.customer?.document_issuer : '') || '',
+                    document_issue_city: g.document_issue_city || (g.is_head_of_family ? booking.customer?.document_issue_city : '') || '',
+                    document_issue_country: g.document_issue_country || (g.is_head_of_family ? booking.customer?.document_issue_country : '') || ''
+                }));
+            } else {
+                // Initialize based on guests_count
+                // Logic: 1st guest is Head of Family (Booking Customer)
+                const customer = booking.customer || {};
 
-            // Documento
-            setDocType(c.document_type || 'carta_identita');
-            setDocNumber(c.document_number || '');
-            setDocIssueDate(c.document_issue_date || '');
-            setDocIssuer(c.document_issuer || '');
-            setDocIssueCity(c.document_issue_city || '');
-            setDocIssueCountry(c.document_issue_country || '');
+                initialGuests = Array(booking.guests_count).fill(null).map((_, i) => {
+                    const isHead = i === 0;
+                    if (isHead) {
+                        return {
+                            first_name: customer.first_name || '',
+                            last_name: customer.last_name || '',
+                            birth_date: customer.birth_date || '',
+                            gender: customer.gender || '',
+                            birth_country: customer.birth_country || 'Italia',
+                            birth_province: customer.birth_province || '',
+                            birth_city: customer.birth_city || '',
+                            citizenship: customer.citizenship || 'Italiana',
+                            is_head_of_family: true,
 
-            // Clear errors when booking opens/changes
+                            address: customer.address || '',
+                            residence_country: customer.residence_country || 'Italia',
+                            residence_province: customer.residence_province || '',
+                            residence_city: customer.residence_city || '',
+                            residence_zip: customer.residence_zip || '',
+
+                            document_type: customer.document_type || 'carta_identita',
+                            document_number: customer.document_number || '',
+                            document_issue_date: customer.document_issue_date || '',
+                            document_issuer: customer.document_issuer || '',
+                            document_issue_city: customer.document_issue_city || '',
+                            document_issue_country: customer.document_issue_country || 'Italia',
+                        };
+                    } else {
+                        return {
+                            first_name: '',
+                            last_name: '',
+                            birth_date: '',
+                            gender: '',
+                            birth_country: 'Italia',
+                            birth_province: '',
+                            birth_city: '',
+                            citizenship: 'Italiana',
+                            is_head_of_family: false
+                        };
+                    }
+                });
+            }
+
+            // PAD with empty guests if current list is shorter than guests_count
+            if (initialGuests.length < booking.guests_count) {
+                const missing = booking.guests_count - initialGuests.length;
+                for (let i = 0; i < missing; i++) {
+                    initialGuests.push({
+                        first_name: '',
+                        last_name: '',
+                        birth_date: '',
+                        gender: '',
+                        birth_country: 'Italia',
+                        birth_province: '',
+                        birth_city: '',
+                        citizenship: 'Italiana',
+                        is_head_of_family: false
+                    });
+                }
+            }
+            // Optional: Truncate if more? Usually shouldn't happen unless logic changed. 
+            // Better to keep existing if there are more than expected to avoid data loss.
+
+            setGuests(initialGuests);
             setErrors({});
+            setCurrentGuestIndex(0);
         }
     }, [booking, open]);
 
-    if (!booking) return null;
+    const updateGuest = (index: number, data: GuestData) => {
+        const newGuests = [...guests];
+        newGuests[index] = data;
+        setGuests(newGuests);
+    };
+
+    const setHeadOfFamily = (index: number) => {
+        // Toggle: Set this index to true, others to false
+        // WARNING: If switching head, we might lose data if not saved.
+        // For simplicity: Copy data from current head to new head if needed? 
+        // Or just switch the flag and let the UI react (show more fields).
+
+        let newGuests = guests.map((g, i) => ({
+            ...g,
+            is_head_of_family: i === index
+        }));
+
+        // Ensure the new head has the required fields placeholders if empty
+        const customer = booking.customer || {};
+        if (newGuests[index].is_head_of_family) {
+            const g = newGuests[index];
+            // Auto-fill some defaults if missing (e.g. from customer if it matches?)
+            // For now, we leave them blank or keep existing values.
+            if (!g.document_type) g.document_type = 'carta_identita';
+        }
+
+        setGuests(newGuests);
+    };
 
     const validateForm = () => {
-        const requiredFields = [
-            { value: birthDate, label: "Data di Nascita", key: "birthDate" },
-            { value: gender, label: "Sesso", key: "gender" },
-            { value: birthCountry, label: "Stato Nascita", key: "birthCountry" },
-            { value: birthProvince, label: "Provincia Nascita", key: "birthProvince" },
-            { value: birthCity, label: "Comune Nascita", key: "birthCity" },
-            { value: citizenship, label: "Cittadinanza", key: "citizenship" },
+        const newErrors: Record<string, Record<string, boolean>> = {};
+        let isValid = true;
 
-            { value: address, label: "Indirizzo Residenza", key: "address" },
-            { value: residenceCountry, label: "Stato Residenza", key: "residenceCountry" },
-            { value: residenceCity, label: "Comune Residenza", key: "residenceCity" },
-            { value: residenceZip, label: "CAP Residenza", key: "residenceZip" },
-            { value: residenceProvince, label: "Provincia Residenza", key: "residenceProvince" },
+        guests.forEach((guest, index) => {
+            const guestErrors: Record<string, boolean> = {};
 
-            { value: docType, label: "Tipo Documento", key: "docType" },
-            { value: docNumber, label: "Numero Documento", key: "docNumber" },
-            { value: docIssueDate, label: "Data Rilascio Documento", key: "docIssueDate" },
-            { value: docIssuer, label: "Ente Rilascio", key: "docIssuer" },
-            { value: docIssueCity, label: "Comune Rilascio Documento", key: "docIssueCity" },
-            { value: docIssueCountry, label: "Stato Rilascio Documento", key: "docIssueCountry" }
-        ];
+            // Common Fields
+            if (!guest.first_name) guestErrors.first_name = true;
+            if (!guest.last_name) guestErrors.last_name = true;
+            if (!guest.birth_date) guestErrors.birth_date = true;
+            if (!guest.gender) guestErrors.gender = true;
+            if (!guest.birth_country) guestErrors.birth_country = true;
+            // if (!guest.birth_province) guestErrors.birth_province = true; // Optional for foreign?
+            if (!guest.birth_city) guestErrors.birth_city = true;
+            if (!guest.citizenship) guestErrors.citizenship = true;
 
-        const newErrors: Record<string, boolean> = {};
-        const missing = requiredFields.filter(f => {
-            const isMissing = !f.value || f.value.trim() === '';
-            if (isMissing) {
-                newErrors[f.key] = true;
+            // Head of Family Fields
+            if (guest.is_head_of_family) {
+                if (!guest.address) guestErrors.address = true;
+                if (!guest.residence_city) guestErrors.residence_city = true;
+                if (!guest.residence_country) guestErrors.residence_country = true;
+                if (!guest.document_number) guestErrors.document_number = true;
+                if (!guest.document_issue_date) guestErrors.document_issue_date = true;
+                // Add others as needed
             }
-            return isMissing;
+
+            if (Object.keys(guestErrors).length > 0) {
+                newErrors[index] = guestErrors;
+                isValid = false;
+            }
         });
 
         setErrors(newErrors);
-
-        if (missing.length > 0) {
-            // Toast removed as requested. Only red borders are shown.
-            return false;
-        }
-        return true;
+        return isValid;
     };
 
     const handleConfirmCheckIn = async () => {
-        if (!validateForm()) return;
+        if (!validateForm()) {
+            toast.error("Controlla i campi obbligatori mancanti");
+            return;
+        }
 
         setSending(true);
         try {
-            // 1. Update Customer Details
-            await fetch(`/api/customers/${booking.customer_id}`, {
-                method: 'PATCH',
+            // Find Head of Family to Update Customer Record
+            const head = guests.find(g => g.is_head_of_family) || guests[0];
+
+            // 1. Update Customer (Sync Head of Family data back to Customer table)
+            if (head) {
+                await fetch(`/api/customers/${booking.customer_id}`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        // Anagrafica
+                        first_name: head.first_name,
+                        last_name: head.last_name,
+                        birth_date: head.birth_date,
+                        gender: head.gender,
+                        birth_country: head.birth_country,
+                        birth_province: head.birth_province,
+                        birth_city: head.birth_city,
+                        citizenship: head.citizenship,
+
+                        // Residenza
+                        address: head.address,
+                        residence_city: head.residence_city,
+                        residence_zip: head.residence_zip,
+                        residence_province: head.residence_province,
+                        residence_country: head.residence_country,
+
+                        // Documento
+                        document_type: head.document_type,
+                        document_number: head.document_number,
+                        document_issue_date: head.document_issue_date,
+                        document_issuer: head.document_issuer,
+                        document_issue_city: head.document_issue_city,
+                        document_issue_country: head.document_issue_country
+                    })
+                });
+            }
+
+            // 2. Save ALL Guests to BookingGuests table
+            const guestsRes = await fetch(`/api/bookings/${booking.id}/guests`, {
+                method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    birth_date: birthDate,
-                    gender: gender,
-                    birth_country: birthCountry,
-                    birth_province: birthProvince,
-                    birth_city: birthCity,
-                    citizenship: citizenship,
-
-                    address: address,
-                    residence_city: residenceCity,
-                    residence_zip: residenceZip,
-                    residence_province: residenceProvince,
-                    residence_country: residenceCountry,
-
-                    document_type: docType,
-                    document_number: docNumber,
-                    document_issue_date: docIssueDate,
-                    document_issuer: docIssuer,
-                    document_issue_city: docIssueCity,
-                    document_issue_country: docIssueCountry
-                })
+                body: JSON.stringify({ guests })
             });
 
-            // 2. Update Booking Status & Questura
+            if (!guestsRes.ok) throw new Error("Errore salvataggio ospiti");
+
+            // 3. Update Booking Status & Questura
             const bookingRes = await fetch(`/api/bookings/${booking.id}`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
@@ -442,7 +538,7 @@ function CheckInDialog({ open, onOpenChange, booking, onClose, onSuccess }: {
                 })
             });
 
-            if (!bookingRes.ok) throw new Error("Errore aggiornamento prenotazione");
+            if (!bookingRes.ok) throw new Error("Errore aggiornamento stato prenotazione");
 
             toast.success("Check-in completato con successo!");
             onSuccess();
@@ -454,9 +550,8 @@ function CheckInDialog({ open, onOpenChange, booking, onClose, onSuccess }: {
         }
     };
 
+    if (!booking) return null;
     const { start, end } = parseBookingPeriod(booking.booking_period);
-
-    const isItaly = (s: string) => !s || s.toLowerCase() === 'italia';
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
@@ -468,7 +563,7 @@ function CheckInDialog({ open, onOpenChange, booking, onClose, onSuccess }: {
                                 Check-in: {booking.customer?.first_name} {booking.customer?.last_name}
                             </DialogTitle>
                             <DialogDescription className="text-lg mt-1">
-                                Completa i dati dell'ospite e conferma il check-in.
+                                Inserisci i dati di tutti gli ospiti ({guests.length} presenti).
                             </DialogDescription>
                         </div>
 
@@ -488,351 +583,118 @@ function CheckInDialog({ open, onOpenChange, booking, onClose, onSuccess }: {
                             <div className="w-px h-4 bg-border hidden sm:block"></div>
                             <div className="flex items-center gap-2">
                                 <Users className="w-4 h-4 text-muted-foreground" />
-                                <span>{booking.guests_count} Ospiti</span>
+                                <span>{booking.guests_count} Prenotati</span>
                             </div>
                         </div>
                     </div>
                 </DialogHeader>
 
-                <div className="flex-1 overflow-y-auto pr-2 -mr-2">
-                    <div className="grid md:grid-cols-2 gap-8 pb-4">
-                        <div className="space-y-8">
-                            {/* Dati di Nascita */}
-                            <div className="space-y-4 bg-primary/5 p-4 rounded-xl border border-primary/10">
-                                <div className="flex items-center gap-2 text-primary font-semibold border-b pb-2 border-l-4 border-l-primary pl-2">
-                                    <UserCheck className="w-5 h-5" />
-                                    <h3 className="text-lg">Dati di Nascita</h3>
-                                </div>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="space-y-2">
-                                        <Label className={cn(errors.birthDate && "text-red-500")}>Data di Nascita</Label>
-                                        <Input
-                                            type="date"
-                                            value={birthDate}
-                                            onChange={e => setBirthDate(e.target.value)}
-                                            className={cn(errors.birthDate && "border-red-500 focus-visible:ring-red-500")}
-                                        />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label className={cn(errors.gender && "text-red-500")}>Sesso</Label>
-                                        <select
-                                            className={cn(
-                                                "flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
-                                                errors.gender && "border-red-500 focus-visible:ring-red-500"
-                                            )}
-                                            value={gender}
-                                            onChange={e => setGender(e.target.value)}
-                                        >
-                                            <option value="">Seleziona...</option>
-                                            <option value="M">Maschio</option>
-                                            <option value="F">Femmina</option>
-                                        </select>
-                                    </div>
+                <div className="flex-1 overflow-y-auto pr-2 -mr-2 pb-6">
+                    <div className="space-y-6">
+                        {/* Guest Tabs Navigation */}
+                        <div className="flex items-center gap-2 mb-4 overflow-x-auto pb-2 scrollbar-hide shrink-0 bg-muted/20 p-2 rounded-lg border border-border/50">
+                            {guests.map((g, idx) => {
+                                const hasError = errors[idx] && Object.keys(errors[idx]).length > 0;
+                                return (
+                                    <button
+                                        key={idx}
+                                        onClick={() => setCurrentGuestIndex(idx)}
+                                        className={cn(
+                                            "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap border h-10",
+                                            currentGuestIndex === idx
+                                                ? "bg-primary text-primary-foreground shadow-sm border-primary"
+                                                : cn(
+                                                    "bg-background border-border hover:bg-muted/60",
+                                                    g.is_head_of_family ? "text-blue-600 border-blue-200/60 bg-blue-50/20" : "text-muted-foreground"
+                                                ),
 
-                                    {/* Stato Nascita */}
-                                    <div className="space-y-2">
-                                        <Label className={cn(errors.birthCountry && "text-red-500")}>Stato Nascita</Label>
-                                        <Input
-                                            placeholder="Italia"
-                                            value={birthCountry}
-                                            onChange={e => setBirthCountry(e.target.value)}
-                                            className={cn(errors.birthCountry && "border-red-500 focus-visible:ring-red-500")}
-                                        />
-                                    </div>
-
-                                    {/* Provincia Nascita */}
-                                    <div className="space-y-2">
-                                        <Label className={cn(errors.birthProvince && "text-red-500")}>Provincia (Sigla)</Label>
-                                        {isItaly(birthCountry) ? (
-                                            <ProvinceAutocomplete
-                                                value={birthProvince}
-                                                onSelect={(p) => setBirthProvince(p.sigla)}
-                                                placeholder="RM"
-                                                className={cn(errors.birthProvince && "border-red-500 focus-visible:ring-red-500")}
-                                            />
-                                        ) : (
-                                            <Input
-                                                placeholder="MI"
-                                                maxLength={2}
-                                                className={cn("uppercase", errors.birthProvince && "border-red-500 focus-visible:ring-red-500")}
-                                                value={birthProvince}
-                                                onChange={e => setBirthProvince(e.target.value.toUpperCase())}
-                                            />
+                                            // Error styles
+                                            hasError && currentGuestIndex !== idx && "border-destructive/50 text-destructive/80"
                                         )}
-                                    </div>
-
-                                    {/* Comune Nascita */}
-                                    <div className="space-y-2">
-                                        <Label className={cn(errors.birthCity && "text-red-500")}>Comune Nascita</Label>
-                                        {isItaly(birthCountry) ? (
-                                            <MunicipalityAutocomplete
-                                                value={birthCity}
-                                                onSelect={(c) => {
-                                                    setBirthCity(c.nome);
-                                                    setBirthProvince(c.sigla);
-                                                    if (!birthCountry) setBirthCountry("Italia");
-                                                }}
-                                                placeholder="Cerca comune..."
-                                                className={cn(errors.birthCity && "border-red-500 focus-visible:ring-red-500")}
-                                            />
-                                        ) : (
-                                            <Input
-                                                placeholder="Milano"
-                                                value={birthCity}
-                                                onChange={e => setBirthCity(e.target.value)}
-                                                className={cn(errors.birthCity && "border-red-500 focus-visible:ring-red-500")}
-                                            />
-                                        )}
-                                    </div>
-
-                                    <div className="space-y-2">
-                                        <Label className={cn(errors.citizenship && "text-red-500")}>Cittadinanza</Label>
-                                        <Input
-                                            placeholder="Italiana"
-                                            value={citizenship}
-                                            onChange={e => setCitizenship(e.target.value)}
-                                            className={cn(errors.citizenship && "border-red-500 focus-visible:ring-red-500")}
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Residenza */}
-                            <div className="space-y-4 bg-green-50/50 dark:bg-green-900/10 p-4 rounded-xl border border-green-100 dark:border-green-900/20">
-                                <div className="flex items-center gap-2 text-green-700 dark:text-green-500 font-semibold border-b pb-2 border-l-4 border-l-green-600 pl-2">
-                                    <UserCheck className="w-5 h-5 text-green-600" />
-                                    <h3 className="text-lg">Residenza</h3>
-                                </div>
-                                <div className="space-y-4">
-                                    <div className="space-y-2">
-                                        <Label className={cn(errors.address && "text-red-500")}>Indirizzo (Via/Piazza, Civico)</Label>
-                                        <Input
-                                            placeholder="Via Roma, 1"
-                                            value={address}
-                                            onChange={e => setAddress(e.target.value)}
-                                            className={cn(errors.address && "border-red-500 focus-visible:ring-red-500")}
-                                        />
-                                    </div>
-                                    <div className="grid grid-cols-2 gap-4">
-                                        {/* Stato Residenza */}
-                                        <div className="space-y-2">
-                                            <Label className={cn(errors.residenceCountry && "text-red-500")}>Stato</Label>
-                                            <Input
-                                                placeholder="Italia"
-                                                value={residenceCountry}
-                                                onChange={e => setResidenceCountry(e.target.value)}
-                                                className={cn(errors.residenceCountry && "border-red-500 focus-visible:ring-red-500")}
-                                            />
+                                    >
+                                        <div className={cn(
+                                            "flex items-center justify-center rounded-full w-5 h-5 text-[10px] font-bold transition-colors",
+                                            currentGuestIndex === idx
+                                                ? "bg-primary-foreground/20 text-primary-foreground"
+                                                : (g.is_head_of_family ? "bg-blue-100 text-blue-600" : "bg-muted text-muted-foreground"),
+                                            hasError && "bg-destructive/10 text-destructive"
+                                        )}>
+                                            {idx + 1}
                                         </div>
-
-                                        {/* Comune Residenza */}
-                                        <div className="space-y-2">
-                                            <Label className={cn(errors.residenceCity && "text-red-500")}>Comune</Label>
-                                            {isItaly(residenceCountry) ? (
-                                                <MunicipalityAutocomplete
-                                                    value={residenceCity}
-                                                    onSelect={(c) => {
-                                                        setResidenceCity(c.nome);
-                                                        setResidenceProvince(c.sigla);
-                                                        setResidenceZip(c.cap[0] || "");
-                                                        if (!residenceCountry) setResidenceCountry("Italia");
-                                                    }}
-                                                    placeholder="Cerca comune..."
-                                                    className={cn(errors.residenceCity && "border-red-500 focus-visible:ring-red-500")}
-                                                />
-                                            ) : (
-                                                <Input
-                                                    placeholder="Roma"
-                                                    value={residenceCity}
-                                                    onChange={e => setResidenceCity(e.target.value)}
-                                                    className={cn(errors.residenceCity && "border-red-500 focus-visible:ring-red-500")}
-                                                />
-                                            )}
-                                        </div>
-
-                                        <div className="space-y-2">
-                                            <Label className={cn(errors.residenceZip && "text-red-500")}>CAP</Label>
-                                            <Input
-                                                placeholder="00100"
-                                                value={residenceZip}
-                                                onChange={e => setResidenceZip(e.target.value)}
-                                                className={cn(errors.residenceZip && "border-red-500 focus-visible:ring-red-500")}
-                                            />
-                                        </div>
-
-                                        {/* Provincia Residenza */}
-                                        <div className="space-y-2">
-                                            <Label className={cn(errors.residenceProvince && "text-red-500")}>Provincia</Label>
-                                            {isItaly(residenceCountry) ? (
-                                                <ProvinceAutocomplete
-                                                    value={residenceProvince}
-                                                    onSelect={(p) => setResidenceProvince(p.sigla)}
-                                                    placeholder="RM"
-                                                    className={cn(errors.residenceProvince && "border-red-500 focus-visible:ring-red-500")}
-                                                />
-                                            ) : (
-                                                <Input
-                                                    placeholder="RM"
-                                                    maxLength={2}
-                                                    className={cn("uppercase", errors.residenceProvince && "border-red-500 focus-visible:ring-red-500")}
-                                                    value={residenceProvince}
-                                                    onChange={e => setResidenceProvince(e.target.value.toUpperCase())}
-                                                />
-                                            )}
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                                        <span>{g.first_name || `Ospite ${idx + 1}`}</span>
+                                        {g.is_head_of_family && <Crown className="w-3.5 h-3.5 opacity-70" />}
+                                        {hasError && <Info className="w-3 h-3 text-destructive" />}
+                                    </button>
+                                );
+                            })}
                         </div>
 
-                        <div className="space-y-8">
-                            {/* Documento d'Identità */}
-                            <div className="space-y-4 bg-amber-50/50 dark:bg-amber-900/10 p-4 rounded-xl border border-amber-100 dark:border-amber-900/20">
-                                <div className="flex items-center gap-2 text-amber-700 dark:text-amber-500 font-semibold border-b pb-2 border-l-4 border-l-amber-500 pl-2">
-                                    <UserCheck className="w-5 h-5 text-amber-600" />
-                                    <h3 className="text-lg">Documento d'Identità</h3>
+                        {/* Guest Form Area */}
+                        <div className="flex-1">
+                            {guests[currentGuestIndex] && (
+                                <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
+                                    <GuestForm
+                                        key={currentGuestIndex} // Key ensures remount/animation on switch
+                                        index={currentGuestIndex}
+                                        guest={guests[currentGuestIndex]}
+                                        onChange={updateGuest}
+                                        onRemove={undefined}
+                                        canRemove={false}
+                                        isHeadOfFamily={guests[currentGuestIndex].is_head_of_family}
+                                        onSetHeadOfFamily={setHeadOfFamily}
+                                        errors={errors[currentGuestIndex]}
+                                    />
                                 </div>
+                            )}
+                        </div>
 
-                                <div className="grid gap-4">
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div className="space-y-2">
-                                            <Label className={cn(errors.docType && "text-red-500")}>Tipo Documento</Label>
-                                            <select
-                                                className={cn(
-                                                    "flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
-                                                    errors.docType && "border-red-500 focus-visible:ring-red-500"
-                                                )}
-                                                value={docType}
-                                                onChange={e => setDocType(e.target.value)}
-                                            >
-                                                <option value="carta_identita">Carta d'Identità</option>
-                                                <option value="passaporto">Passaporto</option>
-                                                <option value="patente">Patente</option>
-                                                <option value="altro">Altro</option>
-                                            </select>
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label className={cn(errors.docNumber && "text-red-500")}>Numero Documento</Label>
-                                            <Input
-                                                value={docNumber}
-                                                onChange={e => setDocNumber(e.target.value)}
-                                                placeholder="AX1234567"
-                                                className={cn(errors.docNumber && "border-red-500 focus-visible:ring-red-500")}
-                                            />
-                                        </div>
-                                    </div>
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div className="space-y-2">
-                                            <Label className={cn(errors.docIssueDate && "text-red-500")}>Data Rilascio</Label>
-                                            <Input
-                                                type="date"
-                                                value={docIssueDate}
-                                                onChange={e => setDocIssueDate(e.target.value)}
-                                                className={cn(errors.docIssueDate && "border-red-500 focus-visible:ring-red-500")}
-                                            />
-                                        </div>
-
-                                        <div className="space-y-2">
-                                            <Label className={cn(errors.docIssueCountry && "text-red-500")}>Stato Rilascio</Label>
-                                            <Input
-                                                placeholder="Italia"
-                                                value={docIssueCountry}
-                                                onChange={e => setDocIssueCountry(e.target.value)}
-                                                className={cn(errors.docIssueCountry && "border-red-500 focus-visible:ring-red-500")}
-                                            />
-                                        </div>
-
-                                        <div className="space-y-2">
-                                            <Label className={cn(errors.docIssueCity && "text-red-500")}>Comune Rilascio</Label>
-                                            {isItaly(docIssueCountry) ? (
-                                                <MunicipalityAutocomplete
-                                                    value={docIssueCity}
-                                                    onSelect={(c) => {
-                                                        setDocIssueCity(c.nome);
-                                                        if (!docIssueCountry) setDocIssueCountry("Italia");
-                                                    }}
-                                                    placeholder="Cerca comune..."
-                                                    className={cn(errors.docIssueCity && "border-red-500 focus-visible:ring-red-500")}
-                                                />
-                                            ) : (
-                                                <Input
-                                                    placeholder="Milano"
-                                                    value={docIssueCity}
-                                                    onChange={e => setDocIssueCity(e.target.value)}
-                                                    className={cn(errors.docIssueCity && "border-red-500 focus-visible:ring-red-500")}
-                                                />
-                                            )}
-                                        </div>
-
-                                        <div className="space-y-2">
-                                            <Label className={cn(errors.docIssuer && "text-red-500")}>Ente Rilascio</Label>
-                                            <Input
-                                                placeholder="Comune"
-                                                value={docIssuer}
-                                                onChange={e => setDocIssuer(e.target.value)}
-                                                className={cn(errors.docIssuer && "border-red-500 focus-visible:ring-red-500")}
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
+                        {/* Questura & Adempimenti */}
+                        <div className="mt-8 pt-6 border-t">
+                            <div className="flex items-center gap-2 text-primary font-semibold border-b pb-2 mb-4">
+                                <AlertCircle className="w-5 h-5" />
+                                <h3 className="text-lg">Adempimenti Legali</h3>
                             </div>
 
-                            {/* Questura & Adempimenti */}
-                            <div className="space-y-4">
-                                <div className="flex items-center gap-2 text-primary font-semibold border-b pb-2">
-                                    <AlertCircle className="w-5 h-5" />
-                                    <h3 className="text-lg">Adempimenti Legali</h3>
-                                </div>
-
-                                <Card className="bg-amber-50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-800 shadow-none">
-                                    <CardContent className="pt-6">
-                                        <div className="flex items-start space-x-4">
-                                            <Switch
-                                                id="questura-mode"
-                                                checked={questuraSent}
-                                                onCheckedChange={setQuesturaSent}
-                                                className="mt-1"
-                                            />
-                                            <div className="space-y-1">
-                                                <Label htmlFor="questura-mode" className="font-semibold text-base">
-                                                    Inviato ad Alloggiati Web
-                                                </Label>
-                                                <p className="text-sm text-muted-foreground leading-snug">
-                                                    Conferma di aver generato ed inviato il file delle presenze al portale della Polizia di Stato (Questura).
-                                                </p>
-                                            </div>
+                            <Card className="bg-amber-50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-800 shadow-none">
+                                <CardContent className="pt-6">
+                                    <div className="flex items-start space-x-4">
+                                        <Switch
+                                            id="questura-mode"
+                                            checked={questuraSent}
+                                            onCheckedChange={setQuesturaSent}
+                                            className="mt-1"
+                                        />
+                                        <div className="space-y-1">
+                                            <Label htmlFor="questura-mode" className="font-semibold text-base">
+                                                Inviato ad Alloggiati Web
+                                            </Label>
+                                            <p className="text-sm text-muted-foreground leading-snug">
+                                                Abilita questo flag se hai già inviato manualmente i dati al portale della Questura.
+                                                Il sistema segnerà questi ospiti come "Inviati".
+                                            </p>
                                         </div>
-                                    </CardContent>
-                                </Card>
-
-                                <div className="bg-blue-50 dark:bg-blue-950/20 p-4 rounded-lg flex gap-3 text-sm text-blue-700 dark:text-blue-300 border border-blue-100 dark:border-blue-900">
-                                    <Info className="w-5 h-5 shrink-0 mt-0.5" />
-                                    <p>
-                                        Ricorda di far firmare il modulo sulla privacy e di verificare la validità dei documenti degli ospiti aggiuntivi se necessario.
-                                    </p>
-                                </div>
-                            </div>
+                                    </div>
+                                </CardContent>
+                            </Card>
                         </div>
                     </div>
                 </div>
 
-                <DialogFooter className="mt-4 flex-none border-t pt-4">
-                    <Button variant="ghost" size="lg" onClick={onClose} disabled={sending}>
+                <DialogFooter className="pt-4 border-t mt-4 flex justify-between sm:justify-between w-full">
+                    <Button variant="outline" onClick={onClose} disabled={sending}>
                         Annulla
                     </Button>
-                    <div className="flex gap-3 w-full sm:w-auto">
-                        <Button
-                            onClick={handleConfirmCheckIn}
-                            disabled={sending}
-                            size="lg"
-                            className="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white shadow-sm"
-                        >
-                            {sending ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Check className="w-4 h-4 mr-2" />}
-                            {booking.status === 'checked_in' ? 'Aggiorna Dati' : 'Conferma Check-in'}
+                    <div className="flex gap-2">
+                        <Button onClick={handleConfirmCheckIn} disabled={sending} className="min-w-[120px]">
+                            {sending ? <>
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Salvataggio...
+                            </> : <>
+                                <Check className="mr-2 h-4 w-4" /> Conferma Check-in
+                            </>}
                         </Button>
                     </div>
                 </DialogFooter>
             </DialogContent>
-        </Dialog >
+        </Dialog>
     );
 }

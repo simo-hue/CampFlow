@@ -20,6 +20,9 @@ export function useSectors() {
             const data = await response.json();
             return data.sectors || [];
         },
+        // Smart Caching Strategy
+        staleTime: 1000 * 60 * 60, // 1 hour - Sectors change very rarely
+        gcTime: 1000 * 60 * 60 * 24, // 24 hours - Keep in cache for a long time
     });
 
     const createSector = useMutation({

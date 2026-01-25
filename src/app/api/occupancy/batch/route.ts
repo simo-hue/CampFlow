@@ -22,6 +22,7 @@ export async function GET(request: NextRequest) {
         const searchParams = request.nextUrl.searchParams;
         const sectorMin = searchParams.get('sector_min');
         const sectorMax = searchParams.get('sector_max');
+        const sectorId = searchParams.get('sector_id');
         const dateFrom = searchParams.get('date_from');
         const dateTo = searchParams.get('date_to');
 
@@ -38,8 +39,11 @@ export async function GET(request: NextRequest) {
             .select('*')
             .order('number');
 
-        // Apply sector filter only if provided (for piazzole)
-        if (sectorMin && sectorMax) {
+        // Apply sector filter
+        if (sectorId) {
+            pitchQuery = pitchQuery.eq('sector_id', sectorId);
+        } else if (sectorMin && sectorMax) {
+            // Legacy support
             const min = parseInt(sectorMin);
             const max = parseInt(sectorMax);
             pitchQuery = pitchQuery
@@ -55,6 +59,13 @@ export async function GET(request: NextRequest) {
                 { error: 'Failed to fetch pitches' },
                 { status: 500 }
             );
+        }
+
+        console.log(`🔎 Pitch Query Debug: SectorID=${sectorId}, SectorMin=${sectorMin}, Found=${pitches.length}`);
+        if (pitches.length === 0) {
+            console.log("⚠️ No pitches found. Checking if SectorID exists in any pitch...");
+            const { count } = await supabaseAdmin.from('pitches').select('*', { count: 'exact', head: true }).not('sector_id', 'is', null);
+            console.log(`ℹ️ Total pitches with assigned sector_id: ${count}`);
         }
 
         // Query 2: Get ALL bookings che si sovrappongono con il date range (1 sola query!)
@@ -80,7 +91,7 @@ export async function GET(request: NextRequest) {
             );
         }
 
-        // Format bookings per facilitare il parsing client-side
+
         const formattedBookings = bookings.map(booking => {
             const periodMatch = booking.booking_period?.match(/\[([^,]+),([^\)]+)\)/);
             const customerData = Array.isArray(booking.customer) ? booking.customer[0] : booking.customer;

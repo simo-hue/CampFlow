@@ -11,7 +11,7 @@ import { Calendar, Users, FileText, Loader2, Check, Dog, Plus, X, Euro, Car, Bab
 import { calculateNights, formatDateLong } from '@/lib/dateUtils';
 import { formatCurrency } from '@/lib/utils';
 import type { PitchType, PriceBreakdownDay } from '@/lib/types';
-import { invalidateOccupancyCache } from './SectorOccupancyViewer';
+import { invalidateOccupancyCache } from '@/lib/occupancyCache';
 import { CustomerAutocomplete } from './CustomerAutocomplete';
 import { toast } from "sonner";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -44,7 +44,6 @@ export function BookingCreationModal({
     const [guestsCount, setGuestsCount] = useState(2);
     const [childrenCount, setChildrenCount] = useState(0);
     const [carsCount, setCarsCount] = useState(0);
-    const [guestNames, setGuestNames] = useState<string[]>(['']);
     const [dogsCount, setDogsCount] = useState(0);
     const [notes, setNotes] = useState('');
     const [loading, setLoading] = useState(false);
@@ -163,7 +162,6 @@ export function BookingCreationModal({
                     phone: customerPhone,
                     notes: notes
                 },
-                guest_names: guestNames.filter(name => name.trim())
             };
 
             if (selectedCustomerId) {
@@ -207,7 +205,6 @@ export function BookingCreationModal({
         setGuestsCount(2);
         setChildrenCount(0);
         setCarsCount(0);
-        setGuestNames(['']);
         setDogsCount(0);
         setNotes('');
         setSuccess(false);
@@ -221,21 +218,7 @@ export function BookingCreationModal({
         }
     };
 
-    const addGuestField = () => {
-        if (guestNames.length < guestsCount) {
-            setGuestNames([...guestNames, '']);
-        }
-    };
 
-    const removeGuestField = (index: number) => {
-        setGuestNames(guestNames.filter((_, i) => i !== index));
-    };
-
-    const updateGuestName = (index: number, value: string) => {
-        const updated = [...guestNames];
-        updated[index] = value;
-        setGuestNames(updated);
-    };
 
     return (
         <Dialog open={open} onOpenChange={handleClose}>
@@ -411,48 +394,7 @@ export function BookingCreationModal({
                             </div>
                         </div>
 
-                        <div className="space-y-2">
-                            <div className="flex items-center justify-between">
-                                <Label className="text-sm text-muted-foreground">
-                                    Nomi Ospiti (opzionale - compilare al check-in)
-                                </Label>
-                                {guestNames.length < (guestsCount + childrenCount) && (
-                                    <Button
-                                        type="button"
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={addGuestField}
-                                        disabled={loading}
-                                    >
-                                        <Plus className="h-3 w-3 mr-1" />
-                                        Aggiungi
-                                    </Button>
-                                )}
-                            </div>
-                            <div className="space-y-2">
-                                {guestNames.map((name, index) => (
-                                    <div key={index} className="flex gap-2">
-                                        <Input
-                                            placeholder={`Ospite ${index + 1}`}
-                                            value={name}
-                                            onChange={(e) => updateGuestName(index, e.target.value)}
-                                            disabled={loading}
-                                        />
-                                        {guestNames.length > 1 && (
-                                            <Button
-                                                type="button"
-                                                variant="ghost"
-                                                size="icon"
-                                                onClick={() => removeGuestField(index)}
-                                                disabled={loading}
-                                            >
-                                                <X className="h-4 w-4" />
-                                            </Button>
-                                        )}
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
+
 
                         <div className="space-y-2">
                             <Label htmlFor="notes" className="flex items-center gap-2">

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase/server';
 import { calculatePrice } from '@/lib/pricing';
 import type { CreateBookingRequest } from '@/lib/types';
-import { invalidateOccupancyCache } from '@/components/dashboard/SectorOccupancyViewer';
+
 
 /**
  * POST /api/bookings
