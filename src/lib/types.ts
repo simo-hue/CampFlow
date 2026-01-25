@@ -77,6 +77,7 @@ export interface Customer {
     birth_province?: string;
     citizenship?: string;
     gender?: 'M' | 'F' | 'Other';
+    license_plate?: string;
 
     // Residence Details
     residence_country?: string;
@@ -138,6 +139,7 @@ export interface CreateCustomerRequest {
     birth_province?: string;
     citizenship?: string;
     gender?: 'M' | 'F' | 'Other';
+    license_plate?: string;
     residence_country?: string;
     residence_province?: string;
     residence_city?: string;

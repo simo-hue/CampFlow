@@ -35,6 +35,7 @@ export interface GuestData {
     document_issuer?: string;
     document_issue_city?: string;
     document_issue_country?: string;
+    license_plate?: string;
 }
 
 interface GuestFormProps {
@@ -359,6 +360,28 @@ export function GuestForm({
                                         />
                                     </div>
                                 </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Veicolo */}
+                    <div className="mt-6 space-y-4 animate-in slide-in-from-top-4 duration-300 delay-100">
+                        <Separator className="mb-4" />
+                        <div className="flex items-center gap-2 text-slate-700 dark:text-slate-400 font-semibold border-b pb-2">
+                            <User className="w-4 h-4" />
+                            <h4 className="text-sm uppercase tracking-wide">Veicolo</h4>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="space-y-2">
+                                <Label htmlFor="license_plate">Targa Veicolo</Label>
+                                <Input
+                                    id="license_plate"
+                                    value={guest.license_plate || ''}
+                                    onChange={e => handleChange('license_plate', e.target.value.toUpperCase())}
+                                    placeholder="AA000AA"
+                                    className="uppercase font-mono"
+                                />
+                                <p className="text-[10px] text-muted-foreground">Necessaria per l'accesso automatico.</p>
                             </div>
                         </div>
                     </div>

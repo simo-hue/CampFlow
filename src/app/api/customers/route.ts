@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
         .select('*');
 
     if (query) {
-        queryBuilder = queryBuilder.or(`first_name.ilike.%${query}%,last_name.ilike.%${query}%,email.ilike.%${query}%,phone.ilike.%${query}%`);
+        queryBuilder = queryBuilder.or(`first_name.ilike.%${query}%,last_name.ilike.%${query}%,email.ilike.%${query}%,phone.ilike.%${query}%,license_plate.ilike.%${query}%`);
     } else {
         queryBuilder = queryBuilder.order('last_name', { ascending: true });
     }

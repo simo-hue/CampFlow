@@ -420,6 +420,28 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
 
                             <Separator />
 
+                            {/* Section: Veicolo */}
+                            <section className="space-y-4">
+                                <h3 className="font-semibold flex items-center gap-2 text-primary text-sm uppercase tracking-wide">
+                                    <Shield className="h-4 w-4" /> Veicolo
+                                </h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="space-y-2">
+                                        <Label>Targa</Label>
+                                        <Input
+                                            className="bg-background uppercase font-mono"
+                                            disabled={!isEditing}
+                                            value={formData.license_plate || ''}
+                                            onChange={e => handleInputChange('license_plate', e.target.value.toUpperCase())}
+                                            placeholder="AA000AA"
+                                        />
+                                        <p className="text-[10px] text-muted-foreground">Necessaria per l'accesso automatico.</p>
+                                    </div>
+                                </div>
+                            </section>
+
+                            <Separator />
+
                             {/* Notes */}
                             <div className="space-y-2">
                                 <Label>Note Interne</Label>

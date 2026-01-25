@@ -136,6 +136,7 @@ export function CustomerAutocomplete({ onSelect, onClear, selectedCustomerId }: 
                                         <span className='font-medium'>{customer.first_name} {customer.last_name}</span>
                                         <span className="text-xs text-muted-foreground">
                                             {customer.phone} • {customer.email}
+                                            {customer.license_plate && ` • ${customer.license_plate}`}
                                         </span>
                                     </div>
                                 </CommandItem>

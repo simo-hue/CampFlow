@@ -332,7 +332,8 @@ function CheckInDialog({ open, onOpenChange, booking, onClose, onSuccess }: {
                     document_issue_date: g.document_issue_date || (g.is_head_of_family ? booking.customer?.document_issue_date : '') || '',
                     document_issuer: g.document_issuer || (g.is_head_of_family ? booking.customer?.document_issuer : '') || '',
                     document_issue_city: g.document_issue_city || (g.is_head_of_family ? booking.customer?.document_issue_city : '') || '',
-                    document_issue_country: g.document_issue_country || (g.is_head_of_family ? booking.customer?.document_issue_country : '') || ''
+                    document_issue_country: g.document_issue_country || (g.is_head_of_family ? booking.customer?.document_issue_country : '') || '',
+                    license_plate: g.license_plate || (g.is_head_of_family ? booking.customer?.license_plate : '') || ''
                 }));
             } else {
                 // Initialize based on guests_count
@@ -365,6 +366,7 @@ function CheckInDialog({ open, onOpenChange, booking, onClose, onSuccess }: {
                             document_issuer: customer.document_issuer || '',
                             document_issue_city: customer.document_issue_city || '',
                             document_issue_country: customer.document_issue_country || 'Italia',
+                            license_plate: customer.license_plate || '',
                         };
                     } else {
                         return {
@@ -514,7 +516,8 @@ function CheckInDialog({ open, onOpenChange, booking, onClose, onSuccess }: {
                         document_issue_date: head.document_issue_date,
                         document_issuer: head.document_issuer,
                         document_issue_city: head.document_issue_city,
-                        document_issue_country: head.document_issue_country
+                        document_issue_country: head.document_issue_country,
+                        license_plate: head.license_plate
                     })
                 });
             }

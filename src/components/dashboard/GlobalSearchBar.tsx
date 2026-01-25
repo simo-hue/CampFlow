@@ -46,7 +46,7 @@ export function GlobalSearchBar() {
             }
         } catch (error) {
             console.error('Search error:', error);
-        
+
             toast.error("Errore imprevisto", { description: error instanceof Error ? error.message : "Riprova più tardi" });
         }
     }, []);
@@ -99,6 +99,7 @@ export function GlobalSearchBar() {
                                         <span className="text-sm text-muted-foreground">
                                             {customer.phone}
                                             {customer.email && ` • ${customer.email}`}
+                                            {customer.license_plate && ` • ${customer.license_plate}`}
                                         </span>
                                     </div>
                                 </CommandItem>

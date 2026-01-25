@@ -61,7 +61,8 @@ export async function PATCH(
             'first_name', 'last_name', 'email', 'phone', 'address', 'notes',
             'birth_date', 'birth_place', 'birth_country', 'birth_city', 'birth_province', 'citizenship', 'gender',
             'residence_country', 'residence_province', 'residence_city', 'residence_zip',
-            'document_type', 'document_number', 'document_issue_country', 'document_issue_city', 'document_issue_date', 'document_issuer'
+            'document_type', 'document_number', 'document_issue_country', 'document_issue_city', 'document_issue_date', 'document_issuer',
+            'license_plate'
         ];
 
         const updates: any = {};
