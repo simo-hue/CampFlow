@@ -1,21 +1,5 @@
 import type { Pitch } from './types';
-
-// =====================================================
-// SETTORI CAMPEGGIO - Configurazione Reale
-// =====================================================
-// Aggiornato per riflettere la configurazione effettiva:
-// - Settore 1: Piazzole 001-025 (25 piazzole)
-// - Settore 2: Piazzole 026-050 (25 piazzole)
-// - Settore 3: Piazzole 051-101 (51 piazzole)
-// - Settore 4: Piazzole 102-112 (11 piazzole)
-// - Tende: T001-T012 (12 tende separate)
-// =====================================================
-export const SECTORS = [
-    { id: 'sector-1', name: 'Settore 1', range: { min: 1, max: 25 } },
-    { id: 'sector-2', name: 'Settore 2', range: { min: 26, max: 50 } },
-    { id: 'sector-3', name: 'Settore 3', range: { min: 51, max: 101 } },
-    { id: 'sector-4', name: 'Settore 4', range: { min: 102, max: 112 } },
-];
+import type { Sector } from '@/hooks/useSectors';
 
 /**
  * Helper function to display pitch number with suffix
@@ -82,25 +66,12 @@ export function canMergePitches(pitchA: Pitch, pitchB: Pitch): boolean {
 }
 
 /**
- * Get sector for a given pitch number or pitch object
- * @param pitchOrNumber Pitch number string (e.g. "001" or "T001") or Pitch object
+ * Get sector for a given pitch
+ * @param pitch Pitch object
+ * @param sectors List of available sectors
  * @returns Sector object or undefined
  */
-export function getPitchSector(pitchOrNumber: string | Pitch) {
-    // If a full pitch object is passed and it has an explicit sector_id, use it
-    if (typeof pitchOrNumber !== 'string' && pitchOrNumber.sector_id) {
-        const manualSector = SECTORS.find(s => s.id === pitchOrNumber.sector_id);
-        if (manualSector) return manualSector;
-    }
-
-    const pitchNumber = typeof pitchOrNumber === 'string' ? pitchOrNumber : pitchOrNumber.number;
-
-    // Handle tent pitches (T001-T012) - they don't belong to sectors
-    if (pitchNumber.startsWith('T')) {
-        return undefined;
-    }
-
-    const num = parseInt(pitchNumber, 10);
-    if (isNaN(num)) return undefined;
-    return SECTORS.find(s => num >= s.range.min && num <= s.range.max);
+export function getPitchSector(pitch: Pitch, sectors: Sector[]) {
+    if (!pitch.sector_id) return undefined;
+    return sectors.find(s => s.id === pitch.sector_id);
 }

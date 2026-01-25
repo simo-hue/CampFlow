@@ -373,3 +373,35 @@ Implemented complete check-out functionality on the `/departures` page, allowing
 - **Historical Records**: Complete booking history preserved
 - **Customer Retention**: Customer data maintained for analytics and future bookings
 - **User Experience**: Simple, clear confirmation flow with immediate feedback
+# Dynamic Sectors & Settings Configuration (2026-01-25)
+
+## Overview
+Implemented a dynamic system for managing campsite sectors and global configuration settings, replacing hardcoded constants.
+
+## Dynamic Sectors
+### Database Changes
+- **Table**: `sectors`
+- **Fields**: `id`, `name`, `created_at`, `updated_at`.
+- **Migration**: `20260125171000_create_sectors_table.sql`
+
+### Features
+- **CRUD Operations**: Complete management (Create, Read, Update, Delete) of sectors via the Settings page.
+- **Pitch Association**: Pitches are linked to sectors via `sector_id`.
+- **Validation**: Prevents deletion of sectors that still contain pitches (UI warning/logic).
+- **UI**: New "Configurazione Settori" section in `SettingsPage`.
+
+## Global Settings
+### Pricing Configuration
+- **Persistence**: Pricing settings are stored in `localStorage` for now (to be migrated to DB in future).
+- **Configurable Items**:
+    - Person Price
+    - Dog Price
+    - Car Price
+    - Child Price
+    - Child Max Age
+
+### Visual Settings
+- **Dark Mode**: Toggle available in "Aspetto" section.
+
+## Confirmations
+- **Safety**: Critical actions (Delete Sector, Delete/Split/Merge Pitch) now require explicit confirmation via a custom `ConfirmationDialog` UI, replacing browser alerts.

@@ -11,8 +11,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { SECTORS } from '@/lib/pitchUtils';
 import type { Pitch, CreatePitchRequest, UpdatePitchRequest, PitchAttributes, PitchType, PitchStatus } from '@/lib/types';
+import type { Sector } from '@/hooks/useSectors';
 import { toast } from "sonner";
 
 interface PitchDialogProps {
@@ -20,6 +20,7 @@ interface PitchDialogProps {
     onOpenChange: (open: boolean) => void;
     onSubmit: (data: CreatePitchRequest | UpdatePitchRequest) => Promise<void>;
     initialData?: Pitch | null;
+    sectors: Sector[];
 }
 
 const PITCH_TYPES: { value: PitchType; label: string }[] = [
@@ -33,7 +34,7 @@ const PITCH_STATUSES: { value: PitchStatus; label: string }[] = [
     { value: 'blocked', label: 'Bloccata' },
 ];
 
-export function PitchDialog({ open, onOpenChange, onSubmit, initialData }: PitchDialogProps) {
+export function PitchDialog({ open, onOpenChange, onSubmit, initialData, sectors }: PitchDialogProps) {
     const isEditing = !!initialData;
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -190,10 +191,10 @@ export function PitchDialog({ open, onOpenChange, onSubmit, initialData }: Pitch
                                 onChange={(e) => setSectorId(e.target.value)}
                                 className="col-span-3 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                             >
-                                <option value="">Automatico (basato sul numero)</option>
-                                {SECTORS.map((s) => (
+                                <option value="">Nessun Settore</option>
+                                {sectors.map((s) => (
                                     <option key={s.id} value={s.id}>
-                                        {s.name} ({s.range.min}-{s.range.max})
+                                        {s.name}
                                     </option>
                                 ))}
                             </select>

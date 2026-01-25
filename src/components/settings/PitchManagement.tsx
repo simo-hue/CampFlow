@@ -23,13 +23,14 @@ import {
     RefreshCw
 } from 'lucide-react';
 import type { Pitch, CreatePitchRequest, UpdatePitchRequest } from '@/lib/types';
-import { getPitchDisplayNumber, canSplitPitch, getSiblingPitch, SECTORS, getPitchSector } from '@/lib/pitchUtils';
+import { getPitchDisplayNumber, canSplitPitch, getSiblingPitch, getPitchSector } from '@/lib/pitchUtils';
 import { PitchDialog } from './PitchDialog';
 import { ConfirmationDialog } from '@/components/shared/ConfirmationDialog';
 import { toast } from "sonner";
 
 // ... imports
 import { usePitches } from '@/hooks/usePitches';
+import { useSectors } from '@/hooks/useSectors';
 
 export function PitchManagement() {
     const {
@@ -41,6 +42,8 @@ export function PitchManagement() {
         splitPitch,
         mergePitches
     } = usePitches();
+
+    const { sectors } = useSectors();
 
     const [searchTerm, setSearchTerm] = useState('');
     const [typeFilter, setTypeFilter] = useState<string>('all');
@@ -132,7 +135,7 @@ export function PitchManagement() {
         const matchesType = typeFilter === 'all' || pitch.type === typeFilter;
 
         // Filter by sector
-        const sector = getPitchSector(pitch);
+        const sector = getPitchSector(pitch, sectors);
         const matchesSector = sectorFilter === 'all' || (sector && sector.id === sectorFilter);
 
         return matchesSearch && matchesType && matchesSector;
@@ -204,9 +207,9 @@ export function PitchManagement() {
                         className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm disabled:cursor-not-allowed"
                     >
                         <option value="all">Tutti</option>
-                        {SECTORS.map((sector) => (
+                        {sectors.map((sector) => (
                             <option key={sector.id} value={sector.id}>
-                                {sector.name} ({sector.range.min}-{sector.range.max})
+                                {sector.name}
                             </option>
                         ))}
                     </select>
@@ -326,6 +329,7 @@ export function PitchManagement() {
                 onOpenChange={setDialogOpen}
                 onSubmit={handleSave}
                 initialData={editingPitch}
+                sectors={sectors}
             />
 
             <ConfirmationDialog

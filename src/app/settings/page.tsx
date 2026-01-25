@@ -4,11 +4,13 @@ import { useState } from 'react';
 import { useTheme } from 'next-themes';
 import { SettingsLayout } from '@/components/settings/SettingsLayout';
 import { PitchManagement } from '@/components/settings/PitchManagement';
+import { SectorManagement } from '@/components/settings/SectorManagement';
 import { SeasonalPricingManager } from '@/components/settings/SeasonalPricingManager';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Save, Check } from 'lucide-react';
 
 interface PricingSettings {
@@ -69,7 +71,18 @@ export default function SettingsPage() {
                             Configura piazzole, tende e strutture del campeggio
                         </p>
                     </div>
-                    <PitchManagement />
+                    <Tabs defaultValue="pitches" className="w-full">
+                        <TabsList className="grid w-full grid-cols-2 max-w-[400px] mb-4 mx-auto">
+                            <TabsTrigger value="pitches">Piazzole</TabsTrigger>
+                            <TabsTrigger value="sectors">Settori</TabsTrigger>
+                        </TabsList>
+                        <TabsContent value="pitches">
+                            <PitchManagement />
+                        </TabsContent>
+                        <TabsContent value="sectors">
+                            <SectorManagement />
+                        </TabsContent>
+                    </Tabs>
                 </div>
             )}
 
