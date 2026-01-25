@@ -183,15 +183,16 @@ E aggiungi questa voce al Changelog alla fine del documento:
 # Deployment
 
 ## Vercel Deployment (Recommended)
-- **Automatic**: Connect your GitHub repository to Vercel.
-- **Environment Variables**: Remember to add the necessary environment variables in the Vercel Project Settings:
-    - `NEXT_PUBLIC_SUPABASE_URL`
-    - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-    - `SUPABASE_SERVICE_ROLE_KEY`
-    - `ADMIN_USERNAME`
-    - `ADMIN_PASSWORD`
-- **Build Command**: Default (`next build`)
-- **Output Directory**: Default (`.next`)
+- **Automatic**: Connect your GitHub repository to Vercel (https://vercel.com/new).
+- **Environment Variables**: You MUST add the following environment variables in the Vercel Project Settings (Settings > Environment Variables):
+    - `NEXT_PUBLIC_SUPABASE_URL`: Found in Supabase > Settings > API > Project URL.
+    - `NEXT_PUBLIC_SUPABASE_ANON_KEY`: Found in Supabase > Settings > API > Project API Keys (anon public).
+    - `SUPABASE_SERVICE_ROLE_KEY`: Found in Supabase > Settings > API > Project API Keys (service_role secret). **Critical for server actions.**
+    - `ADMIN_USERNAME`: Choose a secure username for the System Monitor (e.g., `admin`).
+    - `ADMIN_PASSWORD`: Choose a secure password for the System Monitor.
+- **Build Command**: Default (`next build`).
+- **Output Directory**: Default (`.next`).
+- **Networking**: If using Supabase, ensure "Allow all IP addresses" is enabled in Supabase Database settings, or whitelist Vercel's IP ranges (not recommended due to dynamic IPs). generally Supabase allows connections by default.
 
 # Weekly Occupancy Optimization (2026-01-20)
 
@@ -406,3 +407,26 @@ Implemented a dynamic system for managing campsite sectors and global configurat
 
 ## Confirmations
 - **Safety**: Critical actions (Delete Sector, Delete/Split/Merge Pitch) now require explicit confirmation via a custom `ConfirmationDialog` UI, replacing browser alerts.
+
+# Recharts Build Warning Fix (2026-01-25)
+
+## Problem
+During Vercel Deployment (or `npm run build`), warnings appeared: `The width(-1) and height(-1) of chart should be greater than 0`.
+This was caused by **Recharts** trying to measure container dimensions during **Static Site Generation (SSG)** for the Landing Pages (`/w/*`), where the DOM and layout are not fully available (headless environment).
+
+## Solution
+Implemented a `mounted` state check in the Demo components causing the issue:
+- `src/components/website/demos/DemoHeroDashboard.tsx`
+- `src/components/website/demos/DemoStatsWidget.tsx`
+
+The charts now only render **after** the component has mounted on the client (`useEffect` -> `setMounted(true)`), ensuring the DOM and dimensions are present. This silences the build warnings while preserving functionality for the user.
+
+# Login Page Refinement (2026-01-25)
+
+## Overview
+Modified the layout to exclude the main Application Header from the Login Page (`/login`).
+
+## Changes
+- **Component**: `src/components/layout/Header.tsx`
+- **Logic**: Added a check `if (pathname === '/login') return null;`.
+- **Result**: The login page now displays only the authentication box centered on the screen, without the navigation bar meant for authenticated users.

@@ -23,7 +23,10 @@ export function DemoHeroDashboard() {
     const [scrolled, setScrolled] = useState(false);
     const [selectedTab, setSelectedTab] = useState('overview');
 
+    const [mounted, setMounted] = useState(false);
+
     useEffect(() => {
+        setMounted(true);
         const timer = setInterval(() => {
             setScrolled(s => !s);
         }, 5000);
@@ -148,9 +151,13 @@ export function DemoHeroDashboard() {
                                     <div className="text-2xl font-bold">€2.4k</div>
                                     <div className="h-[24px] mt-2">
                                         <ResponsiveContainer width="100%" height="100%">
-                                            <AreaChart data={dailyTraffic}>
-                                                <Area type="monotone" dataKey="value" stroke="none" fill="#f97316" fillOpacity={0.2} />
-                                            </AreaChart>
+                                            {mounted ? (
+                                                <AreaChart data={dailyTraffic}>
+                                                    <Area type="monotone" dataKey="value" stroke="none" fill="#f97316" fillOpacity={0.2} />
+                                                </AreaChart>
+                                            ) : (
+                                                <div />
+                                            )}
                                         </ResponsiveContainer>
                                     </div>
                                 </CardContent>
@@ -168,29 +175,35 @@ export function DemoHeroDashboard() {
                             </CardHeader>
                             <CardContent className="h-[220px]">
                                 <ResponsiveContainer width="100%" height="100%">
-                                    <LineChart data={weeklyData}>
-                                        <Tooltip
-                                            contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', backgroundColor: '#fff', color: '#000' }}
-                                            labelStyle={{ fontWeight: 'bold', color: '#000' }}
-                                            itemStyle={{ color: '#000' }}
-                                        />
-                                        <Line
-                                            type="monotone"
-                                            dataKey="value"
-                                            stroke="currentColor"
-                                            strokeWidth={3}
-                                            dot={{ r: 4, strokeWidth: 0, fill: "currentColor" }}
-                                            activeDot={{ r: 6, strokeWidth: 0 }}
-                                            className="text-primary"
-                                        />
-                                        <XAxis
-                                            dataKey="day"
-                                            axisLine={false}
-                                            tickLine={false}
-                                            fontSize={12}
-                                            tick={{ fill: '#ffffff', opacity: 0.8 }}
-                                        />
-                                    </LineChart>
+                                    {mounted ? (
+                                        <LineChart data={weeklyData}>
+                                            <Tooltip
+                                                contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', backgroundColor: '#fff', color: '#000' }}
+                                                labelStyle={{ fontWeight: 'bold', color: '#000' }}
+                                                itemStyle={{ color: '#000' }}
+                                            />
+                                            <Line
+                                                type="monotone"
+                                                dataKey="value"
+                                                stroke="currentColor"
+                                                strokeWidth={3}
+                                                dot={{ r: 4, strokeWidth: 0, fill: "currentColor" }}
+                                                activeDot={{ r: 6, strokeWidth: 0 }}
+                                                className="text-primary"
+                                            />
+                                            <XAxis
+                                                dataKey="day"
+                                                axisLine={false}
+                                                tickLine={false}
+                                                fontSize={12}
+                                                tick={{ fill: '#ffffff', opacity: 0.8 }}
+                                            />
+                                        </LineChart>
+                                    ) : (
+                                        <div className="w-full h-full flex items-center justify-center text-muted-foreground/50 text-xs">
+                                            Caricamento...
+                                        </div>
+                                    )}
                                 </ResponsiveContainer>
                             </CardContent>
                         </Card>

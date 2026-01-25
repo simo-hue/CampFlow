@@ -22,8 +22,8 @@ const NAV_ITEMS = [
 export function Header() {
     const pathname = usePathname();
 
-    // Hide App Header on Website Routes
-    if (pathname?.startsWith('/w')) {
+    // Hide App Header on Website Routes OR Login Page
+    if (pathname?.startsWith('/w') || pathname === '/login') {
         return null;
     }
 

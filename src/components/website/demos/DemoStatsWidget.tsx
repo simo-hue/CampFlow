@@ -8,9 +8,11 @@ import { useState, useEffect } from 'react';
 
 export function DemoStatsWidget() {
     const [animatedOccupancy, setAnimatedOccupancy] = useState(0);
+    const [mounted, setMounted] = useState(false);
 
     // Simulate real-time updates
     useEffect(() => {
+        setMounted(true);
         const interval = setInterval(() => {
             // Randomize slightly to simulating live data
             const random = Math.floor(Math.random() * 5) + 80;
@@ -69,31 +71,37 @@ export function DemoStatsWidget() {
                     <CardTitle className="text-sm">Previsione Settimanale</CardTitle>
                 </CardHeader>
                 <CardContent className="p-4 pt-0 h-[150px]">
-                    <ResponsiveContainer width="100%" height="100%">
-                        <LineChart data={data}>
-                            <XAxis
-                                dataKey="name"
-                                stroke="#888888"
-                                fontSize={10}
-                                tickLine={false}
-                                axisLine={false}
-                            />
-                            <Tooltip
-                                contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', backgroundColor: '#fff' }}
-                                labelStyle={{ fontWeight: 'bold', color: '#000' }}
-                                itemStyle={{ color: '#000' }}
-                            />
-                            <Line
-                                type="monotone"
-                                dataKey="occupazione"
-                                stroke="currentColor"
-                                strokeWidth={2}
-                                dot={{ r: 4, fill: "currentColor" }}
-                                activeDot={{ r: 6 }}
-                                className="stroke-primary fill-primary"
-                            />
-                        </LineChart>
-                    </ResponsiveContainer>
+                    {mounted ? (
+                        <ResponsiveContainer width="100%" height="100%">
+                            <LineChart data={data}>
+                                <XAxis
+                                    dataKey="name"
+                                    stroke="#888888"
+                                    fontSize={10}
+                                    tickLine={false}
+                                    axisLine={false}
+                                />
+                                <Tooltip
+                                    contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', backgroundColor: '#fff' }}
+                                    labelStyle={{ fontWeight: 'bold', color: '#000' }}
+                                    itemStyle={{ color: '#000' }}
+                                />
+                                <Line
+                                    type="monotone"
+                                    dataKey="occupazione"
+                                    stroke="currentColor"
+                                    strokeWidth={2}
+                                    dot={{ r: 4, fill: "currentColor" }}
+                                    activeDot={{ r: 6 }}
+                                    className="stroke-primary fill-primary"
+                                />
+                            </LineChart>
+                        </ResponsiveContainer>
+                    ) : (
+                        <div className="w-full h-full flex items-center justify-center text-muted-foreground text-xs">
+                            Caricamento grafico...
+                        </div>
+                    )}
                 </CardContent>
             </Card>
         </div>
