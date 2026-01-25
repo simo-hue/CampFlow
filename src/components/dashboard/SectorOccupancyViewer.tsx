@@ -425,8 +425,28 @@ function SectorOccupancyViewerContent() {
             // Logic: If I click start, then navigate, then click end, selection is range.
             // If I click start, then click start again -> Reset?
             if (draftStart.date === date) {
-                // Clicked same cell twice -> maybe cancel or just keep it?
-                // Let's keep it selected (Drafting)
+                // Clicked same cell twice -> Single Day Booking
+                console.log("✅ Single Day Click Commit");
+
+                // VALIDATION: Check for overlap (Safety check)
+                const hasOverlap = checkOverlap(pitch.id, date, date);
+                if (hasOverlap) {
+                    toast.error("Selezione non valida", {
+                        description: "La data selezionata è già occupata."
+                    });
+                    setDraftStart(null);
+                    setSelection(null);
+                    return;
+                }
+
+                setSelection({
+                    pitchId: pitch.id,
+                    pitchNumber: pitch.number,
+                    startDate: date,
+                    endDate: date
+                });
+                setShowBookingModal(true);
+                setDraftStart(null);
             } else {
                 // Clicked different cell -> Commit Click-Click
 
