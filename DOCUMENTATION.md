@@ -41,3 +41,7 @@ The `customers` table now has a `group_id` foreign key.
     -   Documenti: Emerald theme
     -   Veicolo: Indigo theme
     -   Used subtle transparent backgrounds and borders for a clean, professional look.
+
+-   **Check-in Page**: Applied the same color-coded design language to the **Check-in Guest Form** (`GuestForm.tsx`).
+    -   Ensured consistency between customer management and check-in flows.
+    -   Improved visual hierarchy for complex forms.
