@@ -1,2 +1,0 @@
-:HL["/CampFlow/_next/static/css/2a3a676921788fad.css","style"]
-0:{"buildId":"2MEcHoBIBm8xsPR8OrhHA","tree":{"name":"","paramType":null,"paramKey":"","hasRuntimePrefetch":false,"slots":{"children":{"name":"pricing","paramType":null,"paramKey":"pricing","hasRuntimePrefetch":false,"slots":{"children":{"name":"__PAGE__","paramType":null,"paramKey":"__PAGE__","hasRuntimePrefetch":false,"slots":null,"isRootLayout":false}},"isRootLayout":false}},"isRootLayout":true},"staleTime":300}
