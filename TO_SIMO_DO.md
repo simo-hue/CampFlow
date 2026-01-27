@@ -1,7 +1,5 @@
-# TO_SIMO_DO
+# Manual Actions after LinkedIn Description Generation
 
-Lista delle cose da fare.
-- [ ] Eseguire il deploy della nuova pagina prezzi su GitHub Pages (npm run build && git add . && git commit -m "update pricing" && git push origin gh-pages).
-- [ ] Verificare che l'effetto blur sulla pagina prezzi sia di tuo gradimento.
-- [ ] Testare il pulsante "Parliamone Insieme" (dovrebbe aprire il client email).
-
+- [ ] Revisiona la descrizione per LinkedIn e adattala al tuo tono di voce se necessario.
+- [ ] Copia e incolla la descrizione nel tuo profilo LinkedIn.
+- [ ] (Opzionale) Aggiungi un'immagine o un video (come lo screen di CampFlow) al post per aumentare l'ingaggio.

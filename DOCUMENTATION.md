@@ -538,3 +538,14 @@ The `customers` table now has a `group_id` foreign key.
 - ✅ Tutti i file sono idempotenti e con documentazione inline estesa
 - **Motivazione**: Facilita manutenzione, troubleshooting e deployment incrementale del database
 ```
+
+## Fix CSS Post-Deploy (2026-01-27)
+
+### Problema
+Dopo un aggiornamento manuale del layout, l'importazione di `globals.css` e la struttura fondamentale HTML (`<html>`, `<body>`) erano state rimosse. Questo impediva il caricamento degli stili Tailwind e della Dark Mode sul sito pubblicato.
+
+### Soluzione
+- Ripristinata l'importazione di `globals.css` in `src/app/layout.tsx`.
+- Reintrodotti i tag `<html>` e `<body>` con la classe `dark` obbligatoria per Next.js App Router.
+- Eseguito un nuovo deploy tramite `deploy.sh`.
+

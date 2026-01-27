@@ -51,7 +51,6 @@ export default function PricingPage() {
         {
             name: 'Cloud Managed',
             price: '€499',
-            period: 'Personalizzato',
             blurPrice: true,
             description: 'La soluzione chiavi in mano. Pensiamo a tutto noi.',
             icon: Server,
