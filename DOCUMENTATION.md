@@ -173,3 +173,13 @@ E aggiungi questa voce al Changelog alla fine del documento:
 - ✅ Tutti i file sono idempotenti e con documentazione inline estesa
 - **Motivazione**: Facilita manutenzione, troubleshooting e deployment incrementale del database
 ```
+
+## Aggiornamento Pagina Prezzi (2026-01-27)
+
+### Modifiche Apportate
+1.  **Oscuramento Prezzo**: Nella pagina dei prezzi (`src/app/pricing/page.tsx`), il costo del piano "Cloud Managed" è stato oscurato utilizzando un effetto blur (`blur-md`).
+2.  **Aggiornamento CTA**: La Call to Action (CTA) per il piano Cloud Managed è stata cambiata in "Parliamone Insieme".
+3.  **Link di Contatto**: Il pulsante ora punta direttamente all'invio di una email (`mailto`) per facilitare la discussione personalizzata.
+4.  **Fix TypeScript**: Corretti errori di tipo che impedivano la build a causa di proprietà mancanti nell'array dei piani (tiers).
+5.  **Ripristino Configurazione**: Ricreato `next.config.ts` con i parametri necessari per il deploy statico su GitHub Pages (basePath: "/CampFlow").
+

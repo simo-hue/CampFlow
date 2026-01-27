@@ -26,41 +26,47 @@ export default function PricingPage() {
             href: 'https://github.com/simo-hue',
             variant: 'outline',
             target: '_blank',
-        },
-        {
-            name: 'Cloud Managed',
-            price: '€29',
-            period: '/mese',
-            description: 'La soluzione chiavi in mano. Pensiamo a tutto noi.',
-            icon: Server,
-            popular: true,
-            features: [
-                'Tutto pronto all\'uso',
-                'Hosting e Server incluso',
-                'Backup Giornalieri automatici',
-                'Aggiornamenti automatici',
-                'Supporto Email Prioritario',
-            ],
-            cta: 'Inizia Prova Gratuita',
-            href: '/contact',
-            variant: 'default',
+            popular: false,
+            blurPrice: false,
         },
         {
             name: 'Setup Assistito',
             price: '€499',
             period: 'una tantum',
-            description: 'Vuoi il server tuo ma non sai configurarlo? Ti aiutiamo noi.',
+            description: 'Vuoi il Software ma non sei un esperto? Ti aiutiamo noi.',
             icon: LifeBuoy,
             features: [
-                'Installazione sul TUO server',
-                'Configurazione dominio e SSL',
-                'Setup iniziale del campeggio',
+                'Installazione in locale',
+                'Configurazione del campeggio',
                 '1 ora di formazione staff',
                 '30 giorni di supporto post-setup',
             ],
-            cta: 'Richiedi Preventivo',
+            cta: 'Prenota il Tuo Setup Assistito',
             href: '/contact',
             variant: 'outline',
+            target: '_self',
+            popular: false,
+            blurPrice: false,
+        },
+        {
+            name: 'Cloud Managed',
+            price: '€499',
+            period: 'Personalizzato',
+            blurPrice: true,
+            description: 'La soluzione chiavi in mano. Pensiamo a tutto noi.',
+            icon: Server,
+            features: [
+                'Tutto pronto all\'uso',
+                'Hosting e Server incluso',
+                'Backup Dei Dati',
+                'Aggiornamenti automatici',
+                'Supporto Email Prioritario',
+            ],
+            cta: 'Parliamone Insieme',
+            href: 'mailto:mattioli.simone.10@gmail.com',
+            variant: 'default',
+            target: '_self',
+            popular: false,
         },
     ];
 
@@ -97,7 +103,9 @@ export default function PricingPage() {
                             </div>
 
                             <div className="mb-8">
-                                <span className="text-4xl font-bold">{tier.price}</span>
+                                <span className={`text-4xl font-bold ${tier.blurPrice ? 'blur-md select-none' : ''}`}>
+                                    {tier.price}
+                                </span>
                                 {tier.period && <span className="text-muted-foreground text-sm font-medium ml-1">{tier.period}</span>}
                             </div>
 
