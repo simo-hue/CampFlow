@@ -550,7 +550,7 @@ Dopo un aggiornamento manuale del layout, l'importazione di `globals.css` e la s
 - Reintrodotti i tag `<html>` e `<body>` con la classe `dark` obbligatoria per Next.js App Router.
 - Eseguito un nuovo deploy tramite `deploy.sh`.
 
-=======
+
 ## Ristrutturazione Pagina Prezzi (2026-01-27)
 
 ### Modifiche Apportate
@@ -573,4 +573,8 @@ La pagina `/pricing` è stata riorganizzata secondo le richieste commerciali:
 
 ### Stato Deploy
 Deploy eseguito su `gh-pages`. Il sito statico ora presenta la nuova matrice di pricing.
->>>>>>> Stashed changes
+
+## Anteprima Social e Open Graph (2026-01-27)
+- **Modifica**: Aggiunta immagine di anteprima social `src/app/opengraph-image.png`.
+- **Configurazione**: Impostato `metadataBase` in `src/app/layout.tsx` su `https://simo-hue.github.io/CampFlow` per garantire la risoluzione corretta degli URL assoluti delle immagini.
+- **Risultato**: Quando il link viene condiviso su WhatsApp, LinkedIn o altri social, ora appare un'immagine professionale generata appositamente per il progetto.
