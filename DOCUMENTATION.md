@@ -539,3 +539,15 @@ The `customers` table now has a `group_id` foreign key.
 -   **Customers List Page**: Redesigned the search bar to match the Check-in page style.
     -   Unified search and filter container with blur effect.
     -   Added "Filtra per Gruppo" functionality using the new API capability.
+
+## Fix 404 GitHub Pages (2026-01-27)
+
+### Causa
+I file della build statica erano stati erroneamente committati all'interno di una sottocartella `out/` nel branch `gh-pages`. GitHub Pages cerca il file `index.html` nella root del branch, non trovandolo restituiva 404.
+
+### Soluzione
+1.  **Pulizia Branch**: Svuotato completamente il branch `gh-pages`.
+2.  **Deploy Corretto**: Copiati i contenuti della cartella `out/` direttamente nella root del branch.
+3.  **Verifica**: Confermato che `index.html`, `_next/` e gli altri file siano ora al primo livello del repository.
+
+Il sito è ora raggiungibile e correttamente renderizzato in Dark Mode.
