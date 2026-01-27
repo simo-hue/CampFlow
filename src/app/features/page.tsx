@@ -145,10 +145,10 @@ export default function FeaturesPage() {
                         CampFlow digitalizza ogni aspetto del tuo campeggio, dalla prenotazione alla segnalazione in Questura, tutto in un'unica piattaforma moderna.
                     </p>
                     <div className="flex justify-center gap-4">
-                        <Link href="/w/pricing">
+                        <Link href="/pricing">
                             <Button size="lg" className="h-12 px-8">Vedi i Prezzi</Button>
                         </Link>
-                        <Link href="/w/contact">
+                        <Link href="/contact">
                             <Button size="lg" variant="outline" className="h-12 px-8">Richiedi Demo</Button>
                         </Link>
                     </div>
@@ -268,7 +268,7 @@ export default function FeaturesPage() {
                     <p className="text-primary-foreground/80 text-lg mb-10 max-w-2xl mx-auto">
                         Inizia oggi stesso. Senza costi nascosti, senza vincoli.
                     </p>
-                    <Link href="/w/contact">
+                    <Link href="/contact">
                         <Button size="lg" variant="secondary" className="h-14 px-10 text-lg shadow-lg hover:shadow-xl transition-all">
                             Parla con Simone
                         </Button>

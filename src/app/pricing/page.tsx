@@ -42,7 +42,7 @@ export default function PricingPage() {
                 'Supporto Email Prioritario',
             ],
             cta: 'Inizia Prova Gratuita',
-            href: '/w/contact',
+            href: '/contact',
             variant: 'default',
         },
         {
@@ -59,7 +59,7 @@ export default function PricingPage() {
                 '30 giorni di supporto post-setup',
             ],
             cta: 'Richiedi Preventivo',
-            href: '/w/contact',
+            href: '/contact',
             variant: 'outline',
         },
     ];
