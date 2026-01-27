@@ -11,6 +11,14 @@ import { Switch } from '@/components/ui/switch';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useCustomerGroups } from '@/hooks/useCustomerGroups';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 import {
     Table,
     TableBody,
@@ -127,6 +135,7 @@ const parseBookingPeriod = (period: string) => {
 export default function CustomerDetailPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = use(params);
     const queryClient = useQueryClient();
+    const { groups } = useCustomerGroups();
     const [isEditing, setIsEditing] = useState(false);
     const [activeTab, setActiveTab] = useState("anagrafica");
 
@@ -234,7 +243,7 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
         updateCustomerMutation.mutate(formData);
     };
 
-    const handleInputChange = (field: string, value: string) => {
+    const handleInputChange = (field: string, value: any) => {
         setFormData(prev => ({ ...prev, [field]: value }));
     }
     const StatCard = ({ label, value, icon: Icon, subtext, onClick, className }: { label: string, value: string | number, icon: any, subtext?: string, onClick?: () => void, className?: string }) => (
@@ -269,7 +278,16 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                         <span className="text-muted-foreground">•</span>
                         <span>{customer.email}</span>
                         <span className="text-muted-foreground">•</span>
+                        <span className="text-muted-foreground">•</span>
                         <span>{customer.phone}</span>
+                        <span className="text-muted-foreground">•</span>
+                        {customer.customer_groups ? (
+                            <Badge variant="outline" className="px-2 py-0.5 text-xs" style={{ borderColor: customer.customer_groups.color, color: customer.customer_groups.color, backgroundColor: `${customer.customer_groups.color}15` }}>
+                                {customer.customer_groups.name}
+                            </Badge>
+                        ) : (
+                            <span className="text-muted-foreground text-xs italic">Nessun Gruppo</span>
+                        )}
                     </div>
                 </div>
             </div>
@@ -333,6 +351,29 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                                     <div className="space-y-2">
                                         <Label className="text-muted-foreground">Telefono</Label>
                                         <Input className="bg-background/80" disabled={!isEditing} value={formData.phone || ''} onChange={e => handleInputChange('phone', e.target.value)} />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label className="text-muted-foreground">Gruppo Cliente</Label>
+                                        <Select
+                                            disabled={!isEditing}
+                                            value={formData.group_id || 'none'}
+                                            onValueChange={(val) => handleInputChange('group_id', val === 'none' ? null : val)}
+                                        >
+                                            <SelectTrigger className="bg-background/80">
+                                                <SelectValue placeholder="Seleziona gruppo..." />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="none">Nessun Gruppo</SelectItem>
+                                                {groups.map(group => (
+                                                    <SelectItem key={group.id} value={group.id}>
+                                                        <div className="flex items-center gap-2">
+                                                            <div className="w-3 h-3 rounded-full" style={{ backgroundColor: group.color }} />
+                                                            {group.name}
+                                                        </div>
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
                                     </div>
                                     <div className="space-y-2">
                                         <Label className="text-muted-foreground">Data di Nascita</Label>

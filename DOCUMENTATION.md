@@ -16,11 +16,8 @@ The `customers` table now has a `group_id` foreign key.
 
 ### Frontend Implementation
 1.  **Settings -> Gruppi**: A new tab in the Settings Dialog allows full management of groups and their seasonal rules.
-    -   Component: `src/components/settings/GroupManagement.tsx`
 2.  **Customer Management**: The Customers page (`/customers`) now allows creating and editing customers, including assigning them to a group.
-    -   Component: `src/components/dashboard/CustomerDialog.tsx`
 3.  **Booking Creation**: When creating a booking, selecting a customer automatically fetches their group configuration.
-    -   The Pricing API (`api/pricing/calculate`) was updated to accept `customerId` and apply the group's rules.
 
 ### Pricing Logic Priority
 1.  **Custom Rates**: If a group has a specific rate for a season (e.g., Person Price), it **overrides** the season's base price.
@@ -33,15 +30,11 @@ The `customers` table now has a `group_id` foreign key.
 -   **Customers Visibility**: Fixed `/api/customers` return format.
 -   **Customer Details Error**: Added GET handler to `/api/customers/[id]`.
 -   **Groups API Error**: Fixed table name typo in `/api/groups`.
+-   **Customer Filter**: Added `group_id` filtering support to `/api/customers`.
 
 ### UI Enhancements
--   **Customer Details Page**: Enhanced the "Dati Personali" section with color-coded categories for better visual distinction:
-    -   Anagrafica: Blue theme
-    -   Residenza: Amber theme
-    -   Documenti: Emerald theme
-    -   Veicolo: Indigo theme
-    -   Used subtle transparent backgrounds and borders for a clean, professional look.
-
--   **Check-in Page**: Applied the same color-coded design language to the **Check-in Guest Form** (`GuestForm.tsx`).
-    -   Ensured consistency between customer management and check-in flows.
-    -   Improved visual hierarchy for complex forms.
+-   **Customer Details Page**: Enhanced the "Dati Personali" section with color-coded categories.
+-   **Check-in Page**: Applied color-coded design language to the **Check-in Guest Form**.
+-   **Customers List Page**: Redesigned the search bar to match the Check-in page style.
+    -   Unified search and filter container with blur effect.
+    -   Added "Filtra per Gruppo" functionality using the new API capability.

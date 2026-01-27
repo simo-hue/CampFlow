@@ -15,6 +15,15 @@ export async function GET(request: Request) {
         queryBuilder.or(`first_name.ilike.%${query}%,last_name.ilike.%${query}%,email.ilike.%${query}%,phone.ilike.%${query}%`);
     }
 
+    const groupId = searchParams.get('group_id');
+    if (groupId && groupId !== 'all') {
+        if (groupId === 'none') {
+            queryBuilder.is('group_id', null);
+        } else {
+            queryBuilder.eq('group_id', groupId);
+        }
+    }
+
     // Sort by most recent
     queryBuilder.order('created_at', { ascending: false });
 

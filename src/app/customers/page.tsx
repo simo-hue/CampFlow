@@ -16,7 +16,7 @@ import {
     Card,
     CardContent,
 } from '@/components/ui/card';
-import { Search, UserPlus, Users, Loader2, Mail, Phone, ChevronRight } from 'lucide-react';
+import { Search, UserPlus, Users, Loader2, Mail, Phone, ChevronRight, ChevronDown, Pencil, Trash2, Tag } from 'lucide-react';
 import Link from 'next/link';
 import { format } from 'date-fns';
 import { it } from 'date-fns/locale';
@@ -24,9 +24,11 @@ import { useDebounce } from '@/hooks/use-debounce';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { CustomerDialog } from '@/components/dashboard/CustomerDialog';
-import { Pencil, Trash2, Tag } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
+import { useCustomerGroups } from '@/hooks/useCustomerGroups';
+
+import { useRouter } from 'next/navigation';
 
 import type { Customer as BaseCustomer } from '@/lib/types';
 // Extend customer type to include joined data
@@ -38,16 +40,12 @@ type Customer = BaseCustomer & {
 };
 
 export default function CustomersPage() {
+    const router = useRouter();
     const [searchQuery, setSearchQuery] = useState('');
     const debouncedQuery = useDebounce(searchQuery, 300);
-    const [dialogOpen, setDialogOpen] = useState(false);
-    const [customerToEdit, setCustomerToEdit] = useState<Customer | null>(null);
+    const [groupFilter, setGroupFilter] = useState('all');
     const queryClient = useQueryClient();
-
-    const handleEdit = (customer: Customer) => {
-        setCustomerToEdit(customer);
-        setDialogOpen(true);
-    };
+    const { groups } = useCustomerGroups();
 
     const handleDelete = async (customer: Customer) => {
         if (!confirm(`Sei sicuro di voler eliminare ${customer.first_name} ${customer.last_name}?`)) return;
@@ -62,15 +60,12 @@ export default function CustomersPage() {
         }
     };
 
-    const handleSuccess = () => {
-        queryClient.invalidateQueries({ queryKey: ['customers'] });
-    };
-
     const { data, isLoading, error } = useQuery({
-        queryKey: ['customers', debouncedQuery],
+        queryKey: ['customers', debouncedQuery, groupFilter],
         queryFn: async () => {
             const params = new URLSearchParams();
             if (debouncedQuery) params.append('q', debouncedQuery);
+            if (groupFilter !== 'all') params.append('group_id', groupFilter);
 
             const response = await fetch(`/api/customers?${params.toString()}`);
             if (!response.ok) {
@@ -95,19 +90,46 @@ export default function CustomersPage() {
                     </p>
                 </div>
 
-                {/* Main Action Bar: Search & Add */}
-                <div className="flex w-full max-w-2xl items-center gap-2">
-                    <div className="relative flex-1">
-                        <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                        <Input
-                            type="search"
-                            placeholder="Cerca per nome, email o telefono..."
-                            className="pl-9 bg-background/50 backdrop-blur-sm border-muted-foreground/20"
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                        />
+                {/* Main Action Bar: Search & Filters & Add */}
+                <div className="flex flex-col md:flex-row w-full max-w-4xl items-stretch md:items-center gap-3">
+
+                    {/* Search & Filter Container (Check-in style) */}
+                    <div className="flex flex-col md:flex-row flex-1 items-stretch md:items-center gap-0 bg-background/60 backdrop-blur-md p-1.5 rounded-xl border shadow-sm w-full">
+                        <div className="relative flex-1 group">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                            <Input
+                                placeholder="Cerca per nome, email o telefono..."
+                                className="pl-10 h-10 text-sm bg-transparent border-transparent focus-visible:ring-0 placeholder:text-muted-foreground/70"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                            />
+                        </div>
+
+                        <div className="h-6 w-[1px] bg-border hidden md:block mx-1" />
+
+                        <div className="relative md:w-[220px]">
+                            <select
+                                className="appearance-none flex h-10 w-full rounded-lg bg-muted/50 hover:bg-muted/80 transition-colors px-3 py-2 pr-8 text-sm font-medium focus:outline-none cursor-pointer border-0"
+                                value={groupFilter}
+                                onChange={(e) => setGroupFilter(e.target.value)}
+                            >
+                                <option value="all">Tutti i gruppi</option>
+                                <option value="none">Nessun gruppo</option>
+                                {groups.map(group => (
+                                    <option key={group.id} value={group.id}>
+                                        {group.name}
+                                    </option>
+                                ))}
+                            </select>
+                            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                        </div>
                     </div>
-                    <Button className="shadow-sm" onClick={() => { setCustomerToEdit(null); setDialogOpen(true); }}>
+
+                    {/* New Button */}
+                    <Button
+                        className="shadow-sm h-[54px] md:h-auto rounded-xl px-6 bg-primary text-primary-foreground hover:bg-primary/90"
+                        onClick={() => router.push('/customers/new')}
+                    >
                         <UserPlus className="mr-2 h-4 w-4" />
                         Nuovo
                     </Button>
@@ -146,7 +168,11 @@ export default function CustomersPage() {
                             ) : (
                                 <div className="divide-y">
                                     {data?.customers?.map((customer: Customer) => (
-                                        <div key={customer.id} className="grid grid-cols-12 gap-4 px-6 py-4 items-center hover:bg-muted/30 transition-colors group">
+                                        <div
+                                            key={customer.id}
+                                            className="grid grid-cols-12 gap-4 px-6 py-4 items-center hover:bg-muted/30 transition-colors group cursor-pointer"
+                                            onClick={() => router.push(`/customers/${customer.id}`)}
+                                        >
                                             {/* Name & Avatar */}
                                             <div className="col-span-4 flex items-center gap-3">
                                                 <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm">
@@ -186,15 +212,7 @@ export default function CustomersPage() {
 
                                             {/* Actions */}
                                             <div className="col-span-2 flex justify-end">
-                                                <Link href={`/customers/${customer.id}`}>
-                                                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                                                        <ChevronRight className="h-4 w-4" />
-                                                    </Button>
-                                                </Link>
-                                                <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => handleEdit(customer)}>
-                                                    <Pencil className="h-3 w-3" />
-                                                </Button>
-                                                <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-destructive hover:text-destructive" onClick={() => handleDelete(customer)}>
+                                                <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-destructive hover:text-destructive" onClick={(e) => { e.stopPropagation(); handleDelete(customer); }}>
                                                     <Trash2 className="h-3 w-3" />
                                                 </Button>
                                             </div>
@@ -207,12 +225,7 @@ export default function CustomersPage() {
                 </div>
             </div>
 
-            <CustomerDialog
-                open={dialogOpen}
-                onClose={() => setDialogOpen(false)}
-                customer={customerToEdit}
-                onSuccess={handleSuccess}
-            />
+
         </div>
     );
 }
