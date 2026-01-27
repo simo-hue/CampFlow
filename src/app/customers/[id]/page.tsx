@@ -311,125 +311,119 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                         </CardHeader>
                         <Separator />
 
-                        <CardContent className="p-8 space-y-8 max-w-5xl mx-auto w-full">
-                            {/* Section: Contatti & Info Base */}
-                            <section className="space-y-4">
-                                <h3 className="font-semibold flex items-center gap-2 text-primary text-sm uppercase tracking-wide">
+                        <CardContent className="p-6 md:p-8 space-y-6 max-w-5xl mx-auto w-full">
+                            {/* Section: Anagrafica & Contatti (Blue) */}
+                            <div className="rounded-xl border border-blue-200/50 bg-blue-50/50 dark:bg-blue-950/20 dark:border-blue-900/50 p-6 space-y-4">
+                                <h3 className="font-semibold flex items-center gap-2 text-blue-700 dark:text-blue-400 text-sm uppercase tracking-wide">
                                     <User className="h-4 w-4" /> Anagrafica e Contatti
                                 </h3>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div className="space-y-2">
-                                        <Label>Nome</Label>
-                                        <Input className="bg-background" disabled={!isEditing} value={formData.first_name || ''} onChange={e => handleInputChange('first_name', e.target.value)} />
+                                        <Label className="text-muted-foreground">Nome</Label>
+                                        <Input className="bg-background/80" disabled={!isEditing} value={formData.first_name || ''} onChange={e => handleInputChange('first_name', e.target.value)} />
                                     </div>
                                     <div className="space-y-2">
-                                        <Label>Cognome</Label>
-                                        <Input className="bg-background" disabled={!isEditing} value={formData.last_name || ''} onChange={e => handleInputChange('last_name', e.target.value)} />
+                                        <Label className="text-muted-foreground">Cognome</Label>
+                                        <Input className="bg-background/80" disabled={!isEditing} value={formData.last_name || ''} onChange={e => handleInputChange('last_name', e.target.value)} />
                                     </div>
                                     <div className="space-y-2">
-                                        <Label>Email</Label>
-                                        <Input className="bg-background" disabled={!isEditing} value={formData.email || ''} onChange={e => handleInputChange('email', e.target.value)} />
+                                        <Label className="text-muted-foreground">Email</Label>
+                                        <Input className="bg-background/80" disabled={!isEditing} value={formData.email || ''} onChange={e => handleInputChange('email', e.target.value)} />
                                     </div>
                                     <div className="space-y-2">
-                                        <Label>Telefono</Label>
-                                        <Input className="bg-background" disabled={!isEditing} value={formData.phone || ''} onChange={e => handleInputChange('phone', e.target.value)} />
+                                        <Label className="text-muted-foreground">Telefono</Label>
+                                        <Input className="bg-background/80" disabled={!isEditing} value={formData.phone || ''} onChange={e => handleInputChange('phone', e.target.value)} />
                                     </div>
                                     <div className="space-y-2">
-                                        <Label>Data di Nascita</Label>
-                                        <Input className="bg-background" type="date" disabled={!isEditing} value={formData.birth_date ? format(new Date(formData.birth_date), 'yyyy-MM-dd') : ''} onChange={e => handleInputChange('birth_date', e.target.value)} />
+                                        <Label className="text-muted-foreground">Data di Nascita</Label>
+                                        <Input className="bg-background/80" type="date" disabled={!isEditing} value={formData.birth_date ? format(new Date(formData.birth_date), 'yyyy-MM-dd') : ''} onChange={e => handleInputChange('birth_date', e.target.value)} />
                                     </div>
                                     <div className="space-y-2">
-                                        <Label>Sesso</Label>
-                                        <Input className="bg-background" disabled={!isEditing} value={formData.gender || ''} onChange={e => handleInputChange('gender', e.target.value)} placeholder="M/F" />
+                                        <Label className="text-muted-foreground">Sesso</Label>
+                                        <Input className="bg-background/80" disabled={!isEditing} value={formData.gender || ''} onChange={e => handleInputChange('gender', e.target.value)} placeholder="M/F" />
                                     </div>
                                 </div>
 
                                 <div className="grid grid-cols-2 gap-6 pt-2">
                                     <div className="space-y-2">
-                                        <Label>Comune Nascita</Label>
-                                        <Input className="bg-background" disabled={!isEditing} value={formData.birth_city || ''} onChange={e => handleInputChange('birth_city', e.target.value)} />
+                                        <Label className="text-muted-foreground">Comune Nascita</Label>
+                                        <Input className="bg-background/80" disabled={!isEditing} value={formData.birth_city || ''} onChange={e => handleInputChange('birth_city', e.target.value)} />
                                     </div>
                                     <div className="space-y-2">
-                                        <Label>Provincia</Label>
-                                        <Input className="bg-background" disabled={!isEditing} value={formData.birth_province || ''} onChange={e => handleInputChange('birth_province', e.target.value)} />
+                                        <Label className="text-muted-foreground">Provincia</Label>
+                                        <Input className="bg-background/80" disabled={!isEditing} value={formData.birth_province || ''} onChange={e => handleInputChange('birth_province', e.target.value)} />
                                     </div>
                                 </div>
-                            </section>
+                            </div>
 
-                            <Separator />
-
-                            {/* Section: Residenza */}
-                            <section className="space-y-4">
-                                <h3 className="font-semibold flex items-center gap-2 text-primary text-sm uppercase tracking-wide">
+                            {/* Section: Residenza (Amber/Orange) */}
+                            <div className="rounded-xl border border-amber-200/50 bg-amber-50/50 dark:bg-amber-950/20 dark:border-amber-900/50 p-6 space-y-4">
+                                <h3 className="font-semibold flex items-center gap-2 text-amber-700 dark:text-amber-500 text-sm uppercase tracking-wide">
                                     <MapPin className="h-4 w-4" /> Residenza
                                 </h3>
                                 <div className="space-y-4">
                                     <div className="space-y-2">
-                                        <Label>Indirizzo</Label>
-                                        <Input className="bg-background" disabled={!isEditing} value={formData.address || ''} onChange={e => handleInputChange('address', e.target.value)} placeholder="Via Roma, 1" />
+                                        <Label className="text-muted-foreground">Indirizzo</Label>
+                                        <Input className="bg-background/80" disabled={!isEditing} value={formData.address || ''} onChange={e => handleInputChange('address', e.target.value)} placeholder="Via Roma, 1" />
                                     </div>
                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                         <div className="md:col-span-1 space-y-2">
-                                            <Label>CAP</Label>
-                                            <Input className="bg-background" disabled={!isEditing} value={formData.residence_zip || ''} onChange={e => handleInputChange('residence_zip', e.target.value)} />
+                                            <Label className="text-muted-foreground">CAP</Label>
+                                            <Input className="bg-background/80" disabled={!isEditing} value={formData.residence_zip || ''} onChange={e => handleInputChange('residence_zip', e.target.value)} />
                                         </div>
                                         <div className="md:col-span-2 space-y-2">
-                                            <Label>Città</Label>
-                                            <Input className="bg-background" disabled={!isEditing} value={formData.residence_city || ''} onChange={e => handleInputChange('residence_city', e.target.value)} />
+                                            <Label className="text-muted-foreground">Città</Label>
+                                            <Input className="bg-background/80" disabled={!isEditing} value={formData.residence_city || ''} onChange={e => handleInputChange('residence_city', e.target.value)} />
                                         </div>
                                     </div>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         <div className="space-y-2">
-                                            <Label>Provincia</Label>
-                                            <Input className="bg-background" disabled={!isEditing} value={formData.residence_province || ''} onChange={e => handleInputChange('residence_province', e.target.value)} />
+                                            <Label className="text-muted-foreground">Provincia</Label>
+                                            <Input className="bg-background/80" disabled={!isEditing} value={formData.residence_province || ''} onChange={e => handleInputChange('residence_province', e.target.value)} />
                                         </div>
                                         <div className="space-y-2">
-                                            <Label>Stato</Label>
-                                            <Input className="bg-background" disabled={!isEditing} value={formData.residence_country || ''} onChange={e => handleInputChange('residence_country', e.target.value)} />
+                                            <Label className="text-muted-foreground">Stato</Label>
+                                            <Input className="bg-background/80" disabled={!isEditing} value={formData.residence_country || ''} onChange={e => handleInputChange('residence_country', e.target.value)} />
                                         </div>
                                     </div>
                                 </div>
-                            </section>
+                            </div>
 
-                            <Separator />
-
-                            {/* Section: Documenti */}
-                            <section className="space-y-4">
-                                <h3 className="font-semibold flex items-center gap-2 text-primary text-sm uppercase tracking-wide">
+                            {/* Section: Documenti (Emerald/Green) */}
+                            <div className="rounded-xl border border-emerald-200/50 bg-emerald-50/50 dark:bg-emerald-950/20 dark:border-emerald-900/50 p-6 space-y-4">
+                                <h3 className="font-semibold flex items-center gap-2 text-emerald-700 dark:text-emerald-500 text-sm uppercase tracking-wide">
                                     <Shield className="h-4 w-4" /> Documento d'Identità
                                 </h3>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div className="space-y-2">
-                                        <Label>Tipo</Label>
-                                        <Input className="bg-background" disabled={!isEditing} value={formData.document_type || ''} onChange={e => handleInputChange('document_type', e.target.value)} placeholder="carta_identita" />
+                                        <Label className="text-muted-foreground">Tipo</Label>
+                                        <Input className="bg-background/80" disabled={!isEditing} value={formData.document_type || ''} onChange={e => handleInputChange('document_type', e.target.value)} placeholder="carta_identita" />
                                     </div>
                                     <div className="space-y-2">
-                                        <Label>Numero</Label>
-                                        <Input className="bg-background" disabled={!isEditing} value={formData.document_number || ''} onChange={e => handleInputChange('document_number', e.target.value)} />
+                                        <Label className="text-muted-foreground">Numero</Label>
+                                        <Input className="bg-background/80" disabled={!isEditing} value={formData.document_number || ''} onChange={e => handleInputChange('document_number', e.target.value)} />
                                     </div>
                                     <div className="space-y-2">
-                                        <Label>Rilasciato da</Label>
-                                        <Input className="bg-background" disabled={!isEditing} value={formData.document_issuer || ''} onChange={e => handleInputChange('document_issuer', e.target.value)} />
+                                        <Label className="text-muted-foreground">Rilasciato da</Label>
+                                        <Input className="bg-background/80" disabled={!isEditing} value={formData.document_issuer || ''} onChange={e => handleInputChange('document_issuer', e.target.value)} />
                                     </div>
                                     <div className="space-y-2">
-                                        <Label>Data Rilascio</Label>
-                                        <Input className="bg-background" type="date" disabled={!isEditing} value={formData.document_issue_date ? format(new Date(formData.document_issue_date), 'yyyy-MM-dd') : ''} onChange={e => handleInputChange('document_issue_date', e.target.value)} />
+                                        <Label className="text-muted-foreground">Data Rilascio</Label>
+                                        <Input className="bg-background/80" type="date" disabled={!isEditing} value={formData.document_issue_date ? format(new Date(formData.document_issue_date), 'yyyy-MM-dd') : ''} onChange={e => handleInputChange('document_issue_date', e.target.value)} />
                                     </div>
                                 </div>
-                            </section>
+                            </div>
 
-                            <Separator />
-
-                            {/* Section: Veicolo */}
-                            <section className="space-y-4">
-                                <h3 className="font-semibold flex items-center gap-2 text-primary text-sm uppercase tracking-wide">
-                                    <Shield className="h-4 w-4" /> Veicolo
+                            {/* Section: Veicolo (Indigo/Purple) */}
+                            <div className="rounded-xl border border-indigo-200/50 bg-indigo-50/50 dark:bg-indigo-950/20 dark:border-indigo-900/50 p-6 space-y-4">
+                                <h3 className="font-semibold flex items-center gap-2 text-indigo-700 dark:text-indigo-400 text-sm uppercase tracking-wide">
+                                    <CreditCard className="h-4 w-4" /> Veicolo
                                 </h3>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div className="space-y-2">
-                                        <Label>Targa</Label>
+                                        <Label className="text-muted-foreground">Targa</Label>
                                         <Input
-                                            className="bg-background uppercase font-mono"
+                                            className="bg-background/80 uppercase font-mono"
                                             disabled={!isEditing}
                                             value={formData.license_plate || ''}
                                             onChange={e => handleInputChange('license_plate', e.target.value.toUpperCase())}
@@ -438,14 +432,12 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                                         <p className="text-[10px] text-muted-foreground">Necessaria per l'accesso automatico.</p>
                                     </div>
                                 </div>
-                            </section>
+                            </div>
 
-                            <Separator />
-
-                            {/* Notes */}
-                            <div className="space-y-2">
-                                <Label>Note Interne</Label>
-                                <Input className="bg-background" disabled={!isEditing} value={formData.notes || ''} onChange={e => handleInputChange('notes', e.target.value)} placeholder="Note visibili solo allo staff..." />
+                            {/* Note Interne (Gray/Default) */}
+                            <div className="rounded-xl border bg-muted/30 p-6 space-y-4">
+                                <Label className="text-muted-foreground font-semibold">Note Interne</Label>
+                                <Input className="bg-background/80" disabled={!isEditing} value={formData.notes || ''} onChange={e => handleInputChange('notes', e.target.value)} placeholder="Note visibili solo allo staff..." />
                             </div>
                         </CardContent>
                         {isEditing && (

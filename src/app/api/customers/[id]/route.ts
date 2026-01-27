@@ -1,6 +1,43 @@
 
 import { supabaseAdmin } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
+export async function GET(
+    request: Request,
+    { params }: { params: Promise<{ id: string }> }
+) {
+    try {
+        const { id } = await params;
+        const supabase = supabaseAdmin;
+
+        // Fetch customer
+        const { data: customer, error: customerError } = await supabase
+            .from('customers')
+            .select('*')
+            .eq('id', id)
+            .single();
+
+        if (customerError) throw customerError;
+
+        // Fetch bookings
+        const { data: bookings, error: bookingsError } = await supabase
+            .from('bookings')
+            .select(`
+                *,
+                pitch:pitches (
+                    number,
+                    type
+                )
+            `)
+            .eq('customer_id', id)
+            .order('created_at', { ascending: false });
+
+        if (bookingsError) throw bookingsError;
+
+        return NextResponse.json({ customer, bookings });
+    } catch (error: any) {
+        return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+}
 
 export async function PUT(
     request: Request,

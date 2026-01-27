@@ -26,3 +26,18 @@ The `customers` table now has a `group_id` foreign key.
 1.  **Custom Rates**: If a group has a specific rate for a season (e.g., Person Price), it **overrides** the season's base price.
 2.  **Base Rates**: If no custom rate is set, the season's base price is used.
 3.  **Discount %**: If configured, the percentage is deducted from the *final daily total* (calculated using base or custom rates).
+
+## Bug Fixes and UI Improvements (2026-01-27)
+
+### API Fixes
+-   **Customers Visibility**: Fixed `/api/customers` return format.
+-   **Customer Details Error**: Added GET handler to `/api/customers/[id]`.
+-   **Groups API Error**: Fixed table name typo in `/api/groups`.
+
+### UI Enhancements
+-   **Customer Details Page**: Enhanced the "Dati Personali" section with color-coded categories for better visual distinction:
+    -   Anagrafica: Blue theme
+    -   Residenza: Amber theme
+    -   Documenti: Emerald theme
+    -   Veicolo: Indigo theme
+    -   Used subtle transparent backgrounds and borders for a clean, professional look.

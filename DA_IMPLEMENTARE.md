@@ -1,5 +1,3 @@
-- listino prezzi personalizzato per i gruppi
 - Gestione delle caparre ( nella prenotazione + pagina dedicata)
 - gruppi come filtro di ricerca tra i clienti
-- ogni gruppo ha tariffe speciali oppure sconti speciali ( in % sull'alta stagione )
 - nel cliente la possibilità di assegnarlo ad un gruppo

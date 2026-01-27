@@ -16,7 +16,7 @@ export async function GET() {
 
         // Fetch their seasonal configurations
         const { data: configs, error: configError } = await supabase
-            .from('group_season_configurations')
+            .from('group_season_configuration')
             .select('*');
 
         if (configError) throw configError;
@@ -63,7 +63,7 @@ export async function POST(request: Request) {
             }));
 
             const { error: configsError } = await supabase
-                .from('group_season_configurations')
+                .from('group_season_configuration')
                 .insert(configsToInsert);
 
             if (configsError) throw configsError;
