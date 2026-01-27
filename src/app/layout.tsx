@@ -59,9 +59,9 @@ export default function WebsiteLayout({
                 <Link href="/faq" className="text-sm font-medium hover:text-primary transition-colors">
                   FAQ
                 </Link>
-                <a href="/contact" className="text-sm font-medium hover:text-primary transition-colors">
+                <Link href="/contact" className="text-sm font-medium hover:text-primary transition-colors">
                   Contatti
-                </a>
+                </Link>
                 <a href="https://github.com/simo-hue/CampFlow" target="_blank" rel="noopener noreferrer">
                   <Button size="sm">Vedi su GitHub <ArrowRight className="ml-2 w-4 h-4" /></Button>
                 </a>
@@ -79,7 +79,7 @@ export default function WebsiteLayout({
                     <Link href="/features" className="text-lg font-medium">Funzionalità</Link>
                     <Link href="/pricing" className="text-lg font-medium">Prezzi</Link>
                     <Link href="/faq" className="text-lg font-medium">FAQ</Link>
-                    <a href="mailto:mattioli.simone.10@gmail.com" className="text-lg font-medium">Contatti</a>
+                    <Link href="/contact" className="text-lg font-medium">Contatti</Link>
                     <div className="h-px bg-border my-2" />
                     <a href="https://github.com/simo-hue/CampFlow" target="_blank" rel="noopener noreferrer">
                       <Button className="w-full">Vedi su GitHub</Button>
