@@ -1,7 +1,6 @@
-# Actions Required by Simo
+# TO SIMO DO
 
-1.  **Verify Season Visualization**:
-    *   Go to **/settings** -> **Prezzi**.
-    *   Verify that the "Gerarchia Stagioni" (Tower of Hanoi) is displayed correctly above the season list.
-    *   Check if high priority seasons are on top and the default season is at the bottom.
-    *   Hover over the blocks to see the tooltip with pricing details.
+## Customer Groups Implementation
+- [ ] **Run Database Migration**: Please run the SQL commands in `supabase/migrations/20260127120000_customer_groups.sql` to create the new tables. You can use the Supabase Dashboard SQL Editor or the CLI.
+- [ ] **Verify Settings**: Check the new "Gruppi" tab in SettingsDialog.
+- [ ] **Verify Customers**: Try editing a customer and assigning a group.

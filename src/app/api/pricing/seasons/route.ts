@@ -147,7 +147,7 @@ export async function PUT(request: Request) {
 
         const body = await request.json();
         // Validation
-        const { name, start_date, end_date, piazzola_price_per_day, tenda_price_per_day, person_price_per_day, child_price_per_day, dog_price_per_day, car_price_per_day, priority, color, description } = body;
+        const { name, start_date, end_date, piazzola_price_per_day, tenda_price_per_day, person_price_per_day, child_price_per_day, dog_price_per_day, car_price_per_day, priority, color, description, is_active } = body;
 
         // Build update object (only include provided fields)
         const updates: Partial<PricingSeason> = {};

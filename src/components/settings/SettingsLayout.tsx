@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
-import { Building2, Euro, Palette, ArrowLeft } from 'lucide-react';
+import { Building2, Euro, Palette, ArrowLeft, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 const settingsSections = [
@@ -17,6 +17,12 @@ const settingsSections = [
         label: 'Prezzi',
         icon: Euro,
         description: 'Configura tariffe e prezzi',
+    },
+    {
+        id: 'gruppi',
+        label: 'Gruppi',
+        icon: Users,
+        description: 'Gestisci gruppi clienti e sconti',
     },
     {
         id: 'aspetto',

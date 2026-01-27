@@ -17,6 +17,40 @@ export interface PitchAttributes {
 }
 
 // =====================================================
+// CUSTOMER GROUPS TYPES
+// =====================================================
+
+export interface CustomRates {
+    // Overrides for standard season rates
+    piazzola?: number;
+    tenda?: number;
+    person?: number;
+    child?: number;
+    dog?: number;
+    car?: number;
+}
+
+export interface GroupSeasonConfiguration {
+    id: string;
+    group_id: string;
+    season_id: string;
+    discount_percentage?: number; // e.g. 10.00 for 10%
+    custom_rates?: CustomRates; // JSONB
+    created_at: string;
+    updated_at: string;
+}
+
+export interface CustomerGroup {
+    id: string;
+    name: string;
+    description?: string;
+    color: string;
+    season_configurations?: GroupSeasonConfiguration[]; // For frontend convenience
+    created_at: string;
+    updated_at: string;
+}
+
+// =====================================================
 // SEASONAL PRICING TYPES
 // =====================================================
 
@@ -73,6 +107,7 @@ export interface Customer {
     phone: string;
     address?: string; // Via/Piazza + Civico
     notes?: string;
+    personal_id_code?: string; // Codice Fiscale
 
     // Birth Details
     birth_date?: string;
@@ -96,6 +131,9 @@ export interface Customer {
     document_issue_city?: string;
     document_issue_date?: string;
     document_issuer?: string; // Ente
+
+    group_id?: string; // Link to CustomerGroup
+    group?: CustomerGroup; // Joined data
 
     created_at: string;
     updated_at: string;

@@ -1,57 +1,53 @@
 
+import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase/server';
-import { NextRequest, NextResponse } from 'next/server';
 
-export async function GET(request: NextRequest) {
-    const searchParams = request.nextUrl.searchParams;
+export async function GET(request: Request) {
+    const supabase = supabaseAdmin;
+    const { searchParams } = new URL(request.url);
     const query = searchParams.get('q');
 
-    // Search by name, surname, email or phone
-    let queryBuilder = supabaseAdmin
+    let queryBuilder = supabase
         .from('customers')
-        .select('*');
+        .select('*, customer_groups ( name, color )');
 
     if (query) {
-        queryBuilder = queryBuilder.or(`first_name.ilike.%${query}%,last_name.ilike.%${query}%,email.ilike.%${query}%,phone.ilike.%${query}%,license_plate.ilike.%${query}%`);
-    } else {
-        queryBuilder = queryBuilder.order('last_name', { ascending: true });
+        queryBuilder.or(`first_name.ilike.%${query}%,last_name.ilike.%${query}%,email.ilike.%${query}%,phone.ilike.%${query}%`);
     }
 
-    const { data, error } = await queryBuilder.limit(20);
+    // Sort by most recent
+    queryBuilder.order('created_at', { ascending: false });
 
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-    return NextResponse.json({ customers: data });
+    const { data: customers, error } = await queryBuilder;
+
+    if (error) {
+        return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+
+    return NextResponse.json(customers);
 }
 
-export async function POST(request: NextRequest) {
+export async function POST(request: Request) {
     try {
         const body = await request.json();
+        const { group_id, ...customerData } = body;
+        const supabase = supabaseAdmin;
 
-        // Basic validation
-        if (!body.first_name || !body.last_name) {
-            return NextResponse.json(
-                { error: 'First name and last name are required' },
-                { status: 400 }
-            );
-        }
+        const payload = {
+            ...customerData,
+            group_id: group_id === 'none' ? null : group_id
+        };
 
-        const { data, error } = await supabaseAdmin
+        const { data, error } = await supabase
             .from('customers')
-            .insert([body])
+            .insert(payload)
             .select()
             .single();
 
-        if (error) {
-            console.error('Error creating customer:', error);
-            return NextResponse.json({ error: error.message }, { status: 500 });
-        }
+        if (error) throw error;
 
         return NextResponse.json(data);
-    } catch (error) {
-        console.error('Server error creating customer:', error);
-        return NextResponse.json(
-            { error: 'Internal server error' },
-            { status: 500 }
-        );
+    } catch (error: any) {
+        return NextResponse.json({ error: error.message }, { status: 500 });
     }
 }

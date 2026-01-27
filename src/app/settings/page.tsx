@@ -6,6 +6,7 @@ import { SettingsLayout } from '@/components/settings/SettingsLayout';
 import { PitchManagement } from '@/components/settings/PitchManagement';
 import { SectorManagement } from '@/components/settings/SectorManagement';
 import { SeasonalPricingManager } from '@/components/settings/SeasonalPricingManager';
+import { GroupManagement } from '@/components/settings/GroupManagement';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
@@ -158,6 +159,19 @@ export default function SettingsPage() {
                             )}
                         </Button>
                     </div>
+                </div>
+            )}
+
+            {/* Gruppi Section */}
+            {activeSection === 'gruppi' && (
+                <div>
+                    <div className="mb-6">
+                        <h2 className="text-2xl font-bold">Gestione Gruppi</h2>
+                        <p className="text-muted-foreground mt-1">
+                            Configura gruppi clienti e sconti stagionali
+                        </p>
+                    </div>
+                    <GroupManagement />
                 </div>
             )}
 

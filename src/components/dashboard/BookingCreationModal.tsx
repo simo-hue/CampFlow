@@ -84,7 +84,7 @@ export function BookingCreationModal({
                 setChildAgeMax(childMaxAge);
 
                 const res = await fetch(
-                    `/api/pricing/calculate?checkIn=${checkIn}&checkOut=${checkOut}&pitchType=${pitchType}&guests=${guestsCount}&children=${childrenCount}&dogs=${dogsCount}&cars=${carsCount}&guestPrice=${personPrice}&childPrice=${childPrice}&dogPrice=${dogPrice}&carPrice=${carPrice}`
+                    `/api/pricing/calculate?checkIn=${checkIn}&checkOut=${checkOut}&pitchType=${pitchType}&guests=${guestsCount}&children=${childrenCount}&dogs=${dogsCount}&cars=${carsCount}&guestPrice=${personPrice}&childPrice=${childPrice}&dogPrice=${dogPrice}&carPrice=${carPrice}&customerId=${selectedCustomerId || ''}`
                 );
 
                 if (!res.ok) throw new Error("Failed to calculate price");
@@ -106,7 +106,8 @@ export function BookingCreationModal({
         };
 
         fetchPrice();
-    }, [checkIn, checkOut, pitchType, nights, guestsCount, childrenCount, dogsCount, carsCount]);
+        fetchPrice();
+    }, [checkIn, checkOut, pitchType, nights, guestsCount, childrenCount, dogsCount, carsCount, selectedCustomerId]);
 
     const handleCustomerSelect = (customer: any) => {
         setSelectedCustomerId(customer.id);

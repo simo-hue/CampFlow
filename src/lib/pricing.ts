@@ -1,12 +1,11 @@
 /**
-/**
  * Seasonal Pricing Calculator for CampFlow PMS
  * 
  * Pricing structure is now fully dynamic and based on the 'seasons' table in the database.
  * The Default Season (Stagione Base) acts as a fallback for any dates not covered by higher priority seasons.
  */
 
-import type { PitchType, PricingSeason } from '@/lib/types';
+import type { PitchType, PricingSeason, GroupSeasonConfiguration } from '@/lib/types';
 import { isWithinInterval, parseISO } from 'date-fns';
 
 /**
@@ -38,6 +37,7 @@ export interface CalculationContext {
     children?: number;
     dogs?: number;
     cars?: number;
+    groupConfigs?: GroupSeasonConfiguration[]; // List of all seasonal configs for the group
 }
 
 /**
@@ -55,23 +55,43 @@ function getDailyRate(date: Date, pitchType: PitchType, context: CalculationCont
         };
     }
 
+
     let dailyTotal = 0;
+    // Find configuration for the active season
+    const config = context.groupConfigs?.find(c => c.season_id === season.id);
+
+    // determine base rates (group custom rates override season rates)
+    const rates = {
+        piazzola: config?.custom_rates?.piazzola ?? season.piazzola_price_per_day,
+        tenda: config?.custom_rates?.tenda ?? season.tenda_price_per_day,
+        person: config?.custom_rates?.person ?? season.person_price_per_day,
+        child: config?.custom_rates?.child ?? season.child_price_per_day,
+        dog: config?.custom_rates?.dog ?? season.dog_price_per_day,
+        car: config?.custom_rates?.car ?? season.car_price_per_day,
+    };
 
     // Pitch Price
     if (pitchType === 'piazzola') {
-        dailyTotal += season.piazzola_price_per_day;
+        dailyTotal += rates.piazzola;
     } else {
-        dailyTotal += season.tenda_price_per_day;
+        dailyTotal += rates.tenda;
     }
 
     // Extra variables
-    if (context.guests) dailyTotal += context.guests * (season.person_price_per_day ?? 0);
-    if (context.children) dailyTotal += context.children * (season.child_price_per_day ?? 0);
-    if (context.dogs) dailyTotal += context.dogs * (season.dog_price_per_day ?? 0);
-    if (context.cars) dailyTotal += context.cars * (season.car_price_per_day ?? 0);
+    if (context.guests) dailyTotal += context.guests * (rates.person ?? 0);
+    if (context.children) dailyTotal += context.children * (rates.child ?? 0);
+    if (context.dogs) dailyTotal += context.dogs * (rates.dog ?? 0);
+    if (context.cars) dailyTotal += context.cars * (rates.car ?? 0);
+
+    // Apply Percentage Discount (if configured)
+    // Applied to the total daily sum calculated so far
+    if (config?.discount_percentage && config.discount_percentage > 0) {
+        const discountAmount = (dailyTotal * config.discount_percentage) / 100;
+        dailyTotal -= discountAmount;
+    }
 
     return {
-        total: dailyTotal,
+        total: Math.max(0, dailyTotal), // Prevent negative prices
         seasonName: season.name,
         seasonColor: season.color
     };

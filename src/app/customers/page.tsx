@@ -23,19 +23,48 @@ import { it } from 'date-fns/locale';
 import { useDebounce } from '@/hooks/use-debounce';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
+import { CustomerDialog } from '@/components/dashboard/CustomerDialog';
+import { Pencil, Trash2, Tag } from 'lucide-react';
+import { useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 
-type Customer = {
-    id: string;
-    first_name: string;
-    last_name: string;
-    email: string;
-    phone: string;
-    created_at: string;
+import type { Customer as BaseCustomer } from '@/lib/types';
+// Extend customer type to include joined data
+type Customer = BaseCustomer & {
+    customer_groups?: {
+        name: string;
+        color: string;
+    } | null;
 };
 
 export default function CustomersPage() {
     const [searchQuery, setSearchQuery] = useState('');
     const debouncedQuery = useDebounce(searchQuery, 300);
+    const [dialogOpen, setDialogOpen] = useState(false);
+    const [customerToEdit, setCustomerToEdit] = useState<Customer | null>(null);
+    const queryClient = useQueryClient();
+
+    const handleEdit = (customer: Customer) => {
+        setCustomerToEdit(customer);
+        setDialogOpen(true);
+    };
+
+    const handleDelete = async (customer: Customer) => {
+        if (!confirm(`Sei sicuro di voler eliminare ${customer.first_name} ${customer.last_name}?`)) return;
+
+        try {
+            const res = await fetch(`/api/customers/${customer.id}`, { method: 'DELETE' });
+            if (!res.ok) throw new Error('Errore eliminazione');
+            toast.success('Cliente eliminato');
+            queryClient.invalidateQueries({ queryKey: ['customers'] });
+        } catch (e: any) {
+            toast.error(e.message);
+        }
+    };
+
+    const handleSuccess = () => {
+        queryClient.invalidateQueries({ queryKey: ['customers'] });
+    };
 
     const { data, isLoading, error } = useQuery({
         queryKey: ['customers', debouncedQuery],
@@ -78,7 +107,7 @@ export default function CustomersPage() {
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
                     </div>
-                    <Button className="shadow-sm">
+                    <Button className="shadow-sm" onClick={() => { setCustomerToEdit(null); setDialogOpen(true); }}>
                         <UserPlus className="mr-2 h-4 w-4" />
                         Nuovo
                     </Button>
@@ -128,6 +157,11 @@ export default function CustomersPage() {
                                                         {customer.first_name} {customer.last_name}
                                                     </div>
                                                     <div className="text-xs text-muted-foreground hidden lg:block">ID: {customer.id.slice(0, 8)}...</div>
+                                                    {customer.customer_groups && (
+                                                        <Badge variant="outline" className="mt-1 text-[10px] px-1 py-0" style={{ borderColor: customer.customer_groups.color, color: customer.customer_groups.color }}>
+                                                            {customer.customer_groups.name}
+                                                        </Badge>
+                                                    )}
                                                 </div>
                                             </div>
 
@@ -153,10 +187,16 @@ export default function CustomersPage() {
                                             {/* Actions */}
                                             <div className="col-span-2 flex justify-end">
                                                 <Link href={`/customers/${customer.id}`}>
-                                                    <Button variant="secondary" size="sm" className="gap-1 shadow-sm hover:bg-primary hover:text-primary-foreground transition-all">
-                                                        Dettagli <ChevronRight className="h-3 w-3" />
+                                                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                                                        <ChevronRight className="h-4 w-4" />
                                                     </Button>
                                                 </Link>
+                                                <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => handleEdit(customer)}>
+                                                    <Pencil className="h-3 w-3" />
+                                                </Button>
+                                                <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-destructive hover:text-destructive" onClick={() => handleDelete(customer)}>
+                                                    <Trash2 className="h-3 w-3" />
+                                                </Button>
                                             </div>
                                         </div>
                                     ))}
@@ -166,6 +206,13 @@ export default function CustomersPage() {
                     </div>
                 </div>
             </div>
-        </div >
+
+            <CustomerDialog
+                open={dialogOpen}
+                onClose={() => setDialogOpen(false)}
+                customer={customerToEdit}
+                onSuccess={handleSuccess}
+            />
+        </div>
     );
 }

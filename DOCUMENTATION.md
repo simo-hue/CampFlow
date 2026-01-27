@@ -1,56 +1,28 @@
-# CampFlow Implementation Documentation
+# CampFlow Documentation
 
-## Seasonal Pricing Variables Implementation
-
-**Date:** 2026-01-27
-**Status:** Completed
+## Customer Groups Feature (Added 2026-01-27)
 
 ### Overview
-Moved from a hybrid pricing model (Global Settings + Hardcoded logic) to a **fully database-driven Seasonal Pricing system**. All pricing variables (People, Children, Dogs, Cars) are now configurable per-season.
+The system now supports **Customer Groups** (e.g., VIP, Friends, Families). Groups function as a way to apply automatic discounts or custom pricing tiers to customers.
 
-### Changes Implemented
+### Database Schema
+Two new tables were added:
+1.  `customer_groups`: Stores group definitions (Name, Color, Description).
+2.  `group_season_configuration`: Links groups to `pricing_seasons`.
+    -   `discount_percentage`: Applies a % discount to the total calculated daily rate.
+    -   `custom_rates`: A JSONB object that overrides specific base rates (e.g., `{"person": 5.0}`).
 
-1.  **Database Schema (`pricing_seasons` table)**
-    *   Added columns: `person_price_per_day`, `child_price_per_day`, `dog_price_per_day`, `car_price_per_day`.
-    *   Ensures comprehensive pricing configuration within the season record itself.
+The `customers` table now has a `group_id` foreign key.
 
-2.  **Backend Logic (`src/lib/pricing.ts`)**
-    *   **Refactored `calculatePrice`**: Removed hardcoded checks for High/Mid/Low season.
-    *   **Dynamic Resolution**: The system now accepts a list of `seasons`. It finds the active season with the highest priority that covers a given date.
-    *   **Context Support**: Accepts distinct counts for Guests, Children, Dogs, and Cars to calculate the daily total accurately using the season's specific rates.
+### Frontend Implementation
+1.  **Settings -> Gruppi**: A new tab in the Settings Dialog allows full management of groups and their seasonal rules.
+    -   Component: `src/components/settings/GroupManagement.tsx`
+2.  **Customer Management**: The Customers page (`/customers`) now allows creating and editing customers, including assigning them to a group.
+    -   Component: `src/components/dashboard/CustomerDialog.tsx`
+3.  **Booking Creation**: When creating a booking, selecting a customer automatically fetches their group configuration.
+    -   The Pricing API (`api/pricing/calculate`) was updated to accept `customerId` and apply the group's rules.
 
-3.  **API Routes**
-    *   **`GET /api/pricing/calculate`**: Fetches active seasons from DB and uses the new shared logic to return price breakdowns for the frontend (Booking Modal).
-    *   **`POST /api/bookings`**: Fetches active seasons serverside to ensure the final booking price matches the configuration at the moment of creation.
-
-4.  **Frontend**
-    *   **Settings Page**: Removed legacy global pricing inputs.
-    *   **Season Dialog**: Added input fields for the new variables, allowing full control over pricing for each season.
-    *   **Booking Modal**: Now sends individual counts (children, dogs, cars) to the calculation API.
-
-### Fallback Mechanism
-A **"Stagione Base (Default)"** with Priority 0 is automatically created/used. This ensures that even if no specific season (High/Low) is defined for a date, the system falls back to these base rates instead of returning zero or erroring.
-
-### UI Improvements
-*   **Delete Confirmation**: Added a confirmation popup (Dialog) when deleting a pricing season to prevent accidental deletions.
-*   **Smart Save Button**: The "Save Changes" button in the season editor is now disabled by default and only becomes active when actual changes are detected.
-
-## Season Stack Visualization ("Tower of Hanoi")
-
-**Date:** 2026-01-27
-**Status:** Completed
-
-### Overview
-Implemented a visual representation of the pricing seasons hierarchy to allow users to intuitively understand which season takes precedence.
-
-### Components
-*   **`SeasonStackVisualization.tsx`**: A new component that visualizes seasons in a stacked format based on priority.
-    *   **High Priority (>= 15)**: Top of the stack.
-    *   **Medium Priority (5-14)**: Middle.
-    *   **Low Priority (< 5)**: Bottom (Base).
-*   **Integration**: Added to the `SeasonalPricingManager` component in the Settings page.
-
-### Features
-*   **Visual Hierarchy**: Clearly shows priority levels.
-*   **Tooltips**: Hovering over a season block reveals detailed pricing info.
-*   **Dynamic**: Automatically updates as seasons are added or modified.
+### Pricing Logic Priority
+1.  **Custom Rates**: If a group has a specific rate for a season (e.g., Person Price), it **overrides** the season's base price.
+2.  **Base Rates**: If no custom rate is set, the season's base price is used.
+3.  **Discount %**: If configured, the percentage is deducted from the *final daily total* (calculated using base or custom rates).

@@ -17,6 +17,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Settings } from 'lucide-react';
 import { PitchManagement } from '@/components/settings/PitchManagement';
 import { SeasonalPricingManager } from '@/components/settings/SeasonalPricingManager';
+import { GroupManagement } from '@/components/settings/GroupManagement';
 
 interface PricingSettings {
     person_price_per_day: number;
@@ -99,9 +100,10 @@ export function SettingsDialog() {
                 </DialogHeader>
 
                 <Tabs defaultValue="appearance" className="mt-4">
-                    <TabsList className="grid w-full grid-cols-3">
+                    <TabsList className="grid w-full grid-cols-4">
                         <TabsTrigger value="appearance">Aspetto</TabsTrigger>
                         <TabsTrigger value="pricing">Prezzi</TabsTrigger>
+                        <TabsTrigger value="groups">Gruppi</TabsTrigger>
                         <TabsTrigger value="campeggio">Campeggio</TabsTrigger>
                     </TabsList>
 
@@ -168,6 +170,11 @@ export function SettingsDialog() {
 
                         {/* Seasonal Pricing Manager */}
                         <SeasonalPricingManager />
+                    </TabsContent>
+
+                    {/* Gruppi Tab */}
+                    <TabsContent value="groups" className="mt-4">
+                        <GroupManagement />
                     </TabsContent>
 
                     {/* Campeggio Tab */}
