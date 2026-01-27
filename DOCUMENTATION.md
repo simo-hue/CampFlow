@@ -530,6 +530,7 @@ The `customers` table now has a `group_id` foreign key.
     -   Unified search and filter container with blur effect.
     -   Added "Filtra per Gruppo" functionality using the new API capability.
 
+<<<<<<< Updated upstream
 ```markdown
 ### 2026-01-18 - Organizzazione SQL Migrations
 - ✅ Creata struttura modulare nella cartella `supabase/migrations/`
@@ -549,3 +550,27 @@ Dopo un aggiornamento manuale del layout, l'importazione di `globals.css` e la s
 - Reintrodotti i tag `<html>` e `<body>` con la classe `dark` obbligatoria per Next.js App Router.
 - Eseguito un nuovo deploy tramite `deploy.sh`.
 
+=======
+## Ristrutturazione Pagina Prezzi (2026-01-27)
+
+### Modifiche Apportate
+La pagina `/pricing` è stata riorganizzata secondo le richieste commerciali:
+
+1.  **Cloud Managed (Nuovo Posizionamento)**
+    - Spostato come primo elemento a sinistra.
+    - Prezzo sostituito da un effetto *blur* visivo (classe `blur-[6px]`) con overlay "Su Misura".
+    - CTA cambiata in "Contattami".
+    - Descrizione aggiornata per enfatizzare il servizio "Chiavi in mano".
+
+2.  **Setup Assistito (Nuovo "Popular")**
+    - Spostato al centro (o comunque reso `popular: true`).
+    - Evidenziato visivamente come l'opzione raccomandata.
+    - CTA "Richiedi Preventivo".
+    - Descrizione focalizzata sulla consulenza aziendale e integrazione (on-premise o comunque personalizzata).
+
+3.  **Community (Free)**
+    - Mantenuta come opzione "Self-hosted" per sviluppatori.
+
+### Stato Deploy
+Deploy eseguito su `gh-pages`. Il sito statico ora presenta la nuova matrice di pricing.
+>>>>>>> Stashed changes
