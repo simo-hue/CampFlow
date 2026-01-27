@@ -59,7 +59,7 @@ export default function WebsiteLayout({
                 <Link href="/faq" className="text-sm font-medium hover:text-primary transition-colors">
                   FAQ
                 </Link>
-                <a href="mailto:mattioli.simone.10@gmail.com" className="text-sm font-medium hover:text-primary transition-colors">
+                <a href="/contact" className="text-sm font-medium hover:text-primary transition-colors">
                   Contatti
                 </a>
                 <a href="https://github.com/simo-hue/CampFlow" target="_blank" rel="noopener noreferrer">
