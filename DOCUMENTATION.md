@@ -182,4 +182,359 @@ E aggiungi questa voce al Changelog alla fine del documento:
 3.  **Link di Contatto**: Il pulsante ora punta direttamente all'invio di una email (`mailto`) per facilitare la discussione personalizzata.
 4.  **Fix TypeScript**: Corretti errori di tipo che impedivano la build a causa di proprietà mancanti nell'array dei piani (tiers).
 5.  **Ripristino Configurazione**: Ricreato `next.config.ts` con i parametri necessari per il deploy statico su GitHub Pages (basePath: "/CampFlow").
+6.  **Automazione Deploy**: Creato lo script `deploy.sh` per automatizzare il futuro aggiornamento del sito da `website-only` a `gh-pages`.
 
+# Weekly Occupancy Optimization (2026-01-20)
+
+## Overview
+Optimized the "Panoramica Settimanale" widget to fix slow loading times.
+
+## Changes
+- **Client-Side**: `WeeklyOccupancyWidget` now fetches ONLY the 7 required days of data instead of the full booking history.
+- **Mechanism**: Utilizes Supabase `.overlaps()` filter for efficient database-level filtering without needing complex backend changes.
+- **Performance**: Reduced data transfer size by ~95% and eliminated client-side processing lag.
+- **Caching (Memory)**: Implemented 5-minute local cache to prevent re-fetching on navigation.
+- **Caching (Storage)**: Implemented `localStorage` persistence. The widget now loads *immediately* (0ms perceived latency) if the user has visited the dashboard earlier in the day.
+
+## Optional Database Optimization
+A prepared migration `supabase/migrations/20260120140000_get_weekly_occupancy.sql` is available.
+If enabled, it moves the calculation entirely to the database (RPC), which is slightly faster but currently not strictly necessary given the client-side optimization success.
+
+# Check-in Validation (2026-01-20)
+## Overview
+Strict validation has been enforced on the Check-in form to ensure data integrity and compliance with requirements (especially for Alloggiati Web).
+
+## Validated Fields
+The system now prevents check-in if ANY of the following fields are empty:
+- **Anagrafica**: Name, Surname, Birth Date, Gender, Birth Place (Country/Province/City), Citizenship.
+- **Residenza**: Address, Residence Place (Country/Province/City/ZIP).
+- **Document**: Type, Number, Issue Date, Issuer, Issue Place (City/Country).
+
+## Implementation
+- **Client-Side**: `validateForm()` helper in `CheckInPage` checks all fields before allowing the API call.
+- **Visual Feedback**: Invalid fields are highlighted with a **red border** to immediately attract the user's attention.
+- **Toast Feedback**: A clear error message lists specifically which fields are missing.
+
+# System Monitor Security Update (2026-01-20)
+
+## Overview
+Improved the security posture of the System Monitor (`/sys-monitor`) by decoupling its authentication from the main application and enforcing strict access controls on sensitive server actions.
+
+## Changes
+- **Authentication Decoupling**: Logging into the main application (`/login`) NO LONGER automatically grants access to `/sys-monitor`.
+    - **Why**: Keeps the "God Mode" developer dashboard isolated from standard operational workflows.
+    - **Effect**: You must log in specifically at `/sys-monitor/login` with admin credentials to access the monitor.
+- **Middleware Update**: The global middleware now explicitly whitelists `/sys-monitor` based on its own internal authentication logic, preventing loop redirects and allowing independent access.
+- **Server Action Security**: All sensitive actions (cleaning logs, clearing databases) now perform a rigorous server-side check of the `sys_monitor_auth` cookie before execution. This prevents "Unauthorized" execution even if someone bypasses the client-side UI.
+
+## Verification
+- Accessing `/sys-monitor` without being logged into the **monitor itself** will now correctly redirect to the monitor login page, even if you are logged into the main app.
+
+# Pricing Variables Update (2026-01-21)
+
+## Overview
+Added support for new persistent pricing variables to the Settings and Booking flow.
+
+## New Variables
+- **Car Price** (€/day): Cost for an additional car.
+- **Child Price** (€/day): Cost for children.
+- **Child Max Age**: The maximum age (inclusive) for a guest to be considered a child.
+
+## Implementation
+- **Settings**: New fields in `Settings > Prices` saved to `localStorage`.
+- **Booking Popup**: 
+    - Renamed "Ospiti" to "Adulti".
+    - Added "Bambini" input with info tooltip showing the configured max age.
+    - Added "Auto" input.
+- **Calculation**: Returns total price including extra costs for children and cars.
+
+# Overbooking Protection (2026-01-21)
+
+## Overview
+The system implements a robust double-layer protection against overbooking to ensure data integrity.
+
+## Layers of Protection
+1.  **Database Constraint (Primary)**:
+    -   **Mechanism**: A PostgreSQL Exclusion Constraint (`prevent_overbooking`) is active on the `bookings` table.
+    -   **Logic**: It physically prevents two rows from having overlapping `booking_period` ranges for the same `pitch_id`.
+    -   **Error Code**: If a violation occurs, Postgres returns error code `23P01`.
+
+2.  **API Error Handling**:
+    -   **Endpoint**: `/api/bookings` catches the `23P01` error.
+    -   **Response**: Returns a `409 Conflict` status with a clearer message: "Piazzola già occupata in questo periodo".
+
+3.  **User Feedback**:
+
+# Customer Details Optimization (2026-01-21)
+
+## Overview
+Fixed an issue where "Anagrafica", "Prenotazioni", and "Statistiche" tabs were empty in the Customer Details page (`/customers/[id]`).
+
+## Fixes Implemented
+- **API**: Resolved a silent failure in `GET /api/customers/[id]` caused by querying non-existent columns (`booking_guests(count)`, `pitch(name)`).
+- **Frontend**: 
+    - Implemented **Intelligent Caching** (staleTime 5 min) prevents unnecessary re-fetches.
+    - Improved **Date Parsing** robustness for booking periods.
+    - Optimized data structure handling.
+
+### UI Refinement (2026-01-21)
+- **Aesthetics**: Improved readability of the customer details page by increasing contrast.
+- **Components**: Updated inputs and cards to have distinct backgrounds, solving the "Total Black" visibility issue.
+
+# Smart Date Picker (2026-01-21)
+
+## Overview
+Improved UX for the "Search Available Pitches" box on the dashboard.
+
+## Change
+- **Behavior**: When opening the "Departure Date" calendar, it now defaults to the month of the selected "Arrival Date" (if set), rather than the current month.
+- **Component**: `AvailabilityModule.tsx`
+- **Benefit**: Reduces scrolling when booking dates in the future.
+
+# Calendar UI Stabilization (2026-01-21)
+
+## Overview
+Stabilized the height of the calendar date picker to prevent layout shifts.
+
+## Change
+- **Behavior**: The `Calendar` component now enforces a fixed display of **6 weeks** for every month.
+- **Component**: `src/components/ui/calendar.tsx`
+- **Benefit**: Prevents the calendar popover from "jumping" or resizing when navigating between months with different numbers of weeks (e.g., February vs. August).
+
+# Occupancy Page Fixes (2026-01-21)
+
+## Overview
+Fixed visual layout issues and logic inconsistencies on the `/occupancy` page.
+
+## Changes
+1.  **Column Width Fixed (Responsive)**: Switched to `table-fixed` CSS layout. This guarantees that all date columns (after the first pitch column) are mathematically identical in width. Added `min-w-[40px]` to maintain readability on small screens.
+2.  **Booking Logic Correction (Safe)**: Fixed an off-by-one error in drag-and-drop booking creation.
+    -   **Checkout Logic**: Selecting day X to Y now results in a booking with checkout on Y+1.
+    -   **Validation Fix**: Updated `checkOverlap` to be **inclusive** of the end date. This prevents the "API 409 Conflict" error by blocking invalid selections (which would overlap due to the +1 logic) directly in the UI.
+
+# Check-out Functionality (2026-01-23)
+
+## Overview
+Implemented complete check-out functionality on the `/departures` page, allowing staff to process guest departures with automatic pitch liberation.
+
+## User Flow
+1. Navigate to `/departures` page
+2. Click the "Check-out" button on a departure card
+3. Review confirmation dialog showing:
+   - Guest name and number of guests
+   - Pitch number
+   - Booking period
+4. Click "Conferma Check-out" to process
+5. Success toast notification appears
+6. Card is removed from the list automatically
+
+## Implementation Details
+
+### Database Changes
+- **Migration**: `20260123_update_checkout_constraint.sql`
+- **Constraint Update**: Modified `prevent_overbooking` exclusion constraint to exclude both `cancelled` AND `checked_out` statuses
+- **Result**: Pitches are automatically freed when a booking status changes to `checked_out`
+- **Customer Data**: Customers remain in the database permanently for historical tracking and statistics
+
+### Frontend Components
+1. **CheckOutDialog** (`src/components/shared/CheckOutDialog.tsx`):
+   - Confirmation modal with booking details
+   - API integration to update booking status
+   - Loading state management
+   - Success/error toast notifications
+
+2. **GuestCard** (`src/components/shared/GuestCard.tsx`):
+   - Added `onRefresh` optional callback prop
+   - Click handler for check-out button
+   - State management for dialog visibility
+   - Conditional rendering of CheckOutDialog for departures
+
+3. **Departures Page** (`src/app/departures/page.tsx`):
+   - Passes `loadDepartures` callback to GuestCard components
+   - Automatic list refresh after successful check-out
+
+### API Usage
+- **Endpoint**: `PATCH /api/bookings/[id]`
+- **Payload**: `{ status: 'checked_out' }`
+- **Response**: Updated booking object
+
+## Benefits
+- **Instant Pitch Liberation**: No manual intervention needed to free pitches
+- **Data Integrity**: Database constraint prevents accidental overbooking
+- **Historical Records**: Complete booking history preserved
+- **Customer Retention**: Customer data maintained for analytics and future bookings
+- **User Experience**: Simple, clear confirmation flow with immediate feedback
+# Dynamic Sectors & Settings Configuration (2026-01-25)
+
+## Overview
+Implemented a dynamic system for managing campsite sectors and global configuration settings, replacing hardcoded constants.
+
+## Dynamic Sectors
+### Database Changes
+- **Table**: `sectors`
+- **Fields**: `id`, `name`, `created_at`, `updated_at`.
+- **Migration**: `20260125171000_create_sectors_table.sql`
+
+### Features
+- **CRUD Operations**: Complete management (Create, Read, Update, Delete) of sectors via the Settings page.
+- **Pitch Association**: Pitches are linked to sectors via `sector_id`.
+- **Validation**: Prevents deletion of sectors that still contain pitches (UI warning/logic).
+- **UI**: New "Configurazione Settori" section in `SettingsPage`.
+- **UX Improvement**: Implemented a Tabbed interface in `SettingsPage` to switch views between "Piazzole" and "Settori", eliminating excessive vertical scrolling.
+
+## Global Settings
+### Pricing Configuration
+- **Persistence**: Pricing settings are stored in `localStorage` for now (to be migrated to DB in future).
+- **Configurable Items**:
+    - Person Price
+    - Dog Price
+    - Car Price
+    - Child Price
+    - Child Max Age
+
+### Visual Settings
+- **Dark Mode**: Toggle available in "Aspetto" section.
+
+## Confirmations
+- **Safety**: Critical actions (Delete Sector, Delete/Split/Merge Pitch) now require explicit confirmation via a custom `ConfirmationDialog` UI, replacing browser alerts.
+
+# Recharts Build Warning Fix (2026-01-25)
+
+## Problem
+During Vercel Deployment (or `npm run build`), warnings appeared: `The width(-1) and height(-1) of chart should be greater than 0`.
+This was caused by **Recharts** trying to measure container dimensions during **Static Site Generation (SSG)** for the Landing Pages (`/w/*`), where the DOM and layout are not fully available (headless environment).
+
+## Solution
+Implemented a `mounted` state check in the Demo components causing the issue:
+- `src/components/website/demos/DemoHeroDashboard.tsx`
+- `src/components/website/demos/DemoStatsWidget.tsx`
+
+The charts now only render **after** the component has mounted on the client (`useEffect` -> `setMounted(true)`), ensuring the DOM and dimensions are present. This silences the build warnings while preserving functionality for the user.
+
+# Login Page Refinement (2026-01-25)
+
+## Overview
+Modified the layout to exclude the main Application Header from the Login Page (`/login`).
+
+## Changes
+- **Component**: `src/components/layout/Header.tsx`
+- **Logic**: Added a check `if (pathname === '/login') return null;`.
+- **Result**: 
+# SEO & Social Sharing (2026-01-25)
+
+## Open Graph Image
+Per garantire che i link condivisi (es. su WhatsApp, LinkedIn, Twitter) mostrino un'anteprima corretta, Next.js App Router utilizza il file convenzionale `opengraph-image.png`.
+
+### Configurazione
+- **File**: `src/app/opengraph-image.png`
+- **Risoluzione Consigliata**: 1200x630 pixels
+- **Formato**: PNG o JPG
+- **Comportamento**: Next.js genera automaticamente i tag `<meta property="og:image">` corretti nel layout root.
+
+### Prompt Generazione Immagine
+Un prompt efficace per generare questa immagine con AI (Midjourney/DALL-E):
+> "Minimalist and modern dashboard interface of a camping management software, dark mode, displaying stylized map of pitches and occupancy charts. High-tech, clean lines, professional. Vector art style, vibrant green and blue tech accent colors, dark background. 1200x630 resolution."
+
+
+## Seasonal Pricing Variables Implementation
+
+**Date:** 2026-01-27
+**Status:** Completed
+
+### Overview
+Moved from a hybrid pricing model (Global Settings + Hardcoded logic) to a **fully database-driven Seasonal Pricing system**. All pricing variables (People, Children, Dogs, Cars) are now configurable per-season.
+
+### Changes Implemented
+
+1.  **Database Schema (`pricing_seasons` table)**
+    *   Added columns: `person_price_per_day`, `child_price_per_day`, `dog_price_per_day`, `car_price_per_day`.
+    *   Ensures comprehensive pricing configuration within the season record itself.
+
+2.  **Backend Logic (`src/lib/pricing.ts`)**
+    *   **Refactored `calculatePrice`**: Removed hardcoded checks for High/Mid/Low season.
+    *   **Dynamic Resolution**: The system now accepts a list of `seasons`. It finds the active season with the highest priority that covers a given date.
+    *   **Context Support**: Accepts distinct counts for Guests, Children, Dogs, and Cars to calculate the daily total accurately using the season's specific rates.
+
+3.  **API Routes**
+    *   **`GET /api/pricing/calculate`**: Fetches active seasons from DB and uses the new shared logic to return price breakdowns for the frontend (Booking Modal).
+    *   **`POST /api/bookings`**: Fetches active seasons serverside to ensure the final booking price matches the configuration at the moment of creation.
+
+4.  **Frontend**
+    *   **Settings Page**: Removed legacy global pricing inputs.
+    *   **Season Dialog**: Added input fields for the new variables, allowing full control over pricing for each season.
+    *   **Booking Modal**: Now sends individual counts (children, dogs, cars) to the calculation API.
+
+### Fallback Mechanism
+A **"Stagione Base (Default)"** with Priority 0 is automatically created/used. This ensures that even if no specific season (High/Low) is defined for a date, the system falls back to these base rates instead of returning zero or erroring.
+
+### UI Improvements
+*   **Delete Confirmation**: Added a confirmation popup (Dialog) when deleting a pricing season to prevent accidental deletions.
+*   **Smart Save Button**: The "Save Changes" button in the season editor is now disabled by default and only becomes active when actual changes are detected.
+
+## Season Stack Visualization ("Tower of Hanoi")
+
+**Date:** 2026-01-27
+**Status:** Completed
+
+### Overview
+Implemented a visual representation of the pricing seasons hierarchy to allow users to intuitively understand which season takes precedence.
+
+### Components
+*   **`SeasonStackVisualization.tsx`**: A new component that visualizes seasons in a stacked format based on priority.
+    *   **High Priority (>= 15)**: Top of the stack.
+    *   **Medium Priority (5-14)**: Middle.
+    *   **Low Priority (< 5)**: Bottom (Base).
+*   **Integration**: Added to the `SeasonalPricingManager` component in the Settings page.
+
+### Features
+*   **Visual Hierarchy**: Clearly shows priority levels.
+*   **Tooltips**: Hovering over a season block reveals detailed pricing info.
+*   **Dynamic**: Automatically updates as seasons are added or modified.
+
+## Customer Groups Feature (Added 2026-01-27)
+
+### Overview
+The system now supports **Customer Groups** (e.g., VIP, Friends, Families). Groups function as a way to apply automatic discounts or custom pricing tiers to customers.
+
+### Database Schema
+Two new tables were added:
+1.  `customer_groups`: Stores group definitions (Name, Color, Description).
+2.  `group_season_configuration`: Links groups to `pricing_seasons`.
+    -   `discount_percentage`: Applies a % discount to the total calculated daily rate.
+    -   `custom_rates`: A JSONB object that overrides specific base rates (e.g., `{"person": 5.0}`).
+
+The `customers` table now has a `group_id` foreign key.
+
+### Frontend Implementation
+1.  **Settings -> Gruppi**: A new tab in the Settings Dialog allows full management of groups and their seasonal rules.
+2.  **Customer Management**: The Customers page (`/customers`) now allows creating and editing customers, including assigning them to a group.
+3.  **Booking Creation**: When creating a booking, selecting a customer automatically fetches their group configuration.
+
+### Pricing Logic Priority
+1.  **Custom Rates**: If a group has a specific rate for a season (e.g., Person Price), it **overrides** the season's base price.
+2.  **Base Rates**: If no custom rate is set, the season's base price is used.
+3.  **Discount %**: If configured, the percentage is deducted from the *final daily total* (calculated using base or custom rates).
+
+## Bug Fixes and UI Improvements (2026-01-27)
+
+### API Fixes
+-   **Customers Visibility**: Fixed `/api/customers` return format.
+-   **Customer Details Error**: Added GET handler to `/api/customers/[id]`.
+-   **Groups API Error**: Fixed table name typo in `/api/groups`.
+-   **Customer Filter**: Added `group_id` filtering support to `/api/customers`.
+
+### UI Enhancements
+-   **Customer Details Page**: Enhanced the "Dati Personali" section with color-coded categories.
+-   **Check-in Page**: Applied color-coded design language to the **Check-in Guest Form**.
+-   **Customers List Page**: Redesigned the search bar to match the Check-in page style.
+    -   Unified search and filter container with blur effect.
+    -   Added "Filtra per Gruppo" functionality using the new API capability.
+
+```markdown
+### 2026-01-18 - Organizzazione SQL Migrations
+- ✅ Creata struttura modulare nella cartella `supabase/migrations/`
+- ✅ 7 file SQL separati per responsabilità (extensions, tables, indexes, triggers, functions, seed, rls)
+- ✅ README completo con istruzioni esecuzione e query di verifica
+- ✅ Tutti i file sono idempotenti e con documentazione inline estesa
+- **Motivazione**: Facilita manutenzione, troubleshooting e deployment incrementale del database
+```
