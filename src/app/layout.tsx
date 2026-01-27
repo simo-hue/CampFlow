@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://simo-hue.github.io/CampFlow"),
   title: {
     default: "CampFlow | Gestionale Campeggi Gratis Open Source",
     template: "%s | CampFlow"
@@ -15,7 +16,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     locale: 'it_IT',
-    url: 'https://campflow.app',
+    url: 'https://simo-hue.github.io/CampFlow',
     title: 'CampFlow | Il Gestionale per Campeggi Open Source',
     description: 'Gestisci il tuo campeggio con semplicità. Prenotazioni, mappa interattiva e check-in veloci. 100% Gratuito e Open Source.',
     siteName: 'CampFlow',
