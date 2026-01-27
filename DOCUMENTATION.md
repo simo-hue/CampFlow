@@ -33,3 +33,4 @@ A **"Stagione Base (Default)"** with Priority 0 is automatically created/used. T
 
 ### UI Improvements
 *   **Delete Confirmation**: Added a confirmation popup (Dialog) when deleting a pricing season to prevent accidental deletions.
+*   **Smart Save Button**: The "Save Changes" button in the season editor is now disabled by default and only becomes active when actual changes are detected.

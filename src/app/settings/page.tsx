@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTheme } from 'next-themes';
 import { SettingsLayout } from '@/components/settings/SettingsLayout';
 import { PitchManagement } from '@/components/settings/PitchManagement';
@@ -45,10 +45,26 @@ export default function SettingsPage() {
         return DEFAULT_PRICING;
     });
 
+    // Track saved pricing state for dirty checking
+    const [savedPricing, setSavedPricing] = useState<PricingSettings>(pricing);
+
+    // Initial load effect to sync savedPricing with localStorage if available
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            const saved = localStorage.getItem('pricing');
+            if (saved) {
+                const parsed = JSON.parse(saved);
+                setPricing(parsed);
+                setSavedPricing(parsed);
+            }
+        }
+    }, []);
+
     // Manual Save Pricing
     const savePricing = () => {
         if (typeof window !== 'undefined') {
             localStorage.setItem('pricing', JSON.stringify(pricing));
+            setSavedPricing(pricing);
             setIsSaved(true);
             setTimeout(() => setIsSaved(false), 2000);
         }
@@ -59,6 +75,8 @@ export default function SettingsPage() {
         setPricing((prev) => ({ ...prev, [field]: numValue }));
         setIsSaved(false);
     };
+
+    const isDirty = JSON.stringify(pricing) !== JSON.stringify(savedPricing);
 
     return (
         <SettingsLayout activeSection={activeSection} onSectionChange={setActiveSection}>
@@ -122,7 +140,11 @@ export default function SettingsPage() {
 
                     {/* Save Button */}
                     <div className="flex justify-end pt-4">
-                        <Button onClick={savePricing} className="w-full sm:w-auto" disabled={isSaved}>
+                        <Button
+                            onClick={savePricing}
+                            className="w-full sm:w-auto"
+                            disabled={!isDirty || isSaved}
+                        >
                             {isSaved ? (
                                 <>
                                     <Check className="mr-2 h-4 w-4" />

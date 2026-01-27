@@ -225,10 +225,10 @@ export async function DELETE(request: Request) {
             );
         }
 
-        // Soft delete by setting is_active = false
+        // Hard delete
         const { data, error } = await supabase
             .from('pricing_seasons')
-            .update({ is_active: false })
+            .delete()
             .eq('id', id)
             .select()
             .single();

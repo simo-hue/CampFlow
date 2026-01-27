@@ -98,7 +98,22 @@ export function SeasonDialog({ open, onOpenChange, onSubmit, initialData }: Seas
         onSubmit(data);
     };
 
-    const isValid = name && startDate && endDate && piazzolaPrice && tendaPrice;
+    const isDirty = initialData ? (
+        name !== initialData.name ||
+        (description || '') !== (initialData.description || '') ||
+        startDate !== initialData.start_date ||
+        endDate !== initialData.end_date ||
+        parseFloat(piazzolaPrice) !== (initialData.piazzola_price_per_day ?? 30) ||
+        parseFloat(tendaPrice) !== (initialData.tenda_price_per_day ?? 20) ||
+        parseFloat(personPrice) !== (initialData.person_price_per_day ?? 10) ||
+        parseFloat(childPrice) !== (initialData.child_price_per_day ?? 5) ||
+        parseFloat(dogPrice) !== (initialData.dog_price_per_day ?? 5) ||
+        parseFloat(carPrice) !== (initialData.car_price_per_day ?? 5) ||
+        priority !== initialData.priority ||
+        color !== initialData.color
+    ) : true;
+
+    const isValid = name && startDate && endDate && piazzolaPrice && tendaPrice && isDirty;
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
