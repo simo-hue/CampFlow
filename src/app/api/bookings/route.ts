@@ -56,8 +56,23 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Calculate total price
-        const totalPrice = calculatePrice(body.check_in, body.check_out, pitch.type);
+        // Fetch active seasons for pricing calculation
+        const { data: seasons } = await supabaseAdmin
+            .from('pricing_seasons')
+            .select('*')
+            .eq('is_active', true)
+            .order('priority', { ascending: false });
+
+        // Calculate total price with context
+        const pricingContext = {
+            seasons: seasons || [],
+            guests: body.guests_count,
+            children: body.children_count || 0,
+            dogs: body.dogs_count || 0,
+            cars: body.cars_count || 0
+        };
+
+        const totalPrice = calculatePrice(body.check_in, body.check_out, pitch.type, pricingContext);
 
         // Step 1: Resolve Customer
         let customerId: string;

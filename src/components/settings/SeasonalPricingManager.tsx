@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Plus, Pencil, Trash2, Calendar } from 'lucide-react';
 import type { PricingSeason } from '@/lib/types';
@@ -22,6 +23,7 @@ export function SeasonalPricingManager() {
 
     const [dialogOpen, setDialogOpen] = useState(false);
     const [editingSeason, setEditingSeason] = useState<PricingSeason | null>(null);
+    const [seasonToDelete, setSeasonToDelete] = useState<PricingSeason | null>(null);
 
     const handleAdd = () => {
         setEditingSeason(null);
@@ -46,12 +48,19 @@ export function SeasonalPricingManager() {
         }
     };
 
-    const handleDelete = async (season: PricingSeason) => {
-        if (!confirm(`Vuoi davvero eliminare "${season.name}"?`)) {
-            return;
-        }
+    const handleDelete = (season: PricingSeason) => {
+        setSeasonToDelete(season);
+    };
 
-        await deleteSeason.mutateAsync(season.id);
+    const confirmDelete = async () => {
+        if (!seasonToDelete) return;
+
+        try {
+            await deleteSeason.mutateAsync(seasonToDelete.id);
+            setSeasonToDelete(null);
+        } catch (error) {
+            console.error("Error deleting season:", error);
+        }
     };
 
     const formatDateRange = (startDate: string, endDate: string) => {
@@ -161,6 +170,20 @@ export function SeasonalPricingManager() {
                                                 <span className="ml-2 font-semibold">{formatCurrency(season.tenda_price_per_day)}/giorno</span>
                                             </div>
                                         </div>
+                                        <div className="flex gap-4 mt-1 text-xs text-muted-foreground">
+                                            <div>
+                                                <span>P: {formatCurrency(season.person_price_per_day ?? 0)}</span>
+                                            </div>
+                                            <div>
+                                                <span>B: {formatCurrency(season.child_price_per_day ?? 0)}</span>
+                                            </div>
+                                            <div>
+                                                <span>C: {formatCurrency(season.dog_price_per_day ?? 0)}</span>
+                                            </div>
+                                            <div>
+                                                <span>A: {formatCurrency(season.car_price_per_day ?? 0)}</span>
+                                            </div>
+                                        </div>
                                     </div>
 
                                     <div className="flex gap-1 ml-4">
@@ -209,12 +232,41 @@ export function SeasonalPricingManager() {
                 </details>
             )}
 
-            {/* Stats */}
-            <div className="flex gap-4 text-sm text-muted-foreground pt-4 border-t">
-                <span>Totale stagioni: {seasons.length}</span>
-                <span>Attive: {activeSeasons.length}</span>
-                {inactiveSeasons.length > 0 && <span>Archiviate: {inactiveSeasons.length}</span>}
-            </div>
+
+
+            {/* Delete Confirmation Dialog */}
+            <Dialog open={!!seasonToDelete} onOpenChange={(open) => !open && setSeasonToDelete(null)}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Elimina Stagione</DialogTitle>
+                        <DialogDescription>
+                            Sei sicuro di voler eliminare la stagione o le stagioni selezionate?
+                            <br />
+                            <span className="font-semibold text-foreground">
+                                "{seasonToDelete?.name}"
+                            </span>
+                            <br />
+                            Questa azione non può essere annullata.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter>
+                        <Button
+                            variant="outline"
+                            onClick={() => setSeasonToDelete(null)}
+                            disabled={deleteSeason.isPending}
+                        >
+                            Annulla
+                        </Button>
+                        <Button
+                            variant="destructive"
+                            onClick={() => seasonToDelete && confirmDelete()}
+                            disabled={deleteSeason.isPending}
+                        >
+                            {deleteSeason.isPending ? "Eliminazione..." : "Elimina"}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
 
             <SeasonDialog
                 open={dialogOpen}
@@ -222,6 +274,6 @@ export function SeasonalPricingManager() {
                 onSubmit={handleSave}
                 initialData={editingSeason}
             />
-        </div>
+        </div >
     );
 }

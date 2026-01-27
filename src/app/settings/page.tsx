@@ -97,38 +97,6 @@ export default function SettingsPage() {
                     </div>
 
                     <div className="space-y-6 w-full">
-                        {/* Prezzo Persona */}
-                        <div className="grid gap-2">
-                            <Label htmlFor="person-price">Persona (€/giorno)</Label>
-                            <Input
-                                id="person-price"
-                                type="number"
-                                min="0"
-                                step="0.5"
-                                value={pricing.person_price_per_day}
-                                onChange={(e) => updatePricing('person_price_per_day', e.target.value)}
-                            />
-                            <p className="text-xs text-muted-foreground">
-                                Costo per persona al giorno
-                            </p>
-                        </div>
-
-                        {/* Prezzo Bambino */}
-                        <div className="grid gap-2">
-                            <Label htmlFor="child-price">Bambino (€/giorno)</Label>
-                            <Input
-                                id="child-price"
-                                type="number"
-                                min="0"
-                                step="0.5"
-                                value={pricing.child_price_per_day}
-                                onChange={(e) => updatePricing('child_price_per_day', e.target.value)}
-                            />
-                            <p className="text-xs text-muted-foreground">
-                                Costo per bambino al giorno
-                            </p>
-                        </div>
-
                         {/* Età Massima Bambino */}
                         <div className="grid gap-2">
                             <Label htmlFor="child-age">Età Massima Bambino (anni)</Label>
@@ -143,38 +111,6 @@ export default function SettingsPage() {
                             />
                             <p className="text-xs text-muted-foreground">
                                 Età massima (inclusa) per essere considerato bambino. Oltre questa età verrà applicata la tariffa persona.
-                            </p>
-                        </div>
-
-                        {/* Prezzo Cane */}
-                        <div className="grid gap-2">
-                            <Label htmlFor="dog-price">Cane (€/giorno)</Label>
-                            <Input
-                                id="dog-price"
-                                type="number"
-                                min="0"
-                                step="0.5"
-                                value={pricing.dog_price_per_day}
-                                onChange={(e) => updatePricing('dog_price_per_day', e.target.value)}
-                            />
-                            <p className="text-xs text-muted-foreground">
-                                Costo per cane al giorno
-                            </p>
-                        </div>
-
-                        {/* Prezzo Auto */}
-                        <div className="grid gap-2">
-                            <Label htmlFor="car-price">Auto (€/giorno)</Label>
-                            <Input
-                                id="car-price"
-                                type="number"
-                                min="0"
-                                step="0.5"
-                                value={pricing.car_price_per_day}
-                                onChange={(e) => updatePricing('car_price_per_day', e.target.value)}
-                            />
-                            <p className="text-xs text-muted-foreground">
-                                Costo per auto al giorno
                             </p>
                         </div>
 

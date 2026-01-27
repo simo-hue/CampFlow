@@ -17,6 +17,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000"),
   title: "CampFlow | Gestione Campeggi Gratis Open Source",
   description: "La piattaforma all-in-one per ottimizzare prenotazioni, gestione ospiti e monitoraggio occupazione in modo TOTALMENTE GRATIS e OPEN SOURCE.",
 };

@@ -252,6 +252,34 @@ COMMENT ON CONSTRAINT prevent_overbooking ON bookings IS 'GIST exclusion constra
 COMMENT ON TABLE sectors IS 'Campground sectors for pitch organization';
 
 -- =====================================================
+-- TABLE: pricing_seasons
+-- Stores seasonal pricing configurations
+-- =====================================================
+CREATE TABLE pricing_seasons (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name VARCHAR(255) NOT NULL,
+  description TEXT,
+  start_date DATE NOT NULL,
+  end_date DATE NOT NULL,
+  piazzola_price_per_day DECIMAL(10, 2) NOT NULL DEFAULT 0,
+  tenda_price_per_day DECIMAL(10, 2) NOT NULL DEFAULT 0,
+  person_price_per_day DECIMAL(10, 2) NOT NULL DEFAULT 0,
+  child_price_per_day DECIMAL(10, 2) NOT NULL DEFAULT 0,
+  dog_price_per_day DECIMAL(10, 2) NOT NULL DEFAULT 0,
+  car_price_per_day DECIMAL(10, 2) NOT NULL DEFAULT 0,
+  priority INTEGER NOT NULL DEFAULT 0,
+  color VARCHAR(20) DEFAULT '#94a3b8',
+  is_active BOOLEAN DEFAULT true,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TRIGGER update_pricing_seasons_updated_at
+  BEFORE UPDATE ON pricing_seasons
+  FOR EACH ROW
+  EXECUTE FUNCTION update_updated_at_column();
+
+-- =====================================================
 -- SEED DATA: Sectors & Organization
 -- =====================================================
 

@@ -1,75 +1,90 @@
 /**
+/**
  * Seasonal Pricing Calculator for CampFlow PMS
  * 
- * Pricing structure:
- * - High Season (June 1 - August 31): Premium rates
- * - Mid Season (May, September): Standard rates  
- * - Low Season (October - April): Discounted rates
+ * Pricing structure is now fully dynamic and based on the 'seasons' table in the database.
+ * The Default Season (Stagione Base) acts as a fallback for any dates not covered by higher priority seasons.
  */
 
-import type { PitchType } from '@/lib/types';
-
-interface PricingRates {
-    piazzola: number;
-    tenda: number;
-}
-
-const HIGH_SEASON_RATES: PricingRates = {
-    piazzola: 40,
-    tenda: 25,
-};
-
-const MID_SEASON_RATES: PricingRates = {
-    piazzola: 30,
-    tenda: 20,
-};
-
-const LOW_SEASON_RATES: PricingRates = {
-    piazzola: 20,
-    tenda: 15,
-};
+import type { PitchType, PricingSeason } from '@/lib/types';
+import { isWithinInterval, parseISO } from 'date-fns';
 
 /**
- * Determines if a date falls in high season (June-August)
+ * Gets the applicable season for a specific date
+ * Returns the active season with the highest priority that covers the date.
+ * If no season is found, returns undefined (caller should handle fallback or ensure default season exists).
  */
-function isHighSeason(date: Date): boolean {
-    const month = date.getUTCMonth(); // 0-indexed
-    return month >= 5 && month <= 7; // June (5) - August (7)
+export function getApplicableSeason(date: Date, seasons: PricingSeason[]): PricingSeason | undefined {
+    // Filter seasons that cover the date and are active
+    const applicableSeasons = seasons.filter(season => {
+        if (!season.is_active) return false;
+        const start = parseISO(season.start_date);
+        const end = parseISO(season.end_date);
+        return isWithinInterval(date, { start, end });
+    });
+
+    // Sort by priority (descending) -> highest priority first
+    applicableSeasons.sort((a, b) => b.priority - a.priority);
+
+    return applicableSeasons[0];
 }
 
 /**
- * Determines if a date falls in mid season (May, September)
+ * Calculations context
  */
-function isMidSeason(date: Date): boolean {
-    const month = date.getUTCMonth();
-    return month === 4 || month === 8; // May (4) or September (8)
+export interface CalculationContext {
+    seasons: PricingSeason[];
+    guests?: number;
+    children?: number;
+    dogs?: number;
+    cars?: number;
 }
 
 /**
- * Gets the daily rate for a specific date and pitch type
+ * Gets the daily rate for a specific date, pitch type, and extra variables
  */
-function getDailyRate(date: Date, pitchType: PitchType): number {
-    if (isHighSeason(date)) {
-        return HIGH_SEASON_RATES[pitchType];
-    } else if (isMidSeason(date)) {
-        return MID_SEASON_RATES[pitchType];
-    } else {
-        return LOW_SEASON_RATES[pitchType];
+function getDailyRate(date: Date, pitchType: PitchType, context: CalculationContext): { total: number; seasonName: string; seasonColor: string } {
+    const season = getApplicableSeason(date, context.seasons);
+
+    if (!season) {
+        // Fallback if no season covers the date (should rarely happen if Default Season is set)
+        return {
+            total: 0,
+            seasonName: 'Nessuna Stagione',
+            seasonColor: '#94a3b8'
+        };
     }
+
+    let dailyTotal = 0;
+
+    // Pitch Price
+    if (pitchType === 'piazzola') {
+        dailyTotal += season.piazzola_price_per_day;
+    } else {
+        dailyTotal += season.tenda_price_per_day;
+    }
+
+    // Extra variables
+    if (context.guests) dailyTotal += context.guests * (season.person_price_per_day ?? 0);
+    if (context.children) dailyTotal += context.children * (season.child_price_per_day ?? 0);
+    if (context.dogs) dailyTotal += context.dogs * (season.dog_price_per_day ?? 0);
+    if (context.cars) dailyTotal += context.cars * (season.car_price_per_day ?? 0);
+
+    return {
+        total: dailyTotal,
+        seasonName: season.name,
+        seasonColor: season.color
+    };
 }
 
 /**
  * Calculates the total price for a booking period
- * 
- * @param checkIn - Check-in date (YYYY-MM-DD or Date object)
- * @param checkOut - Check-out date (YYYY-MM-DD or Date object)
- * @param pitchType - Type of pitch
- * @returns Total price in EUR
  */
 export function calculatePrice(
     checkIn: string | Date,
     checkOut: string | Date,
-    pitchType: PitchType
+    pitchType: PitchType,
+    context: CalculationContext
 ): number {
     const startDate = typeof checkIn === 'string' ? new Date(checkIn) : checkIn;
     const endDate = typeof checkOut === 'string' ? new Date(checkOut) : checkOut;
@@ -84,43 +99,42 @@ export function calculatePrice(
 
     // Calculate price for each night
     while (currentDate < endDate) {
-        totalPrice += getDailyRate(currentDate, pitchType);
+        const { total } = getDailyRate(currentDate, pitchType, context);
+        totalPrice += total;
         currentDate.setDate(currentDate.getDate() + 1);
     }
 
-    return totalPrice;
+    return parseFloat(totalPrice.toFixed(2));
 }
 
 /**
  * Gets a breakdown of the pricing calculation
- * Useful for displaying to users
  */
 export function getPriceBreakdown(
     checkIn: string | Date,
     checkOut: string | Date,
-    pitchType: PitchType
+    pitchType: PitchType,
+    context: CalculationContext
 ): {
     nights: number;
     averageRate: number;
     total: number;
-    breakdown: { date: string; rate: number; season: string }[];
+    breakdown: { date: string; rate: number; seasonName: string; seasonColor: string }[];
 } {
     const startDate = typeof checkIn === 'string' ? new Date(checkIn) : checkIn;
     const endDate = typeof checkOut === 'string' ? new Date(checkOut) : checkOut;
 
-    const breakdown: { date: string; rate: number; season: string }[] = [];
+    const breakdown: { date: string; rate: number; seasonName: string; seasonColor: string }[] = [];
     const currentDate = new Date(startDate);
 
     while (currentDate < endDate) {
-        const rate = getDailyRate(currentDate, pitchType);
-        let season = 'Low Season';
-        if (isHighSeason(currentDate)) season = 'High Season';
-        else if (isMidSeason(currentDate)) season = 'Mid Season';
+        const { total, seasonName, seasonColor } = getDailyRate(currentDate, pitchType, context);
 
         breakdown.push({
             date: currentDate.toISOString().split('T')[0],
-            rate,
-            season,
+            rate: parseFloat(total.toFixed(2)),
+            seasonName,
+            seasonColor,
         });
         currentDate.setDate(currentDate.getDate() + 1);
     }
@@ -132,7 +146,7 @@ export function getPriceBreakdown(
     return {
         nights,
         averageRate: Math.round(averageRate * 100) / 100,
-        total,
+        total: parseFloat(total.toFixed(2)),
         breakdown,
     };
 }

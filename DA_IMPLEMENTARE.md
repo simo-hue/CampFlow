@@ -1,5 +1,4 @@
 - listino prezzi personalizzato per i gruppi
 - Gestione delle caparre ( nella prenotazione + pagina dedicata)
 - gruppi come filtro di ricerca tra i clienti
-- aggiustare i prezzi ( tutti variano a seconda della stagione e non c'è nulla di fisso, quindi non si può fare un listino fisso a prescindere )
 - ogni gruppo ha tariffe speciali oppure sconti speciali ( in % sull'alta stagione )

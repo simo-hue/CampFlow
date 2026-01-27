@@ -52,7 +52,7 @@ export async function POST(request: Request) {
         const body = await request.json();
 
         // Validation
-        const { name, start_date, end_date, piazzola_price_per_day, tenda_price_per_day, priority, color, description } = body;
+        const { name, start_date, end_date, piazzola_price_per_day, tenda_price_per_day, person_price_per_day, child_price_per_day, dog_price_per_day, car_price_per_day, priority, color, description } = body;
 
         if (!name || !start_date || !end_date) {
             return NextResponse.json(
@@ -61,7 +61,9 @@ export async function POST(request: Request) {
             );
         }
 
-        if (piazzola_price_per_day === undefined || tenda_price_per_day === undefined) {
+        if (piazzola_price_per_day === undefined || tenda_price_per_day === undefined ||
+            person_price_per_day === undefined || child_price_per_day === undefined ||
+            dog_price_per_day === undefined || car_price_per_day === undefined) {
             return NextResponse.json(
                 { error: 'Missing required price fields' },
                 { status: 400 }
@@ -77,7 +79,9 @@ export async function POST(request: Request) {
         }
 
         // Validate prices
-        if (piazzola_price_per_day < 0 || tenda_price_per_day < 0) {
+        if (piazzola_price_per_day < 0 || tenda_price_per_day < 0 ||
+            person_price_per_day < 0 || child_price_per_day < 0 ||
+            dog_price_per_day < 0 || car_price_per_day < 0) {
             return NextResponse.json(
                 { error: 'Prices must be positive' },
                 { status: 400 }
@@ -91,6 +95,10 @@ export async function POST(request: Request) {
             end_date,
             piazzola_price_per_day: parseFloat(piazzola_price_per_day),
             tenda_price_per_day: parseFloat(tenda_price_per_day),
+            person_price_per_day: parseFloat(person_price_per_day),
+            child_price_per_day: parseFloat(child_price_per_day),
+            dog_price_per_day: parseFloat(dog_price_per_day),
+            car_price_per_day: parseFloat(car_price_per_day),
             priority: priority !== undefined ? parseInt(priority) : 0,
             color: color || '#3b82f6',
             is_active: true,
@@ -138,7 +146,8 @@ export async function PUT(request: Request) {
         }
 
         const body = await request.json();
-        const { name, start_date, end_date, piazzola_price_per_day, tenda_price_per_day, priority, color, description, is_active } = body;
+        // Validation
+        const { name, start_date, end_date, piazzola_price_per_day, tenda_price_per_day, person_price_per_day, child_price_per_day, dog_price_per_day, car_price_per_day, priority, color, description } = body;
 
         // Build update object (only include provided fields)
         const updates: Partial<PricingSeason> = {};
@@ -149,6 +158,10 @@ export async function PUT(request: Request) {
         if (end_date !== undefined) updates.end_date = end_date;
         if (piazzola_price_per_day !== undefined) updates.piazzola_price_per_day = parseFloat(piazzola_price_per_day);
         if (tenda_price_per_day !== undefined) updates.tenda_price_per_day = parseFloat(tenda_price_per_day);
+        if (person_price_per_day !== undefined) updates.person_price_per_day = parseFloat(person_price_per_day);
+        if (child_price_per_day !== undefined) updates.child_price_per_day = parseFloat(child_price_per_day);
+        if (dog_price_per_day !== undefined) updates.dog_price_per_day = parseFloat(dog_price_per_day);
+        if (car_price_per_day !== undefined) updates.car_price_per_day = parseFloat(car_price_per_day);
         if (priority !== undefined) updates.priority = parseInt(priority);
         if (color !== undefined) updates.color = color;
         if (is_active !== undefined) updates.is_active = is_active;

@@ -36,6 +36,10 @@ export function SeasonDialog({ open, onOpenChange, onSubmit, initialData }: Seas
     const [endDate, setEndDate] = useState('');
     const [piazzolaPrice, setPiazzolaPrice] = useState('30');
     const [tendaPrice, setTendaPrice] = useState('20');
+    const [personPrice, setPersonPrice] = useState('10');
+    const [childPrice, setChildPrice] = useState('5');
+    const [dogPrice, setDogPrice] = useState('5');
+    const [carPrice, setCarPrice] = useState('5');
     const [priority, setPriority] = useState(5);
     const [color, setColor] = useState('#3b82f6');
 
@@ -49,6 +53,10 @@ export function SeasonDialog({ open, onOpenChange, onSubmit, initialData }: Seas
                 setEndDate(initialData.end_date);
                 setPiazzolaPrice(initialData.piazzola_price_per_day.toString());
                 setTendaPrice(initialData.tenda_price_per_day.toString());
+                setPersonPrice((initialData.person_price_per_day ?? 10).toString());
+                setChildPrice((initialData.child_price_per_day ?? 5).toString());
+                setDogPrice((initialData.dog_price_per_day ?? 5).toString());
+                setCarPrice((initialData.car_price_per_day ?? 5).toString());
                 setPriority(initialData.priority);
                 setColor(initialData.color);
             } else {
@@ -59,6 +67,10 @@ export function SeasonDialog({ open, onOpenChange, onSubmit, initialData }: Seas
                 setEndDate('');
                 setPiazzolaPrice('30');
                 setTendaPrice('20');
+                setPersonPrice('10');
+                setChildPrice('5');
+                setDogPrice('5');
+                setCarPrice('5');
                 setPriority(5);
                 setColor('#3b82f6');
             }
@@ -75,6 +87,10 @@ export function SeasonDialog({ open, onOpenChange, onSubmit, initialData }: Seas
             end_date: endDate,
             piazzola_price_per_day: parseFloat(piazzolaPrice),
             tenda_price_per_day: parseFloat(tendaPrice),
+            person_price_per_day: parseFloat(personPrice),
+            child_price_per_day: parseFloat(childPrice),
+            dog_price_per_day: parseFloat(dogPrice),
+            car_price_per_day: parseFloat(carPrice),
             priority,
             color,
         };
@@ -169,6 +185,58 @@ export function SeasonDialog({ open, onOpenChange, onSubmit, initialData }: Seas
                                     step="0.01"
                                     value={tendaPrice}
                                     onChange={(e) => setTendaPrice(e.target.value)}
+                                    required
+                                />
+                            </div>
+                        </div>
+
+                        {/* Extra Prices */}
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="person-price">Persona (€/giorno) *</Label>
+                                <Input
+                                    id="person-price"
+                                    type="number"
+                                    min="0"
+                                    step="0.5"
+                                    value={personPrice}
+                                    onChange={(e) => setPersonPrice(e.target.value)}
+                                    required
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="child-price">Bambino (€/giorno) *</Label>
+                                <Input
+                                    id="child-price"
+                                    type="number"
+                                    min="0"
+                                    step="0.5"
+                                    value={childPrice}
+                                    onChange={(e) => setChildPrice(e.target.value)}
+                                    required
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="dog-price">Cane (€/giorno) *</Label>
+                                <Input
+                                    id="dog-price"
+                                    type="number"
+                                    min="0"
+                                    step="0.5"
+                                    value={dogPrice}
+                                    onChange={(e) => setDogPrice(e.target.value)}
+                                    required
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="car-price">Auto (€/giorno) *</Label>
+                                <Input
+                                    id="car-price"
+                                    type="number"
+                                    min="0"
+                                    step="0.5"
+                                    value={carPrice}
+                                    onChange={(e) => setCarPrice(e.target.value)}
                                     required
                                 />
                             </div>

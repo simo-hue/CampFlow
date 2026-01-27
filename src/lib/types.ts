@@ -28,6 +28,10 @@ export interface PricingSeason {
     end_date: string;
     piazzola_price_per_day: number;
     tenda_price_per_day: number;
+    person_price_per_day: number;
+    child_price_per_day: number;
+    dog_price_per_day: number;
+    car_price_per_day: number;
     priority: number; // Higher = wins in overlaps
     color: string; // Hex code for UI
     is_active: boolean;
@@ -162,7 +166,9 @@ export interface CreateBookingRequest {
 
     guests_count: number;
     guest_names?: string[]; // Optional: names collected at booking
+    children_count?: number; // Added for seasonal pricing
     dogs_count?: number;    // Optional: number of dogs
+    cars_count?: number;    // Added for seasonal pricing
 
     notes?: string | null;
 }

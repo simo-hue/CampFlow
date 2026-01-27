@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase/server';
-import type { PriceCalculation, PriceBreakdownDay, PitchType } from '@/lib/types';
-import { parseISO, addDays, differenceInDays, format } from 'date-fns';
+import type { PriceCalculation, PitchType } from '@/lib/types';
+import { calculatePrice, getPriceBreakdown } from '@/lib/pricing';
+import { parseISO, differenceInDays } from 'date-fns';
 
 /**
  * GET /api/pricing/calculate?checkIn=YYYY-MM-DD&checkOut=YYYY-MM-DD&pitchType=piazzola|tenda
@@ -83,76 +84,36 @@ export async function GET(request: Request) {
             );
         }
 
-        if (!seasons || seasons.length === 0) {
-            // Fallback to default pricing if no seasons configured
-            const defaultRate = pitchType === 'piazzola' ? 25 : 18;
-            const finalDailyRate = defaultRate + dailyExtraCost;
-            const totalPrice = finalDailyRate * days;
 
-            return NextResponse.json({
-                totalPrice,
-                days,
-                averageRate: finalDailyRate,
-                breakdown: Array.from({ length: days }, (_, i) => ({
-                    date: format(addDays(startDate, i), 'yyyy-MM-dd'),
-                    rate: finalDailyRate,
-                    seasonName: 'Tariffa Standard',
-                    seasonColor: '#3b82f6'
-                }))
-            });
-        }
 
-        // Calculate price for each day
-        const breakdown: PriceBreakdownDay[] = [];
-        let totalPrice = 0;
-
-        for (let i = 0; i < days; i++) {
-            const currentDate = addDays(startDate, i);
-            const currentDateStr = format(currentDate, 'yyyy-MM-dd');
-
-            // Find the highest priority season that covers this date
-            const applicableSeason = findSeasonForDate(currentDateStr, seasons);
-
-            if (applicableSeason) {
-                const baseRate = pitchType === 'piazzola'
-                    ? applicableSeason.piazzola_price_per_day
-                    : applicableSeason.tenda_price_per_day;
-
-                const finalRate = baseRate + dailyExtraCost;
-
-                breakdown.push({
-                    date: currentDateStr,
-                    rate: finalRate,
-                    seasonName: applicableSeason.name,
-                    seasonColor: applicableSeason.color
-                });
-
-                totalPrice += finalRate;
-            } else {
-                // Fallback rate if no season covers this date
-                const fallbackRate = pitchType === 'piazzola' ? 25 : 18;
-                const finalRate = fallbackRate + dailyExtraCost;
-
-                breakdown.push({
-                    date: currentDateStr,
-                    rate: finalRate,
-                    seasonName: 'Tariffa Standard',
-                    seasonColor: '#6b7280'
-                });
-                totalPrice += finalRate;
-            }
-        }
-
-        const averageRate = days > 0 ? totalPrice / days : 0;
-
-        const result: PriceCalculation = {
-            totalPrice: Math.round(totalPrice * 100) / 100, // Round to 2 decimals
-            breakdown,
-            days,
-            averageRate: Math.round(averageRate * 100) / 100
+        // Calculate total price using shared logic
+        const context = {
+            seasons: seasons || [], // Pass empty array if no seasons (logic handles fallback/error)
+            guests: guestsCount,
+            children: childrenCount,
+            dogs: dogsCount,
+            cars: carsCount
         };
 
-        return NextResponse.json(result);
+        try {
+            const totalPrice = calculatePrice(checkIn, checkOut, pitchType, context);
+            const breakdownData = getPriceBreakdown(checkIn, checkOut, pitchType, context);
+
+            const result: PriceCalculation = {
+                totalPrice,
+                breakdown: breakdownData.breakdown,
+                days: breakdownData.nights,
+                averageRate: breakdownData.averageRate
+            };
+
+            return NextResponse.json(result);
+        } catch (calcError) {
+            console.error('Calculation error:', calcError);
+            return NextResponse.json(
+                { error: calcError instanceof Error ? calcError.message : 'Error calculating price' },
+                { status: 400 }
+            );
+        }
 
     } catch (error) {
         console.error('Unexpected error in GET /api/pricing/calculate:', error);
@@ -163,25 +124,4 @@ export async function GET(request: Request) {
     }
 }
 
-/**
- * Helper: Find the applicable season for a specific date
- * Priority: Higher priority wins, then newer season wins
- */
-function findSeasonForDate(date: string, seasons: any[]): any | null {
-    const targetDate = parseISO(date);
 
-    // Find all seasons that cover this date
-    const matchingSeasons = seasons.filter(season => {
-        const start = parseISO(season.start_date);
-        const end = parseISO(season.end_date);
-        return targetDate >= start && targetDate <= end;
-    });
-
-    if (matchingSeasons.length === 0) {
-        return null;
-    }
-
-    // Already sorted by priority DESC, created_at DESC
-    // So first match is the winner
-    return matchingSeasons[0];
-}
