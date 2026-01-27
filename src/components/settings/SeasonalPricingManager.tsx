@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Plus, Pencil, Trash2, Calendar } from 'lucide-react';
 import type { PricingSeason } from '@/lib/types';
 import { SeasonDialog } from './SeasonDialog';
+import { SeasonStackVisualization } from './SeasonStackVisualization';
 import { toast } from 'sonner';
 import { format, parseISO } from 'date-fns';
 import { it } from 'date-fns/locale';
@@ -112,6 +113,9 @@ export function SeasonalPricingManager() {
                     </div>
                 </div>
             </div>
+
+            {/* Season Stack Visualization */}
+            <SeasonStackVisualization seasons={activeSeasons} />
 
             {/* Active Seasons List */}
             {loading ? (
