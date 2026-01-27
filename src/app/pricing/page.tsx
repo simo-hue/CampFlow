@@ -45,7 +45,7 @@ export default function PricingPage() {
             href: '/contact',
             variant: 'outline',
             target: '_self',
-            popular: false,
+            popular: true,
             blurPrice: false,
         },
         {
