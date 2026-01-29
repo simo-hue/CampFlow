@@ -157,6 +157,7 @@ export async function POST(request: NextRequest) {
                         address: body.customer.address,
                         notes: body.customer.notes,
                         license_plate: body.customer.license_plate,
+                        group_id: body.customer.group_id || null
                     })
                     .select('id')
                     .single();

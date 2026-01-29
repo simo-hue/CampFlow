@@ -36,6 +36,18 @@ export interface GroupSeasonConfiguration {
     season_id: string;
     discount_percentage?: number; // e.g. 10.00 for 10%
     custom_rates?: CustomRates; // JSONB
+    enable_bundle?: boolean; // New flag: if true, check for bundles
+    created_at: string;
+    updated_at: string;
+}
+
+export interface GroupBundle {
+    id: string;
+    group_id: string;
+    season_id?: string; // Optional during transition, but logically required for new logic
+    nights: number;
+    pitch_price: number;
+    unit_prices: Record<string, number>; // e.g. { "person": 10, "dog": 5 }
     created_at: string;
     updated_at: string;
 }
@@ -46,6 +58,7 @@ export interface CustomerGroup {
     description?: string;
     color: string;
     season_configurations?: GroupSeasonConfiguration[]; // For frontend convenience
+    bundles?: GroupBundle[]; // For frontend convenience
     created_at: string;
     updated_at: string;
 }
@@ -192,6 +205,7 @@ export interface CreateCustomerRequest {
     document_issue_city?: string;
     document_issue_date?: string;
     document_issuer?: string;
+    group_id?: string; // Optional group assignment
 }
 
 export interface CreateBookingRequest {

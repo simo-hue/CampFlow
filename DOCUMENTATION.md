@@ -551,3 +551,44 @@ I file della build statica erano stati erroneamente committati all'interno di un
 3.  **Verifica**: Confermato che `index.html`, `_next/` e gli altri file siano ora al primo livello del repository.
 
 Il sito è ora raggiungibile e correttamente renderizzato in Dark Mode.
+
+## Group Bundle Pricing Implementation (Refactored 2026-01-29)
+
+### Summary
+Refactored the Bundle Pricing system to be **Component-Based**. Instead of a single fixed price, bundles now consist of:
+- **Pitch Price**: Base price for the pitch for N nights.
+- **Unit Prices**: Optional fixed prices for individual add-ons (Person, Dog, etc.) for N nights.
+- **Fallback**: Any service not explicitly priced in the bundle falls back to the standard seasonal rate.
+
+### Database Changes
+- Modified `group_bundles` table:
+    - Renamed `price` to `pitch_price`.
+    - Added `unit_prices` (JSONB) to store per-service costs.
+    - Removed `included_services`.
+
+### API Updates
+- Updated `src/app/api/groups/route.ts` to handle the new schema.
+- Updated `src/app/api/pricing/calculate/route.ts` to use the new `pitch_price` + `unit_prices` logic.
+
+### UI Changes
+- Updated `GroupManagement.tsx` to allow inputting:
+    - Base Pitch Price.
+    - Individual unit prices for Person, Dog, etc.
+
+### Testing
+- Verified via `scripts/test-pricing-bundles.ts` covering partial bundles, full bundles, and mixed scenarios.
+
+## Fix: group bundles persistence (2026-01-29)
+
+### Issue
+Group bundles were not persistent because the `season_id` was missing in the API insert payload, and the database unique constraint did not account for `season_id`, preventing multiple seasons from having bundles with the same number of nights.
+
+### Fix Implementation
+1.  **Database Migration**: `20260129183000_fix_groups_bundles_constraint.sql`
+    -   Dropped unique constraint on `(group_id, nights)`.
+    -   Added unique constraint on `(group_id, season_id, nights)`.
+2.  **API Update**: Updated `src/app/api/groups/[id]/route.ts` to include `season_id` when inserting bundles.
+
+### Verification
+-   Create bundles for different seasons with the same night count (e.g., 3 nights in Low Season and 3 nights in High Season).
+-   Verify they persist correctly after save/refresh.

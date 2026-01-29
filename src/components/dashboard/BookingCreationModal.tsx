@@ -55,9 +55,45 @@ export function BookingCreationModal({
     const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(null);
 
     const nights = calculateNights(checkIn, checkOut);
+
+    // Pricing State
     const [totalPrice, setTotalPrice] = useState(0);
     const [priceBreakdown, setPriceBreakdown] = useState<PriceBreakdownDay[]>([]);
     const [loadingPrice, setLoadingPrice] = useState(false);
+
+    // Customer Groups State
+    const [customerGroups, setCustomerGroups] = useState<any[]>([]);
+    const [selectedGroupId, setSelectedGroupId] = useState<string>('none');
+
+    // Fetch customer groups
+    useEffect(() => {
+        async function fetchGroups() {
+            try {
+                const res = await fetch('/api/groups');
+                if (res.ok) {
+                    const data = await res.json();
+                    setCustomerGroups(data.groups || []);
+                }
+            } catch (error) {
+                console.error("Failed to fetch customer groups", error);
+            }
+        }
+        fetchGroups();
+    }, []);
+
+    // Update selected group if customer changes
+    useEffect(() => {
+        if (selectedCustomerId) {
+            // Fetch customer details to get group? 
+            // Better: CustomerAutocomplete could return group_id. 
+            // For now, if we select a customer, we might want to respect their existing group 
+            // or allow override? 
+            // The Pricing API now handles `customerId` lookup internally, so `selectedCustomerId` 
+            // ensures the group is used. 
+            // But if we want to show it in UI? 
+            // Let's rely on manual override only for NEW/Anonymous customers or explicit change.
+        }
+    }, [selectedCustomerId]);
 
     // Fetch price from API whenever dates, pitch type, or counts change
     useEffect(() => {
@@ -84,7 +120,7 @@ export function BookingCreationModal({
                 setChildAgeMax(childMaxAge);
 
                 const res = await fetch(
-                    `/api/pricing/calculate?checkIn=${checkIn}&checkOut=${checkOut}&pitchType=${pitchType}&guests=${guestsCount}&children=${childrenCount}&dogs=${dogsCount}&cars=${carsCount}&guestPrice=${personPrice}&childPrice=${childPrice}&dogPrice=${dogPrice}&carPrice=${carPrice}&customerId=${selectedCustomerId || ''}`
+                    `/api/pricing/calculate?checkIn=${checkIn}&checkOut=${checkOut}&pitchType=${pitchType}&guests=${guestsCount}&children=${childrenCount}&dogs=${dogsCount}&cars=${carsCount}&guestPrice=${personPrice}&childPrice=${childPrice}&dogPrice=${dogPrice}&carPrice=${carPrice}&customerId=${selectedCustomerId || ''}&groupId=${selectedGroupId}`
                 );
 
                 if (!res.ok) throw new Error("Failed to calculate price");
@@ -106,8 +142,7 @@ export function BookingCreationModal({
         };
 
         fetchPrice();
-        fetchPrice();
-    }, [checkIn, checkOut, pitchType, nights, guestsCount, childrenCount, dogsCount, carsCount, selectedCustomerId]);
+    }, [checkIn, checkOut, pitchType, nights, guestsCount, childrenCount, dogsCount, carsCount, selectedCustomerId, selectedGroupId]);
 
     const handleCustomerSelect = (customer: any) => {
         setSelectedCustomerId(customer.id);
@@ -116,6 +151,21 @@ export function BookingCreationModal({
         setCustomerEmail(customer.email || '');
         setCustomerPhone(customer.phone);
         setLicensePlate(customer.license_plate || '');
+
+        // If customer has a group, set it
+        if (customer.customer_groups) {
+            // We don't have the ID directly here usually if validation is strict, 
+            // but let's assume autcomplete returns it or we leave it 'none' and let backend resolve it via ID.
+            // Actually, Autocomplete usually returns joined group details.
+            // For simplicity, let's keep 'none' to indicate "Use Customer Default" 
+            // OR if we want to show it, we need to know the ID.
+            // If manual edit happens, selectedCustomerId becomes null.
+        } else if (customer.group_id) {
+            setSelectedGroupId(customer.group_id);
+        } else {
+            setSelectedGroupId('none');
+        }
+
         toast.success("Dati cliente caricati");
     };
 
@@ -125,6 +175,8 @@ export function BookingCreationModal({
 
         if (selectedCustomerId) {
             setSelectedCustomerId(null);
+            // Keep the selected group as is, or reset? 
+            // If they are creating a new user, they might want to set a group.
         }
     };
 
@@ -164,7 +216,8 @@ export function BookingCreationModal({
                     email: customerEmail || null,
                     phone: customerPhone,
                     notes: notes,
-                    license_plate: licensePlate || null
+                    license_plate: licensePlate || null,
+                    group_id: selectedGroupId !== 'none' ? selectedGroupId : undefined
                 },
             };
 
@@ -213,6 +266,7 @@ export function BookingCreationModal({
         setDogsCount(0);
         setNotes('');
         setSuccess(false);
+        setSelectedGroupId('none');
     };
 
     const handleClose = () => {
@@ -293,6 +347,24 @@ export function BookingCreationModal({
                                     disabled={loading}
                                 />
                             </div>
+                        </div>
+
+                        {/* Customer Group Selector */}
+                        <div className="space-y-2">
+                            <Label>Gruppo Cliente</Label>
+                            <select
+                                className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                value={selectedGroupId}
+                                onChange={(e) => setSelectedGroupId(e.target.value)}
+                                disabled={loading}
+                            >
+                                <option value="none">Nessun Gruppo (Standard)</option>
+                                {customerGroups.map(group => (
+                                    <option key={group.id} value={group.id}>
+                                        {group.name}
+                                    </option>
+                                ))}
+                            </select>
                         </div>
 
                         <div className="grid grid-cols-2 gap-3">

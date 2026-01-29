@@ -184,8 +184,8 @@ export function SeasonDialog({ open, onOpenChange, onSubmit, initialData }: Seas
                                 <Input
                                     id="piazzola-price"
                                     type="number"
-                                    min="0"
-                                    step="0.01"
+                                    min="1"
+                                    step="1"
                                     value={piazzolaPrice}
                                     onChange={(e) => setPiazzolaPrice(e.target.value)}
                                     required
@@ -196,8 +196,8 @@ export function SeasonDialog({ open, onOpenChange, onSubmit, initialData }: Seas
                                 <Input
                                     id="tenda-price"
                                     type="number"
-                                    min="0"
-                                    step="0.01"
+                                    min="1"
+                                    step="1"
                                     value={tendaPrice}
                                     onChange={(e) => setTendaPrice(e.target.value)}
                                     required
@@ -212,8 +212,8 @@ export function SeasonDialog({ open, onOpenChange, onSubmit, initialData }: Seas
                                 <Input
                                     id="person-price"
                                     type="number"
-                                    min="0"
-                                    step="0.5"
+                                    min="1"
+                                    step="1"
                                     value={personPrice}
                                     onChange={(e) => setPersonPrice(e.target.value)}
                                     required
@@ -224,8 +224,8 @@ export function SeasonDialog({ open, onOpenChange, onSubmit, initialData }: Seas
                                 <Input
                                     id="child-price"
                                     type="number"
-                                    min="0"
-                                    step="0.5"
+                                    min="1"
+                                    step="1"
                                     value={childPrice}
                                     onChange={(e) => setChildPrice(e.target.value)}
                                     required
@@ -236,8 +236,8 @@ export function SeasonDialog({ open, onOpenChange, onSubmit, initialData }: Seas
                                 <Input
                                     id="dog-price"
                                     type="number"
-                                    min="0"
-                                    step="0.5"
+                                    min="1"
+                                    step="1"
                                     value={dogPrice}
                                     onChange={(e) => setDogPrice(e.target.value)}
                                     required
@@ -248,8 +248,8 @@ export function SeasonDialog({ open, onOpenChange, onSubmit, initialData }: Seas
                                 <Input
                                     id="car-price"
                                     type="number"
-                                    min="0"
-                                    step="0.5"
+                                    min="1"
+                                    step="1"
                                     value={carPrice}
                                     onChange={(e) => setCarPrice(e.target.value)}
                                     required

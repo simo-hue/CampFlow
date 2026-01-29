@@ -50,8 +50,11 @@ export async function GET(request: Request) {
             return NextResponse.json({ error: error.message }, { status: 500 });
         }
 
-        // Fetch Customer Group Configuration (if customerId provided)
+        // Fetch Customer Group Configuration (if customerId provided or groupId explicitly requested)
         let groupConfigs: any[] = [];
+        let groupBundles: any[] = [];
+        let targetGroupId: string | null = null;
+
         if (customerId) {
             const { data: customer, error: customerError } = await supabase
                 .from('customers')
@@ -60,15 +63,35 @@ export async function GET(request: Request) {
                 .single();
 
             if (!customerError && customer?.group_id) {
-                // Fetch configurations for this group
-                const { data: configs, error: configError } = await supabase
-                    .from('group_season_configurations')
-                    .select('*')
-                    .eq('group_id', customer.group_id);
+                targetGroupId = customer.group_id;
+            }
+        }
 
-                if (!configError && configs) {
-                    groupConfigs = configs;
-                }
+        // Override with explicit groupId if provided (e.g. overriding existing customer or new customer)
+        const explicitGroupId = searchParams.get('groupId');
+        if (explicitGroupId && explicitGroupId !== 'none') {
+            targetGroupId = explicitGroupId;
+        }
+
+        if (targetGroupId) {
+            // Fetch configurations for this group
+            const { data: configs, error: configError } = await supabase
+                .from('group_season_configurations')
+                .select('*')
+                .eq('group_id', targetGroupId);
+
+            if (!configError && configs) {
+                groupConfigs = configs;
+            }
+
+            // Fetch Bundles
+            const { data: bundles, error: bundlesError } = await supabase
+                .from('group_bundles')
+                .select('*')
+                .eq('group_id', targetGroupId);
+
+            if (!bundlesError && bundles) {
+                groupBundles = bundles;
             }
         }
 
@@ -79,7 +102,8 @@ export async function GET(request: Request) {
             children: childrenCount,
             dogs: dogsCount,
             cars: carsCount,
-            groupConfigs: groupConfigs.length > 0 ? groupConfigs : undefined
+            groupConfigs: groupConfigs.length > 0 ? groupConfigs : undefined,
+            bundles: groupBundles.length > 0 ? groupBundles : undefined
         };
 
         const totalPrice = calculatePrice(checkIn, checkOut, pitchType, context);
