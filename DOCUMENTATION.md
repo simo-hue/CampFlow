@@ -592,3 +592,20 @@ Group bundles were not persistent because the `season_id` was missing in the API
 ### Verification
 -   Create bundles for different seasons with the same night count (e.g., 3 nights in Low Season and 3 nights in High Season).
 -   Verify they persist correctly after save/refresh.
+
+## Group Summary Popup (2026-01-29)
+
+### Overview
+Enhanced the Group Management UI to allow quick viewing of group configurations without entering edit mode.
+
+### Features
+- **Clickable Cards**: Group cards in the Settings panel are now clickable.
+- **Summary Modal**: Clicking a card opens a read-only modal showing:
+    - Group details (Name, Description, Color).
+    - Per-season configuration breakdown.
+    - Discount percentages, Custom Rates, and Bundle details.
+- **UX**: Edit and Delete actions remain accessible via their respective buttons without triggering the summary.
+
+### Components
+- `GroupManagement.tsx`: Added `viewingGroup` state and `GroupSummaryDialog`.
+

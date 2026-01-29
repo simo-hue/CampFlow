@@ -55,3 +55,9 @@ Assicurati di aver creato questi gruppi e bundle:
 #### 4. Fix Persistence Bundle (29/01/2026)
 - [ ] **Esegui Migration**: Esegui il file SQL `supabase/migrations/20260129183000_fix_groups_bundles_constraint.sql` nel tuo database Supabase per aggiornare i vincoli di unicità (necessario per salvare i bundle correttamente).
 - [ ] **Test Manuale**: Verifica che ora i bundle rimangano salvati e che puoi averne uno da "3 notti" in Bassa Stagione e uno da "3 notti" in Alta Stagione senza errori.
+
+#### 5. Verifica Popup Riassunto Gruppi (29/01/2026)
+- [ ] **Apertura Popup**: Vai in `Impostazioni > Gestione Gruppi` e clicca su una card qualsiasi (non sui bottoni modifica/elimina).
+- [ ] **Contenuto**: Verifica che il popup mostri correttamente le tariffe per ogni stagione (Sconti, Prezzi Personalizzati, Bundle).
+- [ ] **Bottoni Azione**: Verifica che cliccando sulla matita (Modifica) si apra il dialog di modifica e NON quello di riassunto. Idem per il cestino (Elimina).
+

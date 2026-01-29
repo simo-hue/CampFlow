@@ -25,6 +25,7 @@ export function GroupManagement() {
     const [dialogOpen, setDialogOpen] = useState(false);
     const [deleteConfirmation, setDeleteConfirmation] = useState<{ isOpen: boolean; groupId: string; groupName: string } | null>(null);
     const [editingGroup, setEditingGroup] = useState<CustomerGroup | null>(null);
+    const [viewingGroup, setViewingGroup] = useState<CustomerGroup | null>(null);
     const [formData, setFormData] = useState<Partial<CustomerGroup>>({
         name: '',
         description: '',
@@ -120,7 +121,11 @@ export function GroupManagement() {
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {groups.map((group) => (
-                        <Card key={group.id} className="p-4 flex items-start justify-between group hover:shadow-md transition-shadow relative overflow-hidden">
+                        <Card
+                            key={group.id}
+                            className="p-4 flex items-start justify-between group hover:shadow-md transition-shadow relative overflow-hidden cursor-pointer active:scale-[0.99] transition-all"
+                            onClick={() => setViewingGroup(group)}
+                        >
                             <div className="absolute left-0 top-0 bottom-0 w-1" style={{ backgroundColor: group.color }} />
                             <div className="pl-2">
                                 <div className="flex items-center gap-2 mb-1">
@@ -150,10 +155,10 @@ export function GroupManagement() {
                                 </div>
                             </div>
                             <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <Button size="sm" variant="ghost" onClick={() => handleEdit(group)}>
+                                <Button size="sm" variant="ghost" onClick={(e) => { e.stopPropagation(); handleEdit(group); }}>
                                     <Pencil className="h-4 w-4" />
                                 </Button>
-                                <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive" onClick={() => handleDeleteClick(group.id, group.name)}>
+                                <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive" onClick={(e) => { e.stopPropagation(); handleDeleteClick(group.id, group.name); }}>
                                     <Trash2 className="h-4 w-4" />
                                 </Button>
                             </div>
@@ -297,6 +302,98 @@ export function GroupManagement() {
                     <DialogFooter>
                         <Button variant="outline" onClick={() => setDeleteConfirmation(null)}>Annulla</Button>
                         <Button variant="destructive" onClick={confirmDelete}>Elimina</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            {/* View Summary Dialog */}
+            <Dialog open={!!viewingGroup} onOpenChange={(open) => !open && setViewingGroup(null)}>
+                <DialogContent className="w-full max-w-2xl max-h-[90vh] flex flex-col">
+                    <DialogHeader>
+                        <div className="flex items-center gap-3">
+                            <div className="w-4 h-4 rounded-full" style={{ backgroundColor: viewingGroup?.color || '#ccc' }} />
+                            <DialogTitle>{viewingGroup?.name}</DialogTitle>
+                        </div>
+                        {viewingGroup?.description && (
+                            <DialogDescription>
+                                {viewingGroup.description}
+                            </DialogDescription>
+                        )}
+                    </DialogHeader>
+
+                    <ScrollArea className="flex-1 pr-4">
+                        <div className="space-y-6 py-4">
+                            <h4 className="font-semibold text-sm text-muted-foreground uppercase tracking-wider">Riepilogo Tariffe per Stagione</h4>
+
+                            <div className="space-y-4">
+                                {activeSeasons.map(season => {
+                                    if (!viewingGroup) return null;
+                                    const config = viewingGroup.season_configurations?.find(c => c.season_id === season.id);
+                                    const bundles = viewingGroup.bundles?.filter(b => b.season_id === season.id) || [];
+                                    const hasConfig = !!config || bundles.length > 0;
+
+                                    return (
+                                        <div key={season.id} className="border rounded-lg p-3 bg-muted/10">
+                                            <div className="flex items-center gap-2 mb-2" style={{ borderLeft: `3px solid ${season.color}`, paddingLeft: '8px' }}>
+                                                <span className="font-medium text-base">{season.name}</span>
+                                            </div>
+
+                                            <div className="pl-3 text-sm">
+                                                {!hasConfig && (
+                                                    <p className="text-muted-foreground">Nessuna configurazione specifica (Tariffe Standard)</p>
+                                                )}
+
+                                                {config?.discount_percentage ? (
+                                                    <div className="flex items-center gap-2 text-green-600 font-medium">
+                                                        <Tag className="h-4 w-4" />
+                                                        Sconto del {config.discount_percentage}% sul totale
+                                                    </div>
+                                                ) : null}
+
+                                                {config?.custom_rates && Object.keys(config.custom_rates).length > 0 && (
+                                                    <div className="space-y-2 mt-2">
+                                                        <p className="font-medium text-xs text-muted-foreground">Prezzi Personalizzati:</p>
+                                                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                                                            {Object.entries(config.custom_rates).map(([key, val]) => (
+                                                                <div key={key} className="bg-background border rounded px-2 py-1 flex justify-between items-center text-xs">
+                                                                    <span className="capitalize">{key === 'person' ? 'Persona' : key}</span>
+                                                                    <span className="font-mono font-semibold">€{val}</span>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                )}
+
+                                                {bundles.length > 0 && (
+                                                    <div className="space-y-2 mt-3">
+                                                        <p className="font-medium text-xs text-muted-foreground">Pacchetti ({bundles.length}):</p>
+                                                        <div className="space-y-2">
+                                                            {bundles.map((bundle, idx) => (
+                                                                <div key={idx} className="bg-background border rounded p-2 text-xs">
+                                                                    <div className="flex justify-between items-center mb-1">
+                                                                        <span className="font-semibold">{bundle.nights} Notti</span>
+                                                                        <Badge variant="outline" className="text-[10px]">Piazzola €{bundle.pitch_price}</Badge>
+                                                                    </div>
+                                                                    {bundle.unit_prices && Object.keys(bundle.unit_prices).length > 0 && (
+                                                                        <div className="text-muted-foreground text-[10px]">
+                                                                            Extra: {Object.entries(bundle.unit_prices).map(([k, v]) => `${k}: €${v}`).join(', ')}
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    </ScrollArea>
+
+                    <DialogFooter>
+                        <Button onClick={() => setViewingGroup(null)}>Chiudi</Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
