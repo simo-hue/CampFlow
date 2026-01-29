@@ -14,8 +14,8 @@ export function ContactForm() {
         const email = formData.get('email') as string;
         const messaggio = formData.get('messaggio') as string;
 
-        const subject = `Richiesta Contatto da ${nome} ${cognome}`;
-        const body = `Nome: ${nome} ${cognome}\nEmail: ${email}\n\nMessaggio:\n${messaggio}`;
+        const subject = `Contact Request from ${nome} ${cognome}`;
+        const body = `Name: ${nome} ${cognome}\nEmail: ${email}\n\nMessage:\n${messaggio}`;
 
         const mailtoLink = `mailto:mattioli.simone.10@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
 
@@ -26,16 +26,16 @@ export function ContactForm() {
         <div className="py-20 bg-background">
             <div className="container mx-auto px-4 max-w-4xl">
                 <div className="text-center mb-16">
-                    <h1 className="text-4xl font-bold mb-4">Contattaci</h1>
-                    <p className="text-xl text-muted-foreground">Hai domande? Siamo qui per aiutarti.</p>
+                    <h1 className="text-4xl font-bold mb-4">Contact Us</h1>
+                    <p className="text-xl text-muted-foreground">Have questions? We are here to help.</p>
                 </div>
 
                 <div className="grid md:grid-cols-2 gap-12">
                     {/* Contact Info */}
                     <div className="space-y-8">
                         <div>
-                            <h3 className="text-lg font-semibold mb-2">Informazioni di Contatto</h3>
-                            <p className="text-muted-foreground mb-6">Compila il modulo o contattaci direttamente.</p>
+                            <h3 className="text-lg font-semibold mb-2">Contact Information</h3>
+                            <p className="text-muted-foreground mb-6">Fill out the form or contact us directly.</p>
                         </div>
 
                         <div className="flex items-center gap-4">
@@ -57,7 +57,7 @@ export function ContactForm() {
                             <div>
                                 <p className="font-medium">WhatsApp</p>
                                 <p className="text-sm text-muted-foreground">+39 334 798 5325</p>
-                                <p className="text-xs text-muted-foreground italic">(Si prega di scrivere su WhatsApp, non chiamare)</p>
+                                <p className="text-xs text-muted-foreground italic">(Please write on WhatsApp, do not call)</p>
                             </div>
                         </div>
 
@@ -66,14 +66,14 @@ export function ContactForm() {
                                 <MapPin className="w-5 h-5" />
                             </div>
                             <div>
-                                <p className="font-medium">Posizione</p>
-                                <p className="text-sm text-muted-foreground">Italia</p>
+                                <p className="font-medium">Location</p>
+                                <p className="text-sm text-muted-foreground">Italy</p>
                             </div>
                         </div>
 
                         {/* Social Links */}
                         <div className="pt-6 border-t">
-                            <h4 className="text-sm font-semibold mb-3">Seguimi su</h4>
+                            <h4 className="text-sm font-semibold mb-3">Follow me on</h4>
                             <div className="flex gap-4">
                                 <a
                                     href="https://www.linkedin.com/in/simonemattioli2003/"
@@ -108,11 +108,11 @@ export function ContactForm() {
                         <form onSubmit={handleSendMessage} className="space-y-4">
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="text-sm font-medium mb-1 block">Nome</label>
+                                    <label className="text-sm font-medium mb-1 block">Name</label>
                                     <input name="nome" type="text" required className="w-full px-3 py-2 bg-background border rounded-md" />
                                 </div>
                                 <div>
-                                    <label className="text-sm font-medium mb-1 block">Cognome</label>
+                                    <label className="text-sm font-medium mb-1 block">Surname</label>
                                     <input name="cognome" type="text" required className="w-full px-3 py-2 bg-background border rounded-md" />
                                 </div>
                             </div>
@@ -121,13 +121,13 @@ export function ContactForm() {
                                 <input name="email" type="email" required className="w-full px-3 py-2 bg-background border rounded-md" />
                             </div>
                             <div>
-                                <label className="text-sm font-medium mb-1 block">Messaggio</label>
+                                <label className="text-sm font-medium mb-1 block">Message</label>
                                 <textarea name="messaggio" required className="w-full px-3 py-2 bg-background border rounded-md min-h-[120px]"></textarea>
                             </div>
-                            <Button type="submit" className="w-full">Invia Messaggio</Button>
+                            <Button type="submit" className="w-full">Send Message</Button>
                         </form>
                         <p className="text-xs text-center text-muted-foreground mt-4">
-                            Cliccando "Invia Messaggio" si aprirà il tuo client di posta predefinito con il messaggio già compilato.
+                            By clicking "Send Message", your default email client will open with the message pre-filled.
                         </p>
                     </div>
                 </div>

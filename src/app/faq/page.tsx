@@ -8,8 +8,8 @@ import {
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-    title: "FAQ | Domande Frequenti su CampFlow",
-    description: "Tutte le risposte sulle funzionalità, l'installazione e l'utilizzo di CampFlow. Scopri come gestire il tuo campeggio col nostro software open source.",
+    title: "FAQ | Frequently Asked Questions about CampFlow",
+    description: "All answers about CampFlow features, installation and usage. Discover how to manage your campsite with our open source software.",
 };
 
 export default function FAQPage() {
@@ -17,129 +17,129 @@ export default function FAQPage() {
         <div className="py-20 bg-background">
             <div className="container mx-auto px-4 max-w-4xl">
                 <div className="text-center mb-16">
-                    <h1 className="text-4xl font-bold mb-4">Domande Frequenti (FAQ)</h1>
-                    <p className="text-xl text-muted-foreground">Tutto quello che devi sapere su CampFlow e il suo sviluppatore.</p>
+                    <h1 className="text-4xl font-bold mb-4">Frequently Asked Questions (FAQ)</h1>
+                    <p className="text-xl text-muted-foreground">Everything you need to know about CampFlow and its developer.</p>
                 </div>
 
                 <div className="space-y-8">
-                    {/* Generali */}
+                    {/* General */}
                     <section>
-                        <h2 className="text-2xl font-semibold mb-4 text-primary">Generali</h2>
+                        <h2 className="text-2xl font-semibold mb-4 text-primary">General</h2>
                         <Accordion type="single" collapsible className="w-full">
                             <AccordionItem value="gen-1">
-                                <AccordionTrigger>Cos'è CampFlow?</AccordionTrigger>
+                                <AccordionTrigger>What is CampFlow?</AccordionTrigger>
                                 <AccordionContent>
-                                    CampFlow è una piattaforma open-source all-in-one per la gestione di campeggi, villaggi turistici e aree di sosta camper. Permette di gestire prenotazioni, ospiti, piazzole e check-in da un'unica interfaccia moderna.
+                                    CampFlow is an all-in-one open-source platform for managing campsites, holiday villages, and camper parking areas. It allows you to manage reservations, guests, pitches, and check-ins from a single modern interface.
                                 </AccordionContent>
                             </AccordionItem>
                             <AccordionItem value="gen-2">
-                                <AccordionTrigger>È davvero gratuito?</AccordionTrigger>
+                                <AccordionTrigger>Is it really free?</AccordionTrigger>
                                 <AccordionContent>
-                                    Sì! La versione "Community" è 100% gratuita e open-source. Puoi scaricare il codice e installarlo sul tuo server senza pagare licenze. Offriamo anche servizi a pagamento per chi preferisce una soluzione gestita (Cloud) o assistenza tecnica.
+                                    Yes! The "Community" version is 100% free and open-source. You can download the code and install it on your server without paying for licenses. We also offer paid services for those who prefer a managed solution (Cloud) or technical support.
                                 </AccordionContent>
                             </AccordionItem>
                             <AccordionItem value="gen-3">
-                                <AccordionTrigger>A chi si rivolge?</AccordionTrigger>
+                                <AccordionTrigger>Who is it for?</AccordionTrigger>
                                 <AccordionContent>
-                                    È ideale per gestori di strutture ricettive all'aria aperta di qualsiasi dimensione, dai piccoli agricampeggi ai grandi villaggi turistici che cercano una soluzione moderna e flessibile.
+                                    It is ideal for managers of outdoor accommodation facilities of any size, from small agri-campsites to large holiday villages looking for a modern and flexible solution.
                                 </AccordionContent>
                             </AccordionItem>
                             <AccordionItem value="gen-4">
-                                <AccordionTrigger>Posso provarlo prima di installarlo?</AccordionTrigger>
+                                <AccordionTrigger>Can I try it before installing?</AccordionTrigger>
                                 <AccordionContent>
-                                    Certamente. Contattaci per accedere a una demo live o guarda i video dimostrativi nella sezione Funzionalità.
+                                    Certainly. Contact us to access a live demo or watch the demonstration videos in the Features section.
                                 </AccordionContent>
                             </AccordionItem>
                         </Accordion>
                     </section>
 
-                    {/* Tecniche */}
+                    {/* Technical & Installation */}
                     <section>
-                        <h2 className="text-2xl font-semibold mb-4 text-primary">Tecniche & Installazione</h2>
+                        <h2 className="text-2xl font-semibold mb-4 text-primary">Technical & Installation</h2>
                         <Accordion type="single" collapsible className="w-full">
                             <AccordionItem value="tech-1">
-                                <AccordionTrigger>Quali tecnologie utilizza?</AccordionTrigger>
+                                <AccordionTrigger>What technologies does it use?</AccordionTrigger>
                                 <AccordionContent>
-                                    CampFlow è costruito con tecnologie moderne: Next.js (React) per il frontend e backend, Supabase (PostgreSQL) come database e autenticazione, e Tailwind CSS per lo stile.
+                                    CampFlow is built with modern technologies: Next.js (React) for frontend and backend, Supabase (PostgreSQL) as database and authentication, and Tailwind CSS for styling.
                                 </AccordionContent>
                             </AccordionItem>
                             <AccordionItem value="tech-2">
-                                <AccordionTrigger>Quali sono i requisiti di sistema per il self-hosting?</AccordionTrigger>
+                                <AccordionTrigger>What are the system requirements for self-hosting?</AccordionTrigger>
                                 <AccordionContent>
-                                    Hai bisogno di un server (VPS) con Node.js installato e un'istanza di Supabase (o PostgreSQL configurato). Consigliamo almeno 2GB di RAM per il server Node.
+                                    You need a server (VPS) with Node.js installed and a Supabase instance (or configured PostgreSQL). We recommend at least 2GB of RAM for the Node server.
                                 </AccordionContent>
                             </AccordionItem>
                             <AccordionItem value="tech-3">
-                                <AccordionTrigger>È difficile da installare?</AccordionTrigger>
+                                <AccordionTrigger>Is it difficult to install?</AccordionTrigger>
                                 <AccordionContent>
-                                    Richiede competenze di sviluppo web (git, npm, gestione variabili d'ambiente). Se non hai queste competenze, il piano "Setup Assistito" o "Cloud Managed" fa al caso tuo.
+                                    It requires web development skills (git, npm, environment variable management). If you don't have these skills, the "Assisted Setup" or "Cloud Managed" plan is right for you.
                                 </AccordionContent>
                             </AccordionItem>
                             <AccordionItem value="tech-4">
-                                <AccordionTrigger>Il codice è sicuro?</AccordionTrigger>
+                                <AccordionTrigger>Is the code secure?</AccordionTrigger>
                                 <AccordionContent>
-                                    La sicurezza è una priorità. Utilizziamo l'autenticazione robusta di Supabase e middleware per proteggere le rotte sensibili. Il codice è pubblico, il che permette alla community di revisionarlo costantemente.
+                                    Security is a priority. We use robust Supabase authentication and middleware to protect sensitive routes. The code is public, allowing the community to constantly review it.
                                 </AccordionContent>
                             </AccordionItem>
                             <AccordionItem value="tech-5">
-                                <AccordionTrigger>Posso modificare il codice?</AccordionTrigger>
+                                <AccordionTrigger>Can I modify the code?</AccordionTrigger>
                                 <AccordionContent>
-                                    Assolutamente sì. La licenza open source ti permette di modificare, estendere e personalizzare il software per le tue esigenze specifiche.
+                                    Absolutely yes. The open source license allows you to modify, extend, and customize the software for your specific needs.
                                 </AccordionContent>
                             </AccordionItem>
                             <AccordionItem value="tech-6">
-                                <AccordionTrigger>Supporta l'integrazione con hardware di terze parti?</AccordionTrigger>
+                                <AccordionTrigger>Does it support integration with third-party hardware?</AccordionTrigger>
                                 <AccordionContent>
-                                    Essendo open source, puoi sviluppare integrazioni con sbarre automatiche, lettori di passaporti o stampanti fiscali tramite API personalizzate.
+                                    Being open source, you can develop integrations with automatic barriers, passport readers, or fiscal printers via custom APIs.
                                 </AccordionContent>
                             </AccordionItem>
                         </Accordion>
                     </section>
 
-                    {/* Funzionalità */}
+                    {/* Features */}
                     <section>
-                        <h2 className="text-2xl font-semibold mb-4 text-primary">Funzionalità</h2>
+                        <h2 className="text-2xl font-semibold mb-4 text-primary">Features</h2>
                         <Accordion type="single" collapsible className="w-full">
                             <AccordionItem value="feat-1">
-                                <AccordionTrigger>Gestisce la fatturazione elettronica?</AccordionTrigger>
+                                <AccordionTrigger>Does it manage electronic invoicing?</AccordionTrigger>
                                 <AccordionContent>
-                                    Attualmente, CampFlow traccia i pagamenti e genera ricevute pro-forma. L'integrazione diretta con lo SDI per la fatturazione elettronica italiana è in roadmap.
+                                    Currently, CampFlow tracks payments and generates pro-forma receipts. Direct integration with the SDI for Italian electronic invoicing is on the roadmap.
                                 </AccordionContent>
                             </AccordionItem>
                             <AccordionItem value="feat-2">
-                                <AccordionTrigger>Posso gestire più campeggi con un account?</AccordionTrigger>
+                                <AccordionTrigger>Can I manage multiple campsites with one account?</AccordionTrigger>
                                 <AccordionContent>
-                                    La versione base è ottimizzata per una singola struttura. Per gestioni multi-sito, offriamo personalizzazioni nel piano Enterprise.
+                                    The base version is optimized for a single facility. For multi-site management, we offer customizations in the Enterprise plan.
                                 </AccordionContent>
                             </AccordionItem>
                             <AccordionItem value="feat-3">
-                                <AccordionTrigger>Il calendario supporta il drag-and-drop?</AccordionTrigger>
+                                <AccordionTrigger>Does the calendar support drag-and-drop?</AccordionTrigger>
                                 <AccordionContent>
-                                    Sì, il calendario occupazione permette di spostare le prenotazioni trascinandole, rendendo la gestione del planning estremamente intuitiva.
+                                    Yes, the occupancy calendar allows you to move reservations by dragging them, making planning management extremely intuitive.
                                 </AccordionContent>
                             </AccordionItem>
                             <AccordionItem value="feat-4">
-                                <AccordionTrigger>Include il check-in online?</AccordionTrigger>
+                                <AccordionTrigger>Does it include online check-in?</AccordionTrigger>
                                 <AccordionContent>
-                                    Sì, puoi inviare un link ai clienti prima del loro arrivo per fargli compilare i dati, velocizzando le operazioni in reception.
+                                    Yes, you can send a link to customers before their arrival to let them fill in their data, speeding up operations at reception.
                                 </AccordionContent>
                             </AccordionItem>
                             <AccordionItem value="feat-5">
-                                <AccordionTrigger>Comunica con il portale Alloggiati Web?</AccordionTrigger>
+                                <AccordionTrigger>Does it communicate with the Alloggiati Web portal?</AccordionTrigger>
                                 <AccordionContent>
-                                    Stiamo lavorando a un modulo per esportare il file .txt compatibile con il portale della Polizia di Stato.
+                                    We are working on a module to export the .txt file compatible with the State Police portal.
                                 </AccordionContent>
                             </AccordionItem>
                             <AccordionItem value="feat-6">
-                                <AccordionTrigger>C'è un limite al numero di piazzole?</AccordionTrigger>
+                                <AccordionTrigger>Is there a limit to the number of pitches?</AccordionTrigger>
                                 <AccordionContent>
-                                    Nessun limite software. Il limite dipende solo dalla potenza del tuo server.
+                                    No software limit. The limit depends only on the power of your server.
                                 </AccordionContent>
                             </AccordionItem>
                             <AccordionItem value="feat-7">
-                                <AccordionTrigger>Le statistiche sono in tempo reale?</AccordionTrigger>
+                                <AccordionTrigger>Are the statistics in real time?</AccordionTrigger>
                                 <AccordionContent>
-                                    Per il Setup Assistito, se non riusciamo a completare l'installazione per problemi tecnici a noi imputabili, rimborsiamo l'intero importo.
+                                    Yes, all dashboards are updated in real time as data is entered.
                                 </AccordionContent>
                             </AccordionItem>
                         </Accordion>
@@ -147,211 +147,211 @@ export default function FAQPage() {
 
                     {/* Developer & Team */}
                     <section>
-                        <h2 className="text-2xl font-semibold mb-4 text-primary">Sviluppatore & Team</h2>
+                        <h2 className="text-2xl font-semibold mb-4 text-primary">Developer & Team</h2>
                         <Accordion type="single" collapsible className="w-full">
                             <AccordionItem value="dev-1">
-                                <AccordionTrigger>Chi ha creato CampFlow?</AccordionTrigger>
+                                <AccordionTrigger>Who created CampFlow?</AccordionTrigger>
                                 <AccordionContent>
-                                    CampFlow è stato ideato e sviluppato da Simone Mattioli, uno studente di Informatica presso l'Università di Verona appassionato di tecnologia e outdoor.
+                                    CampFlow was designed and developed by Simone Mattioli, a Computer Science student at the University of Verona passionate about technology and the outdoors.
                                 </AccordionContent>
                             </AccordionItem>
                             <AccordionItem value="dev-2">
-                                <AccordionTrigger>Qual è il background di Simone?</AccordionTrigger>
+                                <AccordionTrigger>What is Simone's background?</AccordionTrigger>
                                 <AccordionContent>
-                                    Simone ha un diploma tecnico in informatica e sta completando la laurea triennale. Ha esperienza come sviluppatore Full Stack e ha lavorato su progetti di AI e High Performance Computing (HPC).
+                                    Simone holds a technical diploma in computer science and is completing his bachelor's degree. He has experience as a Full Stack developer and has worked on AI and High Performance Computing (HPC) projects.
                                 </AccordionContent>
                             </AccordionItem>
                             <AccordionItem value="dev-3">
-                                <AccordionTrigger>Simone lavora da solo?</AccordionTrigger>
+                                <AccordionTrigger>Does Simone work alone?</AccordionTrigger>
                                 <AccordionContent>
-                                    Attualmente CampFlow è mantenuto principalmente da Simone, ma essendo open source, accetta contributi da altri sviluppatori della community.
+                                    Currently CampFlow is maintained primarily by Simone, but being open source, it accepts contributions from other developers in the community.
                                 </AccordionContent>
                             </AccordionItem>
                             <AccordionItem value="dev-4">
-                                <AccordionTrigger>Ha esperienza nel settore?</AccordionTrigger>
+                                <AccordionTrigger>Does he have experience in the sector?</AccordionTrigger>
                                 <AccordionContent>
-                                    Oltre alle competenze tecniche, Simone ha fatto volontariato internazionale (Brasile) e ha fatto parte dello staff della Coppa del Mondo di Downhill, dimostrando capacità organizzative e di lavoro in team in contesti dinamici.
+                                    In addition to technical skills, Simone has done international volunteering (Brazil) and was part of the Downhill World Cup staff, demonstrating organizational and teamwork skills in dynamic contexts.
                                 </AccordionContent>
                             </AccordionItem>
                             <AccordionItem value="dev-5">
-                                <AccordionTrigger>Perché un progetto open source?</AccordionTrigger>
+                                <AccordionTrigger>Why an open source project?</AccordionTrigger>
                                 <AccordionContent>
-                                    Simone crede nella condivisione della conoscenza e nell'accessibilità del software. Rendere CampFlow open source permette di aiutare le piccole realtà e di migliorare il software grazie al feedback collettivo.
+                                    Simone believes in sharing knowledge and software accessibility. Making CampFlow open source helps small businesses and improves the software through collective feedback.
                                 </AccordionContent>
                             </AccordionItem>
                             <AccordionItem value="dev-6">
-                                <AccordionTrigger>Come posso contattare lo sviluppatore?</AccordionTrigger>
+                                <AccordionTrigger>How can I contact the developer?</AccordionTrigger>
                                 <AccordionContent>
-                                    Puoi trovarlo su LinkedIn (Simone Mattioli), GitHub (simo-hue) o contattarlo direttamente tramite il modulo di contatto su questo sito.
+                                    You can find him on LinkedIn (Simone Mattioli), GitHub (simo-hue) or contact him directly via the contact form on this site.
                                 </AccordionContent>
                             </AccordionItem>
                             <AccordionItem value="dev-7">
-                                <AccordionTrigger>Quali sono le passioni di Simone?</AccordionTrigger>
+                                <AccordionTrigger>What are Simone's passions?</AccordionTrigger>
                                 <AccordionContent>
-                                    È un amante della montagna, della fauna selvatica e dell'esplorazione outdoor. Questa passione si riflette nella cura per un software dedicato al turismo all'aria aperta.
+                                    He is a lover of the mountains, wildlife, and outdoor exploration. This passion is reflected in the care for software dedicated to outdoor tourism.
                                 </AccordionContent>
                             </AccordionItem>
                         </Accordion>
                     </section>
 
-                    {/* Prezzi & Supporto */}
+                    {/* Pricing & Support */}
                     <section>
-                        <h2 className="text-2xl font-semibold mb-4 text-primary">Prezzi & Supporto</h2>
+                        <h2 className="text-2xl font-semibold mb-4 text-primary">Pricing & Support</h2>
                         <Accordion type="single" collapsible className="w-full">
                             <AccordionItem value="sup-1">
-                                <AccordionTrigger>Cosa include il piano "Setup Assistito"?</AccordionTrigger>
+                                <AccordionTrigger>What does the "Assisted Setup" plan include?</AccordionTrigger>
                                 <AccordionContent>
-                                    Include l'installazione completa sul tuo server, la configurazione del dominio, del certificato SSL e una sessione di formazione iniziale per il tuo staff.
+                                    It includes complete installation on your server, domain configuration, SSL certificate, and an initial training session for your staff.
                                 </AccordionContent>
                             </AccordionItem>
                             <AccordionItem value="sup-2">
-                                <AccordionTrigger>Offrite assistenza 24/7?</AccordionTrigger>
+                                <AccordionTrigger>Do you offer 24/7 support?</AccordionTrigger>
                                 <AccordionContent>
-                                    L'assistenza standard è via email nei giorni lavorativi. Piani di supporto SLA personalizzati sono disponibili per i clienti Enterprise.
+                                    Standard support is via email on business days. Custom SLA support plans are available for Enterprise clients.
                                 </AccordionContent>
                             </AccordionItem>
                             <AccordionItem value="sup-3">
-                                <AccordionTrigger>Accettate pagamenti con carta di credito?</AccordionTrigger>
+                                <AccordionTrigger>Do you accept credit card payments?</AccordionTrigger>
                                 <AccordionContent>
-                                    Sì, per i piani Cloud Managed e le consulenze accettiamo bonifici e principali carte di credito.
+                                    Yes, for Cloud Managed plans and consultations we accept bank transfers and major credit cards.
                                 </AccordionContent>
                             </AccordionItem>
                             <AccordionItem value="sup-4">
-                                <AccordionTrigger>Posso cancellare l'abbonamento Cloud in qualsiasi momento?</AccordionTrigger>
+                                <AccordionTrigger>Can I cancel the Cloud subscription at any time?</AccordionTrigger>
                                 <AccordionContent>
-                                    Sì, non ci sono vincoli a lungo termine. Puoi cancellare mensilmente ed esportare i tuoi dati.
+                                    Yes, there are no long-term contracts. You can cancel monthly and export your data.
                                 </AccordionContent>
                             </AccordionItem>
                             <AccordionItem value="sup-5">
-                                <AccordionTrigger>Fate rimborsi?</AccordionTrigger>
+                                <AccordionTrigger>Do you offer refunds?</AccordionTrigger>
                                 <AccordionContent>
-                                    ```
+                                    For Assisted Setup, if we are unable to complete the installation due to technical problems attributable to us, we will refund the full amount.
                                 </AccordionContent>
                             </AccordionItem>
                         </Accordion>
                     </section>
-                    {/* Dettagli Operativi e Avanzati */}
+                    {/* Operational & Detailed Details */}
                     <section>
-                        <h2 className="text-2xl font-semibold mb-4 text-primary">Operatività & Dettagli</h2>
+                        <h2 className="text-2xl font-semibold mb-4 text-primary">Operations & Details</h2>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
                             <Accordion type="single" collapsible className="w-full">
                                 <AccordionItem value="op-1">
-                                    <AccordionTrigger>È possibile gestire prenotazioni di gruppo?</AccordionTrigger>
-                                    <AccordionContent>Sì, puoi creare prenotazioni multiple e associarle allo stesso capogruppo per una gestione semplificata.</AccordionContent>
+                                    <AccordionTrigger>Is it possible to manage group bookings?</AccordionTrigger>
+                                    <AccordionContent>Yes, you can create multiple bookings and associate them with the same group leader for simplified management.</AccordionContent>
                                 </AccordionItem>
                             </Accordion>
                             <Accordion type="single" collapsible className="w-full">
                                 <AccordionItem value="op-2">
-                                    <AccordionTrigger>Posso applicare codici sconto?</AccordionTrigger>
-                                    <AccordionContent>Attualmente i prezzi sono calcolati sui listini, la gestione coupon è in fase di sviluppo per la v2.1.</AccordionContent>
+                                    <AccordionTrigger>Can I apply discount codes?</AccordionTrigger>
+                                    <AccordionContent>Currently, prices are calculated on price lists; coupon management is under development for v2.1.</AccordionContent>
                                 </AccordionItem>
                             </Accordion>
                             <Accordion type="single" collapsible className="w-full">
                                 <AccordionItem value="op-3">
-                                    <AccordionTrigger>Il sistema funziona su tablet?</AccordionTrigger>
-                                    <AccordionContent>Sì, l'interfaccia è completamente responsive e ottimizzata per l'uso su iPad e tablet Android, perfetta per la mobilità in campeggio.</AccordionContent>
+                                    <AccordionTrigger>Does the system work on tablets?</AccordionTrigger>
+                                    <AccordionContent>Yes, the interface is fully responsive and optimized for use on iPads and Android tablets, perfect for mobility in the campsite.</AccordionContent>
                                 </AccordionItem>
                             </Accordion>
                             <Accordion type="single" collapsible className="w-full">
                                 <AccordionItem value="op-4">
-                                    <AccordionTrigger>Serve una connessione internet sempre attiva?</AccordionTrigger>
-                                    <AccordionContent>Sì, essendo un'applicazione web basata su cloud (o server connesso), è necessaria la connessione. In caso di disconnessione, i dati non vengono persi ma non potrai salvarne di nuovi.</AccordionContent>
+                                    <AccordionTrigger>Do I need an always-active internet connection?</AccordionTrigger>
+                                    <AccordionContent>Yes, being a cloud-based web application (or connected server), a connection is required. In case of disconnection, data is not lost, but you will not be able to save new data.</AccordionContent>
                                 </AccordionItem>
                             </Accordion>
                             <Accordion type="single" collapsible className="w-full">
                                 <AccordionItem value="op-5">
-                                    <AccordionTrigger>Posso esportare i dati in Excel?</AccordionTrigger>
-                                    <AccordionContent>Certamente. Quasi tutte le tabelle (Ospiti, Prenotazioni) hanno la funzione "Esporta CSV" compatibile con Excel.</AccordionContent>
+                                    <AccordionTrigger>Can I export data to Excel?</AccordionTrigger>
+                                    <AccordionContent>Certainly. Almost all tables (Guests, Reservations) have the "Export CSV" function compatible with Excel.</AccordionContent>
                                 </AccordionItem>
                             </Accordion>
                             <Accordion type="single" collapsible className="w-full">
                                 <AccordionItem value="op-6">
-                                    <AccordionTrigger>Gestisce la tassa di soggiorno?</AccordionTrigger>
-                                    <AccordionContent>Il sistema permette di configurare costi extra fissi o per persona, utilizzabili per calcolare la tassa di soggiorno.</AccordionContent>
+                                    <AccordionTrigger>Does it manage the tourist tax?</AccordionTrigger>
+                                    <AccordionContent>The system allows you to configure fixed or per-person extra costs, usable to calculate the tourist tax.</AccordionContent>
                                 </AccordionItem>
                             </Accordion>
                             <Accordion type="single" collapsible className="w-full">
                                 <AccordionItem value="op-7">
-                                    <AccordionTrigger>Si collega alle stampanti fiscali?</AccordionTrigger>
-                                    <AccordionContent>Non nativamente. È necessario un modulo middleware specifico per la tua stampante (Epson, RCH, ecc.) da sviluppare ad hoc.</AccordionContent>
+                                    <AccordionTrigger>Does it connect to fiscal printers?</AccordionTrigger>
+                                    <AccordionContent>Not natively. A specific middleware module for your printer (Epson, RCH, etc.) needs to be developed ad hoc.</AccordionContent>
                                 </AccordionItem>
                             </Accordion>
                             <Accordion type="single" collapsible className="w-full">
                                 <AccordionItem value="op-8">
-                                    <AccordionTrigger>Posso personalizzare le email di conferma?</AccordionTrigger>
-                                    <AccordionContent>Le email transazionali sono gestite tramite template. Nel piano self-hosted hai pieno controllo sul codice HTML delle email.</AccordionContent>
+                                    <AccordionTrigger>Can I customize confirmation emails?</AccordionTrigger>
+                                    <AccordionContent>Transactional emails are managed via templates. In the self-hosted plan, you have full control over the HTML code of the emails.</AccordionContent>
                                 </AccordionItem>
                             </Accordion>
                             <Accordion type="single" collapsible className="w-full">
                                 <AccordionItem value="op-9">
-                                    <AccordionTrigger>C'è un limite di utenti staff?</AccordionTrigger>
-                                    <AccordionContent>No, puoi creare infiniti account per il tuo staff (receptionist, manodopera, amministratori) senza costi aggiuntivi.</AccordionContent>
+                                    <AccordionTrigger>Is there a limit on staff users?</AccordionTrigger>
+                                    <AccordionContent>No, you can create infinite accounts for your staff (receptionists, laborers, administrators) at no additional cost.</AccordionContent>
                                 </AccordionItem>
                             </Accordion>
                             <Accordion type="single" collapsible className="w-full">
                                 <AccordionItem value="op-10">
-                                    <AccordionTrigger>Il database viene backuppato?</AccordionTrigger>
-                                    <AccordionContent>Su Supabase (Cloud) i backup sono automatici. Se gestisci il tuo server, devi configurare tu i cronjob di backup (possiamo assisterti nel piano Setup).</AccordionContent>
+                                    <AccordionTrigger>Is the database backed up?</AccordionTrigger>
+                                    <AccordionContent>On Supabase (Cloud) backups are automatic. If you manage your own server, you must configure backup cronjobs yourself (we can assist you in the Setup plan).</AccordionContent>
                                 </AccordionItem>
                             </Accordion>
                             <Accordion type="single" collapsible className="w-full">
                                 <AccordionItem value="op-11">
-                                    <AccordionTrigger>È conforme al GDPR?</AccordionTrigger>
-                                    <AccordionContent>Il software è progettato per la privacy by design. Tuttavia, la conformità legale (nomina DPO, registro trattamenti) spetta al gestore della struttura.</AccordionContent>
+                                    <AccordionTrigger>Is it GDPR compliant?</AccordionTrigger>
+                                    <AccordionContent>The software is designed for privacy by design. However, legal compliance (appointing a DPO, processing register) is the responsibility of the facility manager.</AccordionContent>
                                 </AccordionItem>
                             </Accordion>
                             <Accordion type="single" collapsible className="w-full">
                                 <AccordionItem value="op-12">
-                                    <AccordionTrigger>Posso cambiare i colori interfaccia?</AccordionTrigger>
-                                    <AccordionContent>L'interfaccia supporta la modalità Chiaro/Scuro. Per cambiare i colori del brand, è necessario modificare il file di configurazione del tema Tailwind.</AccordionContent>
+                                    <AccordionTrigger>Can I change the interface colors?</AccordionTrigger>
+                                    <AccordionContent>The interface supports Light/Dark mode. To change brand colors, you need to modify the Tailwind theme configuration file.</AccordionContent>
                                 </AccordionItem>
                             </Accordion>
                             <Accordion type="single" collapsible className="w-full">
                                 <AccordionItem value="op-13">
-                                    <AccordionTrigger>Gestisce stagionalità multiple?</AccordionTrigger>
-                                    <AccordionContent>Sì, puoi definire periodi di Alta, Media e Bassa stagione con listini prezzi differenti.</AccordionContent>
+                                    <AccordionTrigger>Does it manage multiple seasons?</AccordionTrigger>
+                                    <AccordionContent>Yes, you can define High, Medium, and Low season periods with different price lists.</AccordionContent>
                                 </AccordionItem>
                             </Accordion>
                             <Accordion type="single" collapsible className="w-full">
                                 <AccordionItem value="op-14">
-                                    <AccordionTrigger>Posso bloccare una piazzola per manutenzione?</AccordionTrigger>
-                                    <AccordionContent>Sì, esiste lo stato "Bloccato" che impedisce nuove prenotazioni su quella risorsa per il periodo selezionato.</AccordionContent>
+                                    <AccordionTrigger>Can I block a pitch for maintenance?</AccordionTrigger>
+                                    <AccordionContent>Yes, there is a "Blocked" status that prevents new reservations on that resource for the selected period.</AccordionContent>
                                 </AccordionItem>
                             </Accordion>
                             <Accordion type="single" collapsible className="w-full">
                                 <AccordionItem value="op-15">
-                                    <AccordionTrigger>Come gestisco i "No Show"?</AccordionTrigger>
-                                    <AccordionContent>Puoi segnare la prenotazione come "Cancellata" o "No Show", liberando immediatamente la disponibilità sul calendario.</AccordionContent>
+                                    <AccordionTrigger>How do I manage "No Shows"?</AccordionTrigger>
+                                    <AccordionContent>You can mark the reservation as "Cancelled" or "No Show", immediately freeing up availability on the calendar.</AccordionContent>
                                 </AccordionItem>
                             </Accordion>
                             <Accordion type="single" collapsible className="w-full">
                                 <AccordionItem value="op-16">
-                                    <AccordionTrigger>C'è una mappa interattiva?</AccordionTrigger>
-                                    <AccordionContent>Stiamo sviluppando un modulo SVG interattivo per visualizzare la mappa del campeggio e cliccare direttamente sulle piazzole.</AccordionContent>
+                                    <AccordionTrigger>Is there an interactive map?</AccordionTrigger>
+                                    <AccordionContent>We are developing an interactive SVG module to view the campsite map and click directly on pitches.</AccordionContent>
                                 </AccordionItem>
                             </Accordion>
                             <Accordion type="single" collapsible className="w-full">
                                 <AccordionItem value="op-17">
-                                    <AccordionTrigger>Chi possiede i dati dei miei clienti?</AccordionTrigger>
-                                    <AccordionContent>Tu e solo tu. A differenza dei portali di booking, con CampFlow i dati sono di tua esclusiva proprietà.</AccordionContent>
+                                    <AccordionTrigger>Who owns my customer data?</AccordionTrigger>
+                                    <AccordionContent>You and only you. Unlike booking portals, with CampFlow data is your exclusive property.</AccordionContent>
                                 </AccordionItem>
                             </Accordion>
                             <Accordion type="single" collapsible className="w-full">
                                 <AccordionItem value="op-18">
-                                    <AccordionTrigger>Posso importare dati da un vecchio gestionale?</AccordionTrigger>
-                                    <AccordionContent>È possibile importare anagrafiche via CSV. Per lo storico prenotazioni, valutiamo caso per caso tramite il servizio di Setup Assistito.</AccordionContent>
+                                    <AccordionTrigger>Can I import data from old software?</AccordionTrigger>
+                                    <AccordionContent>It is possible to import registries via CSV. For booking history, we evaluate on a case-by-case basis via the Assisted Setup service.</AccordionContent>
                                 </AccordionItem>
                             </Accordion>
                             <Accordion type="single" collapsible className="w-full">
                                 <AccordionItem value="op-19">
-                                    <AccordionTrigger>È multilingua?</AccordionTrigger>
-                                    <AccordionContent>Il frontend pubblico è disponibile in Italiano e Inglese. Il backend gestionale è attualmente in Italiano.</AccordionContent>
+                                    <AccordionTrigger>Is it multilingual?</AccordionTrigger>
+                                    <AccordionContent>The public frontend is available in Italian and English. The management backend is currently in Italian.</AccordionContent>
                                 </AccordionItem>
                             </Accordion>
                             <Accordion type="single" collapsible className="w-full">
                                 <AccordionItem value="op-20">
-                                    <AccordionTrigger>Cosa succede se Simone smette di svilupparlo?</AccordionTrigger>
-                                    <AccordionContent>Essendo Open Source, il codice rimane a te. Qualsiasi altro sviluppatore può prenderlo in carico e continuarlo. Non sei vincolato a noi.</AccordionContent>
+                                    <AccordionTrigger>What happens if Simone stops developing it?</AccordionTrigger>
+                                    <AccordionContent>Being Open Source, the code remains yours. Any other developer can take it over and continue it. You are not bound to us.</AccordionContent>
                                 </AccordionItem>
                             </Accordion>
                         </div>

@@ -585,3 +585,27 @@ Complete rewrite of `README.md` to transition from a developer-only guide to a p
     - **Professional Tools**: Added Seasonal Pricing, Customer Groups, and System Monitor.
 - **Cleanup**: Removed internal references (`TO_SIMO_DO.md`) from the public README.
 - **Links**: Added link to the live website/demo.
+
+## Website Translation & Localization (2026-01-29)
+
+### Overview
+Complete translation of the public-facing website from Italian to English to reach an international audience.
+
+### Translated Components
+1.  **Layout (`src/app/layout.tsx`)**
+    - Metadata (title, description, keywords)
+    - Navigation menu items
+    - Footer links and texts
+
+2.  **Listing Pages**
+    - **Home**: Hero section, value propositions, features overview.
+    - **Features**: Detailed feature descriptions, accordion items.
+    - **Pricing**: Plan descriptions, features lists, FAQ snippets.
+    - **FAQ**: Comprehensive translation of all Frequency Asked Questions categories (General, Technical, Features, Pricing, Operations).
+    - **Privacy & Terms**: Full legal text translation for international compliance.
+    - **Contact**: Form labels, placeholders, and contact information.
+
+### Technical Notes
+- **Metadata**: Updated all `metadata` exports to English for better SEO.
+- **Content**: Preserved all original formatting and HTML structure.
+- **Links**: Kept all internal and external links functional.

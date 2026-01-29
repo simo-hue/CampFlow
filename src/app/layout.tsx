@@ -8,23 +8,23 @@ import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 export const metadata: Metadata = {
   metadataBase: new URL("https://simo-hue.github.io/CampFlow"),
   title: {
-    default: "CampFlow | Gestionale Campeggi Gratis Open Source",
+    default: "CampFlow | Free Open Source Camping Management Software",
     template: "%s | CampFlow"
   },
-  description: "Il miglior software gestionale open source per campeggi, villaggi turistici e aree sosta. Prenotazioni, check-in veloce, schedine alloggiati e statistiche. Tutto gratis.",
-  keywords: ["gestionale campeggio gratis", "software campeggio open source", "pms hotel open source", "gestione piazzole", "software villaggi turistici", "booking engine open source"],
+  description: "The best open source management software for campsites, holiday villages and rest areas. Reservations, fast check-in, guest reporting and statistics. All free.",
+  keywords: ["free camping management software", "open source camping software", "open source hotel pms", "pitch management", "holiday village software", "open source booking engine"],
   openGraph: {
     type: 'website',
-    locale: 'it_IT',
+    locale: 'en_US',
     url: 'https://simo-hue.github.io/CampFlow',
-    title: 'CampFlow | Il Gestionale per Campeggi Open Source',
-    description: 'Gestisci il tuo campeggio con semplicità. Prenotazioni, mappa interattiva e check-in veloci. 100% Gratuito e Open Source.',
+    title: 'CampFlow | The Open Source Camping Management Software',
+    description: 'Manage your campsite with simplicity. Reservations, interactive map and fast check-ins. 100% Free and Open Source.',
     siteName: 'CampFlow',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'CampFlow | Gestionale Campeggi Open Source',
-    description: 'Il futuro della gestione camping è Open Source. Provalo ora.',
+    title: 'CampFlow | Open Source Camping Management Software',
+    description: 'The future of camping management is Open Source. Try it now.',
   },
   authors: [{ name: "Simone Mattioli", url: "https://simo-hue.github.io" }],
   creator: "Simone Mattioli",
@@ -36,7 +36,7 @@ export default function WebsiteLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="it" className="dark">
+    <html lang="en" className="dark">
       <body className="antialiased min-h-screen bg-background text-foreground">
         <div className="flex min-h-screen flex-col">
           {/* Website Header */}
@@ -52,19 +52,19 @@ export default function WebsiteLayout({
               {/* Desktop Nav */}
               <nav className="hidden md:flex items-center gap-6">
                 <Link href="/features" className="text-sm font-medium hover:text-primary transition-colors">
-                  Funzionalità
+                  Features
                 </Link>
                 <Link href="/pricing" className="text-sm font-medium hover:text-primary transition-colors">
-                  Prezzi
+                  Pricing
                 </Link>
                 <Link href="/faq" className="text-sm font-medium hover:text-primary transition-colors">
                   FAQ
                 </Link>
                 <Link href="/contact" className="text-sm font-medium hover:text-primary transition-colors">
-                  Contatti
+                  Contact
                 </Link>
                 <a href="https://github.com/simo-hue/CampFlow" target="_blank" rel="noopener noreferrer">
-                  <Button size="sm">Vedi su GitHub <ArrowRight className="ml-2 w-4 h-4" /></Button>
+                  <Button size="sm">View on GitHub <ArrowRight className="ml-2 w-4 h-4" /></Button>
                 </a>
               </nav>
 
@@ -77,13 +77,13 @@ export default function WebsiteLayout({
                 </SheetTrigger>
                 <SheetContent side="right">
                   <div className="flex flex-col gap-4 mt-8">
-                    <Link href="/features" className="text-lg font-medium">Funzionalità</Link>
-                    <Link href="/pricing" className="text-lg font-medium">Prezzi</Link>
+                    <Link href="/features" className="text-lg font-medium">Features</Link>
+                    <Link href="/pricing" className="text-lg font-medium">Pricing</Link>
                     <Link href="/faq" className="text-lg font-medium">FAQ</Link>
-                    <Link href="/contact" className="text-lg font-medium">Contatti</Link>
+                    <Link href="/contact" className="text-lg font-medium">Contact</Link>
                     <div className="h-px bg-border my-2" />
                     <a href="https://github.com/simo-hue/CampFlow" target="_blank" rel="noopener noreferrer">
-                      <Button className="w-full">Vedi su GitHub</Button>
+                      <Button className="w-full">View on GitHub</Button>
                     </a>
                   </div>
                 </SheetContent>
@@ -102,7 +102,7 @@ export default function WebsiteLayout({
               <p>© {new Date().getFullYear()} CampFlow. Open Source Project by <a href="https://simo-hue.github.io" target="_blank" rel="noopener noreferrer" className="hover:text-primary underline decoration-dotted underline-offset-4">Simone Mattioli</a>.</p>
               <div className="flex items-center gap-6">
                 <Link href="/privacy" className="hover:text-primary transition-colors">Privacy Policy</Link>
-                <Link href="/terms" className="hover:text-primary transition-colors">Termini & Condizioni</Link>
+                <Link href="/terms" className="hover:text-primary transition-colors">Terms & Conditions</Link>
                 <div className="h-4 w-px bg-border hidden md:block" />
                 <a href="https://github.com/simo-hue" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">GitHub</a>
                 <a href="https://www.linkedin.com/in/simonemattioli2003/" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">LinkedIn</a>

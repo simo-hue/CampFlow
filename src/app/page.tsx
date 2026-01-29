@@ -6,8 +6,8 @@ import { DemoHeroDashboard } from '@/components/website/demos/DemoHeroDashboard'
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: "Software Gestionale Campeggio Gratis e Open Source | CampFlow",
-  description: "CampFlow è il software gestionale per campeggi definitivo. Open Source, gratuito, moderno. Gestisci prenotazioni, piazzole e ospiti senza costi di licenza.",
+  title: "Free Open Source Camping Management Software | CampFlow",
+  description: "CampFlow is the ultimate camping management software. Open Source, free, modern. Manage reservations, pitches and guests without license costs.",
   alternates: {
     canonical: 'https://campflow.app/w',
   }
@@ -25,7 +25,7 @@ export default function LandingPage() {
       'price': '0',
       'priceCurrency': 'EUR'
     },
-    'description': 'Software gestionale open source per campeggi e strutture ricettive. Gestione prenotazioni, check-in, e statistiche.',
+    'description': 'Open source management software for campsites and accommodation facilities. Reservation management, check-in, and statistics.',
     'aggregateRating': {
       '@type': 'AggregateRating',
       'ratingValue': '5',
@@ -54,25 +54,25 @@ export default function LandingPage() {
         <div className="container mx-auto px-4 text-center z-10 relative">
           <div className="inline-flex items-center rounded-full border px-3 py-1 text-sm font-medium transition-colors focus:outline-none border-primary/20 bg-primary/5 text-primary mb-6 backdrop-blur-sm">
             <span className="flex h-2 w-2 rounded-full bg-primary mr-2 animate-pulse"></span>
-            La Soluzione Open Source Definitiva
+            The Definitive Open Source Solution
           </div>
           <h1 className="text-5xl md:text-7xl font-bold tracking-tight mb-8 bg-clip-text text-transparent bg-gradient-to-b from-foreground to-foreground/60 leading-tight pb-2">
-            Il Tuo Campeggio, <br />
-            Gestito col Pilota Automatico.
+            Your Campsite, <br />
+            Managed on Autopilot.
           </h1>
           <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto mb-12 leading-relaxed">
-            Dimentica i vecchi software lenti e complessi. <br className="hidden sm:block" />
-            CampFlow ti dà il controllo totale su prenotazioni, ospiti e check-in.
+            Forget slow and complex legacy software. <br className="hidden sm:block" />
+            CampFlow gives you total control over reservations, guests, and check-ins.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-20">
             <Link href="/contact">
               <Button size="lg" className="h-14 px-8 text-lg rounded-full shadow-lg hover:shadow-primary/25 transition-all">
-                Inizia Gratis Ora <ArrowRight className="ml-2 w-5 h-5" />
+                Start for Free Now <ArrowRight className="ml-2 w-5 h-5" />
               </Button>
             </Link>
             <Link href="/features">
               <Button size="lg" variant="outline" className="h-14 px-8 text-lg rounded-full">
-                Esplora Funzionalità
+                Explore Features
               </Button>
             </Link>
           </div>
@@ -95,9 +95,9 @@ export default function LandingPage() {
       <section className="py-32 bg-background relative">
         <div className="container mx-auto px-4">
           <div className="text-center mb-20">
-            <h2 className="text-4xl font-bold tracking-tight mb-6">Tutto quello che ti serve. <br /> E anche di più.</h2>
+            <h2 className="text-4xl font-bold tracking-tight mb-6">Everything you need. <br /> And even more.</h2>
             <p className="text-muted-foreground text-xl max-w-2xl mx-auto">
-              Non solo prenotazioni. CampFlow gestisce l'intero ciclo di vita del tuo ospite.
+              Not just reservations. CampFlow manages the entire lifecycle of your guest.
             </p>
           </div>
 
@@ -111,10 +111,10 @@ export default function LandingPage() {
                 <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center mb-6 text-primary">
                   <Calendar className="w-6 h-6" />
                 </div>
-                <h3 className="text-2xl font-bold mb-3">Planning Visivo</h3>
+                <h3 className="text-2xl font-bold mb-3">Visual Planning</h3>
                 <p className="text-muted-foreground text-lg max-w-md">
-                  Un calendario drag & drop che ti fa vedere tutto a colpo d'occhio.
-                  Sposta prenotazioni, blocca piazzole e gestisci gruppi con la semplicità di un disegno.
+                  A drag & drop calendar that lets you see everything at a glance.
+                  Move reservations, block pitches, and manage groups with the simplicity of a drawing.
                 </p>
               </div>
             </div>
@@ -124,9 +124,9 @@ export default function LandingPage() {
               <div className="w-12 h-12 bg-blue-500/10 rounded-2xl flex items-center justify-center mb-6 text-blue-600">
                 <BarChart3 className="w-6 h-6" />
               </div>
-              <h3 className="text-xl font-bold mb-3">Analytics Pro</h3>
+              <h3 className="text-xl font-bold mb-3">Pro Analytics</h3>
               <p className="text-muted-foreground">
-                Previsioni di occupazione e report incassi in tempo reale. Prendi decisioni basate sui dati, non sull'istinto.
+                Occupancy forecasts and revenue reports in real time. Make data-driven decisions, not instinct-driven ones.
               </p>
             </div>
 
@@ -135,9 +135,9 @@ export default function LandingPage() {
               <div className="w-12 h-12 bg-green-500/10 rounded-2xl flex items-center justify-center mb-6 text-green-600">
                 <Zap className="w-6 h-6" />
               </div>
-              <h3 className="text-xl font-bold mb-3">Velocità Supersonica</h3>
+              <h3 className="text-xl font-bold mb-3">Supersonic Speed</h3>
               <p className="text-muted-foreground">
-                Check-in in 30 secondi. Ricerca istantanea. Tutto è ottimizzato per non farti perdere tempo.
+                Check-in in 30 seconds. Instant search. Everything is optimized to not waste your time.
               </p>
             </div>
 
@@ -150,10 +150,10 @@ export default function LandingPage() {
                 <div className="w-12 h-12 bg-purple-500/10 rounded-2xl flex items-center justify-center mb-6 text-purple-600">
                   <Users className="w-6 h-6" />
                 </div>
-                <h3 className="text-2xl font-bold mb-3">CRM Ospiti Integrato</h3>
+                <h3 className="text-2xl font-bold mb-3">Integrated Guest CRM</h3>
                 <p className="text-muted-foreground text-lg max-w-md">
-                  Conosci i tuoi clienti. Storico soggiorni, preferenze, segnalazioni e invio automatico schede alloggiati.
-                  Fidelizza i tuoi ospiti migliori.
+                  Know your customers. Stay history, preferences, reports and automatic sending of guest forms.
+                  Retain your best guests.
                 </p>
               </div>
             </div>
@@ -165,13 +165,13 @@ export default function LandingPage() {
       <section className="py-24 bg-primary text-primary-foreground relative overflow-hidden">
         <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20"></div>
         <div className="container mx-auto px-4 text-center relative z-10">
-          <h2 className="text-3xl md:text-5xl font-bold mb-6">Pronto a migliorare il tuo campeggio?</h2>
+          <h2 className="text-3xl md:text-5xl font-bold mb-6">Ready to improve your campsite?</h2>
           <p className="text-primary-foreground/80 text-lg md:text-xl max-w-2xl mx-auto mb-10">
-            Unisciti agli altri campeggi che gestiscono le loro operazioni con CampFlow.
+            Join other campsites managing their operations with CampFlow.
           </p>
           <Link href="/contact">
             <Button size="lg" variant="secondary" className="h-14 px-8 text-lg shadow-xl hover:shadow-2xl transition-all">
-              Inizia Gratis
+              Start for Free
             </Button>
           </Link>
         </div>

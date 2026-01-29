@@ -5,45 +5,45 @@ export default function PrivacyPage() {
 
             <div className="prose prose-zinc dark:prose-invert max-w-none space-y-8">
                 <section>
-                    <h2 className="text-2xl font-semibold mb-4">1. Nessuna Raccolta Dati</h2>
+                    <h2 className="text-2xl font-semibold mb-4">1. No Data Collection</h2>
                     <p className="text-muted-foreground leading-relaxed">
-                        CampFlow è un progetto <strong>Open Source</strong> progettato per la massima trasparenza e privacy.
-                        Questo sito web (ospitato su GitHub Pages) e l'applicazione stessa <strong>non utilizzano cookie di tracciamento</strong>,
-                        non contengono script analitici di terze parti (come Google Analytics o Facebook Pixel) e non raccolgono dati personali a fini di marketing.
+                        CampFlow is an <strong>Open Source</strong> project designed for maximum transparency and privacy.
+                        This website (hosted on GitHub Pages) and the application itself <strong>do not use tracking cookies</strong>,
+                        do not contain third-party analytics scripts (like Google Analytics or Facebook Pixel), and do not collect personal data for marketing purposes.
                     </p>
                 </section>
 
                 <section>
-                    <h2 className="text-2xl font-semibold mb-4">2. Dati Inseriti nell'Applicazione</h2>
+                    <h2 className="text-2xl font-semibold mb-4">2. Data Entered in the Application</h2>
                     <p className="text-muted-foreground leading-relaxed">
-                        Qualsiasi dato inserito nella demo o nell'applicazione self-hosted (nomi ospiti, prenotazioni, ecc.) risiede esclusivamente:
+                        Any data entered in the demo or in the self-hosted application (guest names, reservations, etc.) resides exclusively:
                     </p>
                     <ul className="list-disc pl-6 space-y-2 text-muted-foreground mt-4">
-                        <li>Nella memoria locale del tuo browser (per le demo live).</li>
-                        <li>Nel tuo database personale (se decidi di installare e ospitare CampFlow sui tuoi server).</li>
+                        <li>In the local memory of your browser (for live demos).</li>
+                        <li>In your personal database (if you decide to install and host CampFlow on your own servers).</li>
                     </ul>
                     <p className="text-muted-foreground leading-relaxed mt-4">
-                        Noi sviluppatori di CampFlow non abbiamo alcun accesso ai tuoi dati operativi. I dati sono tuoi e restano tuoi.
+                        We CampFlow developers have no access to your operational data. The data is yours and remains yours.
                     </p>
                 </section>
 
                 <section>
                     <h2 className="text-2xl font-semibold mb-4">3. GitHub Pages</h2>
                     <p className="text-muted-foreground leading-relaxed">
-                        Questo sito è ospitato su GitHub Pages. GitHub potrebbe raccogliere log tecnici di base (es. indirizzo IP per fini di sicurezza e accesso)
-                        come parte standard dell'erogazione del servizio di hosting, come indicato nella <a href="https://docs.github.com/en/site-policy/privacy-policies/github-privacy-statement" target="_blank" className="text-primary hover:underline">Privacy Statement di GitHub</a>.
+                        This site is hosted on GitHub Pages. GitHub may collect basic technical logs (e.g. IP address for security and access purposes)
+                        as part of the standard service delivery for hosting, as stated in the <a href="https://docs.github.com/en/site-policy/privacy-policies/github-privacy-statement" target="_blank" className="text-primary hover:underline">GitHub Privacy Statement</a>.
                     </p>
                 </section>
 
                 <section>
-                    <h2 className="text-2xl font-semibold mb-4">4. Contatti</h2>
+                    <h2 className="text-2xl font-semibold mb-4">4. Contacts</h2>
                     <p className="text-muted-foreground leading-relaxed">
-                        Se hai domande tecniche o curiosità sul codice, puoi aprire una Issue sul <a href="https://github.com/simo-hue" className="text-primary hover:underline">repository GitHub</a>.
+                        If you have technical questions or curiosities about the code, you can open an Issue on the <a href="https://github.com/simo-hue" className="text-primary hover:underline">GitHub repository</a>.
                     </p>
                 </section>
 
                 <div className="pt-8 border-t text-sm text-muted-foreground">
-                    Ultimo aggiornamento: {new Date().toLocaleDateString('it-IT')}
+                    Last updated: {new Date().toLocaleDateString('en-US')}
                 </div>
             </div>
         </div>

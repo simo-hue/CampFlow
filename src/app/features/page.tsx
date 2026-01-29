@@ -23,105 +23,105 @@ import { DemoSystemWidget } from '@/components/website/demos/DemoSystemWidget';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-    title: "Funzionalità | Gestionale Campeggio con Mappa Interattiva",
-    description: "Scopri le funzioni di CampFlow: Planning visivo, Check-in veloce, Schedine Alloggiati, Statistiche e CRM. Il PMS per campeggi completo e gratuito.",
+    title: "Features | Camping Management with Interactive Map",
+    description: "Discover CampFlow features: Visual Planning, Fast Check-in, Guest Reporting, Statistics and CRM. The complete and free PMS for campsites.",
 };
 
 export default function FeaturesPage() {
     const featureSections = [
         {
-            title: "Controllo Totale",
-            description: "Una dashboard potente per avere sempre il polso della situazione.",
+            title: "Total Control",
+            description: "A powerful dashboard to always keep your finger on the pulse.",
             icon: LayoutDashboard,
             demo: <DemoStatsWidget />,
             features: [
                 {
-                    title: "Dashboard Intuitiva",
-                    description: "Tieni sotto controllo arrivi, partenze e occupazione in tempo reale con una sola occhiata.",
+                    title: "Intuitive Dashboard",
+                    description: "Keep track of arrivals, departures, and occupancy in real time at a glance.",
                     icon: BarChart3
                 },
                 {
-                    title: "Calendario Occupazione",
-                    description: "Visualizza graficamente lo stato delle piazzole. Una griglia chiara ti mostra chi c'è e chi sta arrivando.",
+                    title: "Occupancy Calendar",
+                    description: "Visually view the status of pitches. A clear grid shows who is there and who is arriving.",
                     icon: Calendar
                 },
                 {
-                    title: "Statistiche Avanzate",
-                    description: "Grafici predittivi sull'occupazione settimanale per pianificare meglio le risorse.",
+                    title: "Advanced Statistics",
+                    description: "Predictive graphs on weekly occupancy to better plan resources.",
                     icon: Zap
                 }
             ]
         },
         {
-            title: "Operatività Semplificata",
-            description: "Strumenti pensati per velocizzare il lavoro quotidiano in reception.",
+            title: "Simplified Operations",
+            description: "Tools designed to speed up daily work at reception.",
             icon: UserCheck,
             demo: <DemoCheckInWidget />,
             features: [
                 {
                     title: "Smart Check-in",
-                    description: "Registrazione rapida degli ospiti con autocomplete per Comuni e Province italiane.",
+                    description: "Quick guest registration with autocomplete for Italian Municipalities and Provinces.",
                     icon: UserCheck
                 },
                 {
-                    title: "Gestione Clienti (CRM)",
-                    description: "Un database completo dei tuoi ospiti con storico prenotazioni e contatti rapidi (Email/Telefono).",
+                    title: "Guest Management (CRM)",
+                    description: "A complete database of your guests with booking history and quick contacts (Email/Phone).",
                     icon: Users
                 },
                 {
-                    title: "Integrazione Questura",
-                    description: "Tieni traccia degli invii al portale Alloggiati Web. Segna chi è stato inviato e chi no.",
+                    title: "Police Integration",
+                    description: "Keep track of submissions to the Alloggiati Web portal. Mark who has been sent and who hasn't.",
                     icon: ShieldCheck
                 },
                 {
-                    title: "Ricerca Potenziata",
-                    description: "Trova prenotazioni e clienti in un attimo cercando per nome, email o numero di telefono.",
+                    title: "Enhanced Search",
+                    description: "Find bookings and customers in an instant by searching by name, email, or phone number.",
                     icon: Search
                 }
             ]
         },
         {
-            title: "Pianificazione Visiva",
-            description: "Il cuore del tuo campeggio: un calendario interattivo per la gestione delle piazzole.",
+            title: "Visual Planning",
+            description: "The heart of your campsite: an interactive calendar for pitch management.",
             icon: Calendar,
             demo: <DemoCalendarWidget />,
             features: [
                 {
                     title: "Drag & Drop (Coming Soon)",
-                    description: "Sposta le prenotazioni con rapidità (feature in arrivo).",
+                    description: "Move reservations quickly (feature coming soon).",
                     icon: BarChart3
                 },
                 {
-                    title: "Vista Matrice",
-                    description: "Incrocia piazzole e giorni per trovare subito i buchi liberi.",
+                    title: "Matrix View",
+                    description: "Cross-reference pitches and days to immediately find free slots.",
                     icon: Database
                 },
                 {
-                    title: "Filtri Avanzati",
-                    description: "Filtra per tipologia (Tenda, Camper, Bungalow) o per zona del campeggio.",
+                    title: "Advanced Filters",
+                    description: "Filter by type (Tent, Camper, Bungalow) or by campsite zone.",
                     icon: Globe
                 }
             ]
         },
         {
-            title: "Tecnologia & Controllo",
-            description: "Sotto il cofano, strumenti per sviluppatori e amministratori esigenti.",
+            title: "Technology & Control",
+            description: "Under the hood, tools for demanding developers and administrators.",
             icon: Database,
             demo: <DemoSystemWidget />,
             features: [
                 {
                     title: "System Monitor",
-                    description: "Una 'Scatola Nera' per monitorare la salute del server, i log di errore e le performance del database.",
+                    description: "A 'Black Box' to monitor server health, error logs, and database performance.",
                     icon: BarChart3
                 },
                 {
-                    title: "Azioni Amministrative",
-                    description: "Pannello di controllo per reset dati, pulizia log e gestione avanzata in caso di emergenza.",
+                    title: "Administrative Actions",
+                    description: "Control panel for data reset, log cleaning, and advanced management in case of emergency.",
                     icon: Database
                 },
                 {
                     title: "Open Source & Self-Host",
-                    description: "Il codice è tuo. Puoi ospitarlo dove vuoi e modificarlo come preferisci.",
+                    description: "The code is yours. You can host it wherever you want and modify it as you please.",
                     icon: Globe
                 }
             ]
@@ -139,17 +139,17 @@ export default function FeaturesPage() {
                         Feature Pack v1.0
                     </div>
                     <h1 className="text-4xl md:text-6xl font-bold tracking-tight mb-6">
-                        Molto più di un semplice <span className="text-primary">Excel</span>.
+                        Much more than a simple <span className="text-primary">Excel</span>.
                     </h1>
                     <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-10">
-                        CampFlow digitalizza ogni aspetto del tuo campeggio, dalla prenotazione alla segnalazione in Questura, tutto in un'unica piattaforma moderna.
+                        CampFlow digitizes every aspect of your campsite, from booking to reporting to the Police Headquarters, all in a single modern platform.
                     </p>
                     <div className="flex justify-center gap-4">
                         <Link href="/pricing">
-                            <Button size="lg" className="h-12 px-8">Vedi i Prezzi</Button>
+                            <Button size="lg" className="h-12 px-8">See Pricing</Button>
                         </Link>
                         <Link href="/contact">
-                            <Button size="lg" variant="outline" className="h-12 px-8">Richiedi Demo</Button>
+                            <Button size="lg" variant="outline" className="h-12 px-8">Request Demo</Button>
                         </Link>
                     </div>
                 </div>
@@ -211,9 +211,9 @@ export default function FeaturesPage() {
                                             <section.icon className="w-24 h-24 text-primary/40 stroke-1" />
                                         </div>
                                         <div className="space-y-2 max-w-sm">
-                                            <h4 className="text-xl font-medium text-foreground">Progettato per l'efficienza</h4>
+                                            <h4 className="text-xl font-medium text-foreground">Designed for efficiency</h4>
                                             <p className="text-muted-foreground text-sm">
-                                                Ogni interfaccia è studiata per ridurre i click e massimizzare la velocità operativa.
+                                                Every interface is designed to reduce clicks and maximize operational speed.
                                             </p>
                                         </div>
                                         <div className="grid grid-cols-2 gap-4 w-full max-w-xs mt-8 opacity-50">
@@ -234,20 +234,20 @@ export default function FeaturesPage() {
             <section className="py-20 bg-muted/30 border-y">
                 <div className="container mx-auto px-4">
                     <div className="text-center max-w-2xl mx-auto mb-16">
-                        <h2 className="text-3xl font-bold mb-4">E non finisce qui...</h2>
+                        <h2 className="text-3xl font-bold mb-4">And it doesn't end here...</h2>
                         <p className="text-muted-foreground">
-                            Piccoli dettagli che fanno una grande differenza nella gestione quotidiana.
+                            Small details that make a big difference in daily management.
                         </p>
                     </div>
 
                     <div className="grid md:grid-cols-3 gap-8">
                         {[
-                            { title: "Mobile Friendly", desc: "Gestisci tutto anche da tablet o smartphone mentre giri per il campeggio." },
-                            { title: "Dark Mode", desc: "Interfaccia scura elegante che riposa la vista durante i turni serali." },
-                            { title: "Log delle Attività", desc: "Tieni traccia di chi ha fatto cosa per la massima trasparenza." },
-                            { title: "Backup Automatici", desc: "I tuoi dati sono al sicuro nel cloud, replicati e protetti." },
-                            { title: "Filtri Personalizzati", desc: "Crea viste personalizzate della lista arrivi e partenze." },
-                            { title: "Supporto Whatsapp", desc: "Pulsanti rapidi per contattare gli ospiti su Whatsapp Web." }
+                            { title: "Mobile Friendly", desc: "Manage everything even from a tablet or smartphone while moving around the campsite." },
+                            { title: "Dark Mode", desc: "Elegant dark interface that rests your eyes during evening shifts." },
+                            { title: "Activity Log", desc: "Track who did what for maximum transparency." },
+                            { title: "Automatic Backups", desc: "Your data is safe in the cloud, replicated and protected." },
+                            { title: "Custom Filters", desc: "Create custom views of the arrivals and departures list." },
+                            { title: "Whatsapp Support", desc: "Quick buttons to contact guests on Whatsapp Web." }
                         ].map((item, i) => (
                             <div key={i} className="bg-background p-6 rounded-xl border hover:border-primary/50 transition-colors">
                                 <div className="flex items-center gap-3 mb-3">
@@ -264,13 +264,13 @@ export default function FeaturesPage() {
             {/* CTA Footer */}
             <section className="py-24 bg-primary text-primary-foreground">
                 <div className="container mx-auto px-4 text-center">
-                    <h2 className="text-3xl md:text-4xl font-bold mb-6">Pronto a modernizzare il tuo campeggio?</h2>
+                    <h2 className="text-3xl md:text-4xl font-bold mb-6">Ready to modernize your campsite?</h2>
                     <p className="text-primary-foreground/80 text-lg mb-10 max-w-2xl mx-auto">
-                        Inizia oggi stesso. Senza costi nascosti, senza vincoli.
+                        Start today. No hidden costs, no constraints.
                     </p>
                     <Link href="/contact">
                         <Button size="lg" variant="secondary" className="h-14 px-10 text-lg shadow-lg hover:shadow-xl transition-all">
-                            Parla con Simone
+                            Talk to Simone
                         </Button>
                     </Link>
                 </div>

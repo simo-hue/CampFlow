@@ -12,3 +12,8 @@
 - [ ] **Verifica Link**: Controlla che il link nel README (https://simo-hue.github.io/CampFlow/) funzioni correttamente.
 - [ ] **Social Share**: Se hai aggiornato l'immagine Open Graph, verifica su https://www.linkedin.com/post-inspector/ che l'anteprima sia corretta.
 - [ ] **GitHub Description**: Aggiorna la descrizione "About" del repo GitHub con: "The Modern Open-Source PMS for Campsites & Glamping. Blazing fast, offline-first PWA with zero-overbooking guarantee."
+
+### 2026-01-29 - English Translation
+- [ ] **Review**: Controlla tutte le pagine tradotte (Home, Features, Pricing, FAQ, Contact, Privacy, Terms) per eventuali errori o imprecisioni.
+- [ ] **Test Forms**: Verifica che il form di contatto funzioni correttamente con le nuove etichette in inglese.
+- [ ] **Deploy**: Esegui `./deploy.sh` per pubblicare le modifiche.

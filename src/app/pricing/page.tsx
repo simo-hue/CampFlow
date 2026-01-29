@@ -4,25 +4,25 @@ import Link from 'next/link';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-    title: "Prezzi | CampFlow Cloud vs Self-Hosted",
-    description: "CampFlow è Gratis e Open Source. Offriamo piani Cloud gestiti per chiamate assistenza e setup server per chi preferisce una soluzione chiavi in mano.",
+    title: "Pricing | CampFlow Cloud vs Self-Hosted",
+    description: "CampFlow is Free and Open Source. We offer managed Cloud plans for support calls and server setup for those who prefer a turnkey solution.",
 };
 
 export default function PricingPage() {
     const tiers = [
         {
             name: 'Community',
-            price: 'Gratis',
-            description: 'Per sviluppatori e chi sa gestirsi il server in autonomia.',
+            price: 'Free',
+            description: 'For developers and those who can manage the server independently.',
             icon: Github,
             features: [
-                'Codice Open Source completo',
-                'Self-hosting illimitato',
-                'Aggiornamenti manuali',
-                'Nessun costo di licenza',
-                'Supporto Community',
+                'Complete Open Source Code',
+                'Unlimited Self-hosting',
+                'Manual Updates',
+                'No License Cost',
+                'Community Support',
             ],
-            cta: 'Vai su GitHub',
+            cta: 'Go to GitHub',
             href: 'https://github.com/simo-hue',
             variant: 'outline',
             target: '_blank',
@@ -30,18 +30,18 @@ export default function PricingPage() {
             blurPrice: false,
         },
         {
-            name: 'Setup Assistito',
+            name: 'Assisted Setup',
             price: '€499',
-            period: 'una tantum',
-            description: 'Vuoi il Software ma non sei un esperto? Ti aiutiamo noi.',
+            period: 'one-time',
+            description: 'Want the software but not an expert? We help you.',
             icon: LifeBuoy,
             features: [
-                'Installazione in locale',
-                'Configurazione del campeggio',
-                '1 ora di formazione staff',
-                '30 giorni di supporto post-setup',
+                'Installation on premise/server',
+                'Campsite Configuration',
+                '1 hour of staff training',
+                '30 days post-setup support',
             ],
-            cta: 'Prenota il Tuo Setup Assistito',
+            cta: 'Book your Assisted Setup',
             href: '/contact',
             variant: 'outline',
             target: '_self',
@@ -52,16 +52,16 @@ export default function PricingPage() {
             name: 'Cloud Managed',
             price: '€499',
             blurPrice: true,
-            description: 'La soluzione chiavi in mano. Pensiamo a tutto noi.',
+            description: 'The turnkey solution. We take care of everything.',
             icon: Server,
             features: [
-                'Tutto pronto all\'uso',
-                'Hosting e Server incluso',
-                'Backup Dei Dati',
-                'Aggiornamenti automatici',
-                'Supporto Email Prioritario',
+                'Ready to use',
+                'Hosting and Server included',
+                'Data Backup',
+                'Automatic Updates',
+                'Priority Email Support',
             ],
-            cta: 'Parliamone Insieme',
+            cta: 'Let\'s Talk',
             href: 'mailto:mattioli.simone.10@gmail.com',
             variant: 'default',
             target: '_self',
@@ -73,9 +73,9 @@ export default function PricingPage() {
         <div className="py-20 bg-background">
             <div className="container mx-auto px-4">
                 <div className="text-center mb-16">
-                    <h1 className="text-4xl font-bold mb-4">Open Source, con Servizi Premium</h1>
+                    <h1 className="text-4xl font-bold mb-4">Open Source, with Premium Services</h1>
                     <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-                        CampFlow è gratuito e libero. Paghi solo se vuoi che lo gestiamo noi per te o se hai bisogno di aiuto per l'installazione.
+                        CampFlow is free and open. You only pay if you want us to manage it for you or if you need help with installation.
                     </p>
                 </div>
 
@@ -88,7 +88,7 @@ export default function PricingPage() {
                             {tier.popular && (
                                 <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
                                     <span className="bg-primary text-primary-foreground text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wide">
-                                        Più Popolare
+                                        Most Popular
                                     </span>
                                 </div>
                             )}
@@ -130,24 +130,24 @@ export default function PricingPage() {
 
                 {/* FAQ Section */}
                 <div className="mt-24 max-w-3xl mx-auto">
-                    <h2 className="text-2xl font-bold text-center mb-8">Domande Frequenti</h2>
+                    <h2 className="text-2xl font-bold text-center mb-8">Frequently Asked Questions</h2>
                     <div className="grid gap-6">
                         <div className="bg-card p-6 rounded-xl border">
-                            <h3 className="font-semibold mb-2">Davvero è gratis?</h3>
+                            <h3 className="font-semibold mb-2">Is it really free?</h3>
                             <p className="text-muted-foreground text-sm">
-                                Sì, la versione Community è 100% open source. Puoi scaricare il codice, installarlo sul tuo server e usarlo senza limiti, per sempre.
+                                Yes, the Community version is 100% open source. You can download the code, install it on your server, and use it without limits, forever.
                             </p>
                         </div>
                         <div className="bg-card p-6 rounded-xl border">
-                            <h3 className="font-semibold mb-2">Cosa include la "Gestione Cloud"?</h3>
+                            <h3 className="font-semibold mb-2">What does "Cloud Management" include?</h3>
                             <p className="text-muted-foreground text-sm">
-                                Include l'hosting su server performanti, la configurazione di sicurezza, i backup automatici e gli aggiornamenti del software. Tu ti occupi solo di gestire il tuo campeggio, a tutto il resto pensiamo noi.
+                                It includes hosting on high-performance servers, security configuration, automatic backups, and software updates. You only worry about managing your campsite, we take care of the rest.
                             </p>
                         </div>
                         <div className="bg-card p-6 rounded-xl border">
-                            <h3 className="font-semibold mb-2">Posso passare dalla versione Cloud a quella Self-hosted?</h3>
+                            <h3 className="font-semibold mb-2">Can I switch from Cloud to Self-hosted?</h3>
                             <p className="text-muted-foreground text-sm">
-                                Assolutamente sì. I dati sono tuoi. Puoi richiedere un export del database in qualsiasi momento e migrare sul tuo server privato.
+                                Absolutely yes. The data is yours. You can request a database export at any time and migrate to your private server.
                             </p>
                         </div>
                     </div>
