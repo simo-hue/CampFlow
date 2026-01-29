@@ -530,15 +530,7 @@ The `customers` table now has a `group_id` foreign key.
     -   Unified search and filter container with blur effect.
     -   Added "Filtra per Gruppo" functionality using the new API capability.
 
-<<<<<<< Updated upstream
-```markdown
-### 2026-01-18 - Organizzazione SQL Migrations
-- ✅ Creata struttura modulare nella cartella `supabase/migrations/`
-- ✅ 7 file SQL separati per responsabilità (extensions, tables, indexes, triggers, functions, seed, rls)
-- ✅ README completo con istruzioni esecuzione e query di verifica
-- ✅ Tutti i file sono idempotenti e con documentazione inline estesa
-- **Motivazione**: Facilita manutenzione, troubleshooting e deployment incrementale del database
-```
+
 
 ## Fix CSS Post-Deploy (2026-01-27)
 
@@ -578,3 +570,18 @@ Deploy eseguito su `gh-pages`. Il sito statico ora presenta la nuova matrice di 
 - **Modifica**: Aggiunta immagine di anteprima social `src/app/opengraph-image.png`.
 - **Configurazione**: Impostato `metadataBase` in `src/app/layout.tsx` su `https://simo-hue.github.io/CampFlow` per garantire la risoluzione corretta degli URL assoluti delle immagini.
 - **Risultato**: Quando il link viene condiviso su WhatsApp, LinkedIn o altri social, ora appare un'immagine professionale generata appositamente per il progetto.
+
+## Documentation Overhaul (2026-01-29)
+
+### Overview
+Complete rewrite of `README.md` to transition from a developer-only guide to a professional product landing page.
+
+### Changes
+- **Professional Header**: Added badges, clear value proposition, and "Property Management System" positioning.
+- **SEO Optimization**: Integrated keywords (PMS, Campsite Software, Open Source, Overbooking Protection).
+- **Feature Highlighting**:
+    - **Reliability**: Emphasized PostgreSQL Exclusion Constraints.
+    - **Performance**: Highlighted PWA and instant search.
+    - **Professional Tools**: Added Seasonal Pricing, Customer Groups, and System Monitor.
+- **Cleanup**: Removed internal references (`TO_SIMO_DO.md`) from the public README.
+- **Links**: Added link to the live website/demo.
