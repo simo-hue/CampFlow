@@ -14,7 +14,7 @@ fi
 
 # 2. Build del progetto
 echo "📦 Generazione build statica..."
-npm run build -- --webpack
+npm run build
 
 if [ $? -ne 0 ]; then
   echo "❌ Errore durante la build. Interruzione."
