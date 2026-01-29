@@ -1,5 +1,5 @@
 # 🏕️ CampFlow PMS
-> **The Modern, Open-Source Property Management System for Campsites & Glamping.**
+> **The Modern, Open-Source Property Management System for Campsites & Glamping ( suitable also for hotels and resorts).**
 
 [![Website](https://img.shields.io/badge/Website-Live_Demo-2ea043?style=for-the-badge&logo=google-chrome)](https://simo-hue.github.io/CampFlow/)
 [![License](https://img.shields.io/badge/License-Proprietary-blue?style=for-the-badge)](https://simo-hue.github.io/CampFlow/)
