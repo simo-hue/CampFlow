@@ -18,8 +18,9 @@
 
 
 -- Enable required extensions
+-- Note: btree_gist should be installed in 'extensions' schema (see fix_extension_schema.sql)
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-CREATE EXTENSION IF NOT EXISTS btree_gist;
+CREATE EXTENSION IF NOT EXISTS btree_gist SCHEMA extensions;
 
 -- =====================================================
 -- TABLE: sectors
@@ -163,7 +164,8 @@ BEGIN
   NEW.updated_at = NOW();
   RETURN NEW;
 END;
-$$ language 'plpgsql';
+$$ LANGUAGE plpgsql
+SET search_path = '';
 
 CREATE TRIGGER update_pitches_updated_at 
   BEFORE UPDATE ON pitches 
@@ -223,12 +225,13 @@ RETURNS INTEGER AS $$
 BEGIN
     RETURN (
         SELECT COUNT(*)
-        FROM bookings
+        FROM public.bookings
         WHERE lower(booking_period) = target_date
         AND status IN ('confirmed', 'checked_in')
     );
 END;
-$$ LANGUAGE plpgsql STABLE;
+$$ LANGUAGE plpgsql STABLE
+SET search_path = '';
 
 -- Funzione per contare partenze di oggi
 CREATE OR REPLACE FUNCTION count_departures_today(target_date DATE DEFAULT CURRENT_DATE)
@@ -236,12 +239,13 @@ RETURNS INTEGER AS $$
 BEGIN
     RETURN (
         SELECT COUNT(*)
-        FROM bookings
+        FROM public.bookings
         WHERE upper(booking_period) = target_date
         AND status IN ('checked_in', 'checked_out')
     );
 END;
-$$ LANGUAGE plpgsql STABLE;
+$$ LANGUAGE plpgsql STABLE
+SET search_path = '';
 
 COMMENT ON TABLE pitches IS 'Campsite pitches with JSONB attributes for flexibility';
 COMMENT ON TABLE customers IS 'Customer records for reservation management';
@@ -388,10 +392,21 @@ CREATE TRIGGER update_group_season_config_updated_at
   FOR EACH ROW
   EXECUTE FUNCTION update_updated_at_column();
 
--- 4. Enable RLS (Row Level Security) - permissive for now as per existing pattern or specific rules
+-- 4. Enable RLS (Row Level Security) - Authenticated users only
 ALTER TABLE customer_groups ENABLE ROW LEVEL SECURITY;
 ALTER TABLE group_season_configuration ENABLE ROW LEVEL SECURITY;
 
--- Policy for public access (simulated for dev env, adjust for production if needed)
-CREATE POLICY "Enable all access for all users" ON customer_groups FOR ALL USING (true);
-CREATE POLICY "Enable all access for all users" ON group_season_configuration FOR ALL USING (true);
+-- Policy for authenticated users only (secure single-user setup)
+CREATE POLICY "Authenticated users have full access to customer_groups"
+ON customer_groups
+FOR ALL
+TO authenticated
+USING (true)
+WITH CHECK (true);
+
+CREATE POLICY "Authenticated users have full access to group_season_configuration"
+ON group_season_configuration
+FOR ALL
+TO authenticated
+USING (true)
+WITH CHECK (true);

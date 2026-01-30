@@ -609,3 +609,189 @@ Enhanced the Group Management UI to allow quick viewing of group configurations 
 ### Components
 - `GroupManagement.tsx`: Added `viewingGroup` state and `GroupSummaryDialog`.
 
+## Row Level Security (RLS) Implementation (2026-01-30)
+
+### Overview
+Implemented Row Level Security (RLS) on all public tables to protect against unauthorized access while maintaining full functionality for authenticated users.
+
+### Security Model
+The application uses a **single-user authenticated model**:
+- **Authenticated users**: Full CRUD access to all tables
+- **Anonymous users**: Completely blocked from accessing data
+- **Purpose**: Since this is a private management tool with authentication solely for access control (not multi-tenancy), RLS protects the public API from unauthorized access while the owner has full permissions when logged in.
+
+### Protected Tables
+RLS has been enabled on the following tables:
+1. `pitches` - Campsite pitch definitions
+2. `bookings` - Reservation records
+3. `sectors` - Pitch organization sectors
+4. `pricing_seasons` - Seasonal pricing configurations
+5. `customers` - Customer records
+6. `booking_guests` - Individual guest details
+7. `customer_groups` - Customer group definitions
+8. `group_season_configuration` - Group-season pricing rules
+
+### Implementation Details
+
+#### Migration File
+- **File**: `supabase/migrations/rlsLogged.sql`
+- **Structure**:
+  ```sql
+  -- Enable RLS on each table
+  ALTER TABLE public.[table_name] ENABLE ROW LEVEL SECURITY;
+  
+  -- Create authenticated-only policy
+  CREATE POLICY "Authenticated users have full access to [table_name]"
+  ON public.[table_name]
+  FOR ALL
+  TO authenticated
+  USING (true)
+  WITH CHECK (true);
+  ```
+
+#### Policy Explanation
+- **`FOR ALL`**: Applies to all operations (SELECT, INSERT, UPDATE, DELETE)
+- **`TO authenticated`**: Only applies to users authenticated via Supabase Auth
+- **`USING (true)`**: Always allows reads for authenticated users
+- **`WITH CHECK (true)`**: Always allows writes for authenticated users
+
+### Schema Updates
+- **File**: `supabase/schema.sql`
+- **Change**: Updated the RLS policies for `customer_groups` and `group_season_configuration` from public access to authenticated-only access, aligning with the security model.
+
+### Benefits
+- ✅ **API Protection**: Public PostgREST endpoints are protected from anonymous access
+- ✅ **Data Integrity**: Only authenticated sessions can modify data
+- ✅ **Compliance**: Resolves Supabase security linter warnings
+- ✅ **Zero Friction**: Authenticated users experience no restrictions
+- ✅ **Future-Proof**: Easy to extend with role-based policies if needed
+
+### Verification
+To verify RLS is correctly enabled:
+```sql
+-- Check RLS status
+SELECT schemaname, tablename, rowsecurity 
+FROM pg_tables 
+WHERE schemaname = 'public';
+
+-- View active policies
+SELECT schemaname, tablename, policyname, roles, cmd
+FROM pg_policies
+WHERE schemaname = 'public'
+ORDER BY tablename, policyname;
+```
+
+## Database Security Hardening (2026-01-30)
+
+### Overview
+Resolved Supabase database linter warnings to improve security posture and follow PostgreSQL best practices.
+
+### Function Search Path Security
+
+**Problem:** Database functions without explicit `search_path` settings are vulnerable to SQL injection via search path manipulation attacks.
+
+**Solution:** Added `SET search_path = ''` to all database functions, forcing fully-qualified table references.
+
+#### Functions Hardened
+1. `update_updated_at_column()` - Trigger function for timestamp updates
+2. `count_arrivals_today(DATE)` - Dashboard statistics
+3. `count_departures_today(DATE)` - Dashboard statistics  
+4. `get_current_occupancy(DATE)` - Occupancy calculation
+5. `get_dashboard_stats(DATE)` - Unified dashboard query
+6. `get_db_stats()` - System monitor statistics
+7. `get_price_for_date(DATE)` - Pricing helper
+
+#### Migration Files
+- **File**: `supabase/migrations/fix_function_security.sql`
+- **Changes**: Each function now includes `SET search_path = ''`
+- **Impact**: All table references changed from `bookings` to `public.bookings` for clarity and security
+
+#### Security Benefit
+Setting an empty search path prevents attackers from creating malicious schemas/tables that could be injected into function execution contexts. This is particularly important for `SECURITY DEFINER` functions.
+
+### Extension Schema Organization
+
+**Problem:** PostgreSQL extensions installed in the `public` schema pollute the application namespace and violate best practices.
+
+**Solution:** Moved `btree_gist` extension from `public` schema to dedicated `extensions` schema.
+
+#### Migration Details
+- **File**: `supabase/migrations/fix_extension_schema.sql`
+- **Steps**:
+  1. Create `extensions` schema
+  2. Drop `btree_gist` from public (with CASCADE)
+  3. Recreate extension in `extensions` schema
+  4. Grant usage permissions
+  5. Recreate `prevent_overbooking` GIST exclusion constraint
+
+#### Impact
+- **Breaking Change**: Temporarily drops the anti-overbooking constraint during migration
+- **Auto-Recovery**: Migration immediately recreates the constraint
+- **Recommendation**: Execute during low-traffic period or after database backup
+
+### RLS Policy Design (Intentional)
+
+**Warning Category:** `rls_policy_always_true`
+
+**Status:** **Intentional by Design** - Not a security issue
+
+#### Rationale
+The application uses a **single-user authentication model**:
+- Authentication serves solely as access control (not multi-tenancy)
+- One authenticated user requires full CRUD permissions
+- `USING (true)` and `WITH CHECK (true)` are correct for this use case
+
+#### Tables with "Permissive" Policies
+All application tables use authenticated-only policies:
+- `pitches`, `bookings`, `sectors`, `pricing_seasons`
+- `customers`, `booking_guests`
+- `customer_groups`, `group_season_configuration`, `group_bundles`
+
+#### Security Guarantee
+- ✅ **Anonymous users**: Completely blocked (RLS enabled)
+- ✅ **Authenticated users**: Full access (intentional)
+- ✅ **Protection**: Public PostgREST API requires valid JWT token
+
+The warnings indicate the policies are permissive, which is the **correct design** for a private management application. These warnings are acknowledged and documented, not fixed.
+
+### Verification Queries
+
+#### Check Function Security
+```sql
+SELECT 
+  p.proname as function_name,
+  COALESCE(
+    (SELECT setting 
+     FROM unnest(p.proconfig) setting 
+     WHERE setting LIKE 'search_path=%'), 
+    'NOT SET'
+  ) as search_path_setting
+FROM pg_proc p
+JOIN pg_namespace n ON p.pronamespace = n.oid
+WHERE n.nspname = 'public'
+  AND p.proname IN (
+    'update_updated_at_column',
+    'count_arrivals_today',
+    'count_departures_today',
+    'get_current_occupancy',
+    'get_dashboard_stats',
+    'get_db_stats',
+    'get_price_for_date'
+  );
+```
+
+#### Check Extension Location
+```sql
+SELECT 
+  e.extname AS extension_name,
+  n.nspname AS schema_name
+FROM pg_extension e
+JOIN pg_namespace n ON e.extnamespace = n.oid
+WHERE e.extname = 'btree_gist';
+```
+
+### Results
+- ✅ **7 warnings resolved**: Function search_path security
+- ✅ **1 warning resolved**: Extension schema organization  
+- 📝 **~10 warnings documented**: RLS permissive policies (intentional)
+
