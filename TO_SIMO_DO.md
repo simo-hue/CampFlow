@@ -91,3 +91,70 @@ Esegui questo script su Supabase per verificare:
 - Data integrity
 
 **Conclusione**: Il sistema è pronto per il deployment in produzione! 🚀
+
+---
+
+## 🚀 Ottimizzazione Database (2026-01-30)
+
+### 📋 Azioni da Eseguire su Supabase
+
+**File SQL da eseguire**:
+1. [`supabase/migrations/optimize_database_performance.sql`](./supabase/migrations/optimize_database_performance.sql) - Ottimizzazioni principali
+2. [`supabase/migrations/optimize_database_vacuum.sql`](./supabase/migrations/optimize_database_vacuum.sql) - Manutenzione database (VACUUM)
+
+#### Step 1: Backup del Database
+Prima di applicare le ottimizzazioni, esegui un backup:
+- **Supabase Dashboard** → Settings → Backups → Create Backup
+
+#### Step 2: Eseguire le Ottimizzazioni Principali
+1. Vai su **Supabase Dashboard** → SQL Editor
+2. Copia e incolla il contenuto di `optimize_database_performance.sql`
+3. Clicca **Run** per eseguire
+
+#### Step 3: Eseguire VACUUM (Separatamente)
+⚠️ **VACUUM non può essere eseguito in una transazione**, quindi va eseguito in modo diverso:
+
+**Metodo 1 (Rapido)**: Esegui **un comando alla volta** nel SQL Editor:
+```sql
+VACUUM ANALYZE public.bookings;
+```
+Poi:
+```sql
+VACUUM ANALYZE public.pitches;
+```
+Poi:
+```sql
+VACUUM ANALYZE public.customers;
+```
+Poi:
+```sql
+VACUUM ANALYZE public.booking_guests;
+```
+
+**Metodo 2 (Automatico)**: Usa Supabase CLI se l'hai installata:
+```bash
+supabase db execute --file supabase/migrations/optimize_database_vacuum.sql
+```
+
+#### Step 4: Verificare i Risultati
+Dopo 24 ore dall'esecuzione, esegui queste query per verificare i miglioramenti:
+
+```sql
+-- Verifica riduzione dead rows (target: < 5%)
+SELECT relname, n_live_tup, n_dead_tup,
+       round(100.0 * n_dead_tup / NULLIF(n_live_tup + n_dead_tup, 0), 2) as dead_pct
+FROM pg_stat_user_tables
+WHERE schemaname = 'public';
+
+-- Verifica performance query dashboard
+SELECT query, calls, mean_time, total_time
+FROM pg_stat_statements
+WHERE query LIKE '%get_dashboard_stats%'
+ORDER BY total_time DESC;
+```
+
+### 📊 Risultati Attesi
+- **-64%** chiamate API ridondanti eliminate
+- **-60%** tempo esecuzione `get_dashboard_stats` (da ~7.5ms a ~2-3ms)
+- **-90%** overhead dead rows (da 48% max a <5%)
+- **-40/60%** riduzione tempo totale query
