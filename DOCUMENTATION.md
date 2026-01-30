@@ -795,3 +795,90 @@ WHERE e.extname = 'btree_gist';
 - ✅ **1 warning resolved**: Extension schema organization  
 - 📝 **~10 warnings documented**: RLS permissive policies (intentional)
 
+## Database Setup for New Projects (2026-01-30)
+
+### Overview
+Comprehensive database initialization system for users forking the CampFlow project.
+
+### Quick Start for New Forks
+
+**File**: `supabase/migrations/00_init_database.sql`
+
+This consolidated script contains everything needed for a fresh Supabase database:
+- All table definitions (10 tables)
+- Performance indexes (GIST + B-tree)
+- Anti-overbooking constraint
+- Triggers for auto-timestamps
+- Dashboard statistics functions
+- Row Level Security policies
+- Function security hardening
+- Default seed data
+
+### Execution Steps
+
+1. **Create Supabase Project**
+   - Go to supabase.com
+   - Create new project
+   - Wait for initialization (~2 min)
+
+2. **Run Setup Script**
+   - Open SQL Editor in Supabase Dashboard
+   - Copy entire `00_init_database.sql` file
+   - Execute
+   - Run verification queries (included in script)
+
+3. **Configure Authentication**
+   - Enable Email provider in Supabase Auth settings
+   - Set environment variables in application
+
+4. **Verify Installation**
+   - Check tables created (10 expected)
+   - Verify RLS enabled on all tables
+   - Confirm functions have `search_path` security
+   - Test anti-overbooking constraint
+
+### Comprehensive Setup Guide
+
+**File**: `supabase/migrations/SETUP_GUIDE.md`
+
+Includes:
+- Step-by-step initialization instructions
+- Alternative incremental migration approach
+- Complete verification checklist
+- Troubleshooting common issues
+- Database schema overview (ER diagram)
+- Security model explanation
+- Update instructions for existing databases
+
+### Migration File Organization
+
+#### Core Setup (Fresh Install)
+- `00_init_database.sql` - **Use this for new projects** (recommended)
+
+#### Incremental Setup (Alternative)
+1. `01_extensions.sql` - `07_rls.sql` - Core database structure
+2. `08_*` - `12_*` - Feature enhancements
+3. `20260*` - Timestamped updates and optimizations
+4. `fix_*.sql` - Security hardening patches
+5. `seed_*.sql` - Optional test data
+
+#### Legacy/Deprecated
+- Files in migrations without numbers - superseded by consolidated script
+
+### Benefits for Fork Users
+
+- ✅ **Single-file setup**: One script, complete database
+- ✅ **Verified and tested**: Includes all production features
+- ✅ **Self-documenting**: Extensive inline comments
+- ✅ **Verification included**: Built-in health check queries
+- ✅ **Security by default**: RLS and function hardening included
+- ✅ **Troubleshooting guide**: Common issues documented
+
+### Maintaining Updates
+
+For future schema changes:
+1. Update `00_init_database.sql` with new features
+2. Create numbered migration files for existing users (e.g., `13_new_feature.sql`)
+3. Document changes in `SETUP_GUIDE.md`
+4. Update `DOCUMENTATION.md` with feature description
+
