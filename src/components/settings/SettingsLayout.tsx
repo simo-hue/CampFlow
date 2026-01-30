@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
-import { Building2, Euro, Palette, ArrowLeft, Users } from 'lucide-react';
+import { Building2, Euro, Palette, ArrowLeft, Users, Terminal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 const settingsSections = [
@@ -29,6 +29,12 @@ const settingsSections = [
         label: 'Aspetto',
         icon: Palette,
         description: 'Personalizza tema e layout',
+    },
+    {
+        id: 'dev',
+        label: 'Dev',
+        icon: Terminal,
+        description: 'Tools sviluppatore e statistiche',
     },
 ];
 

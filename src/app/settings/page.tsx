@@ -7,6 +7,7 @@ import { PitchManagement } from '@/components/settings/PitchManagement';
 import { SectorManagement } from '@/components/settings/SectorManagement';
 import { SeasonalPricingManager } from '@/components/settings/SeasonalPricingManager';
 import { GroupManagement } from '@/components/settings/GroupManagement';
+import { DeveloperPanel } from '@/components/settings/DeveloperPanel';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
@@ -208,6 +209,19 @@ export default function SettingsPage() {
                             </p>
                         </div>
                     </div>
+                </div>
+            )}
+
+            {/* Developer Section */}
+            {activeSection === 'dev' && (
+                <div>
+                    <div className="mb-6">
+                        <h2 className="text-2xl font-bold">Developer Tools</h2>
+                        <p className="text-muted-foreground mt-1">
+                            Database statistics, logs, and maintenance tools
+                        </p>
+                    </div>
+                    <DeveloperPanel />
                 </div>
             )}
         </SettingsLayout>
