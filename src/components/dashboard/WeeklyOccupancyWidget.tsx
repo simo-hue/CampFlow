@@ -1,14 +1,28 @@
 "use client";
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { fetchWeeklyOccupancy } from "@/lib/api/stats";
 import { OccupancyChart } from "@/components/stats/OccupancyChart";
-import { addDays, startOfDay, endOfDay, subDays } from "date-fns";
+import { addDays, startOfDay, subDays, format } from "date-fns";
 import { Loader2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { useEffect, useMemo } from "react";
 
-const CACHE_KEY_PREFIX = "campflow-weekly-occupancy-v1";
+interface OccupancyData {
+    date: string;
+    piazzola: number;
+    tenda: number;
+    total: number;
+}
+
+const CACHE_KEY_PREFIX = "campflow-weekly-occupancy-v2";
+
+async function fetchWeeklyOccupancyFromAPI(startDate: string, endDate: string): Promise<OccupancyData[]> {
+    const response = await fetch(`/api/stats/weekly-occupancy?start=${startDate}&end=${endDate}`);
+    if (!response.ok) {
+        throw new Error('Failed to fetch weekly occupancy data');
+    }
+    return response.json();
+}
 
 export function WeeklyOccupancyWidget() {
     const queryClient = useQueryClient();
@@ -16,19 +30,19 @@ export function WeeklyOccupancyWidget() {
     // Calculate range: Today - 3 days to Today + 3 days
     const today = startOfDay(new Date());
     const start = subDays(today, 3);
-    const end = endOfDay(addDays(today, 3));
+    const end = addDays(today, 3);
 
-    // Stable strings for dependencies
-    const startIso = start.toISOString();
-    const endIso = end.toISOString();
+    // Format dates for API
+    const startStr = format(start, 'yyyy-MM-dd');
+    const endStr = format(end, 'yyyy-MM-dd');
 
     // Memoize queryKey to prevent infinite useEffect loop
     const queryKey = useMemo(() =>
-        ["stats", "weekly-forecast", startIso, endIso],
-        [startIso, endIso]
+        ["stats", "weekly-forecast", startStr, endStr],
+        [startStr, endStr]
     );
 
-    const storageKey = `${CACHE_KEY_PREFIX}-${startIso}`;
+    const storageKey = `${CACHE_KEY_PREFIX}-${startStr}`;
 
     // Load from localStorage AFTER mount to avoid hydration mismatch
     useEffect(() => {
@@ -37,7 +51,7 @@ export function WeeklyOccupancyWidget() {
             if (cached) {
                 const data = JSON.parse(cached);
                 // Initialize query data if not already present
-                queryClient.setQueryData(queryKey, (old: any) => {
+                queryClient.setQueryData(queryKey, (old: OccupancyData[] | undefined) => {
                     return old || data;
                 });
             }
@@ -48,7 +62,7 @@ export function WeeklyOccupancyWidget() {
 
     const { data: occupancyData, isLoading, error } = useQuery({
         queryKey: queryKey,
-        queryFn: () => fetchWeeklyOccupancy(start, end),
+        queryFn: () => fetchWeeklyOccupancyFromAPI(startStr, endStr),
         staleTime: 1000 * 60 * 5, // Cache in memory for 5 minutes
     });
 
@@ -86,3 +100,4 @@ export function WeeklyOccupancyWidget() {
         </div>
     );
 }
+

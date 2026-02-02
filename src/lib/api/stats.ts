@@ -203,6 +203,7 @@ export async function fetchWeeklyOccupancy(startDate: Date, endDate: Date): Prom
     // Since supabase-js might be tricky with range syntax, we construct the range string
     const rangeStr = `[${format(rangeStart, 'yyyy-MM-dd')},${format(addDays(rangeEnd, 1), 'yyyy-MM-dd')})`;
 
+
     const { data: bookingsData, error } = await supabase
         .from('bookings')
         .select(`
@@ -212,6 +213,7 @@ export async function fetchWeeklyOccupancy(startDate: Date, endDate: Date): Prom
         `)
         .in('status', ['confirmed', 'checked_in'])
         .overlaps('booking_period', rangeStr);
+
 
     if (error) throw error;
 
