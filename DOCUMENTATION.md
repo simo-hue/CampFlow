@@ -1223,3 +1223,8 @@ Created a reusable `CheckInDialog` component that:
 - *Details*: Fixed the Statistics page (`/stats`) showing empty data.
 - *Cause*: Same RLS issue blocking the client-side `fetchStats` function.
 - *Solution*: Created new API route `/api/stats/analytics/route.ts` that implements the full analytics logic (KPIs, revenue, trends) using `supabaseAdmin`. Refactored `src/app/stats/page.tsx` to use this API.
+
+### Customer Details Statistics Chart Fix
+- *Details*: Fixed the "Annual Spending Trend" chart in the customer details page failing to render.
+- *Cause*: The chart's container relied on `flex-1` height within a complex flex layout, causing `ResponsiveContainer` to collapse to zero height.
+- *Solution*: Replaced relative styling with an explicit fixed height (`h-[400px]`) for the chart container, ensuring the library can correctly calculate dimensions.

@@ -591,46 +591,48 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                         />
                     </div>
 
-                    {/* Charts Section - Flexible Height */}
-                    <div className="mt-4 flex-1 max-w-7xl mx-auto w-full min-h-0 pb-2">
+                    {/* Charts Section - Fixed Height */}
+                    <div className="mt-4 h-[400px] max-w-7xl mx-auto w-full pb-2">
                         <Card className="flex flex-col shadow-sm border bg-card h-full">
                             <CardHeader className="pb-2">
                                 <CardTitle className="text-lg">Andamento Spesa Annuale</CardTitle>
                                 <CardDescription>Totale speso per anno solare</CardDescription>
                             </CardHeader>
-                            <CardContent className="w-full h-full min-h-[150px]">
+                            <CardContent className="w-full h-full min-h-[150px] p-4">
                                 {chartData.length > 0 ? (
-                                    <ResponsiveContainer width="100%" height="100%">
-                                        <BarChart data={chartData} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
-                                            <CartesianGrid strokeDasharray="3 3" vertical={false} className="stroke-muted/20" />
-                                            <XAxis
-                                                dataKey="year"
-                                                stroke="#888888"
-                                                fontSize={12}
-                                                tickLine={false}
-                                                axisLine={false}
-                                            />
-                                            <YAxis
-                                                stroke="#888888"
-                                                fontSize={12}
-                                                tickLine={false}
-                                                axisLine={false}
-                                                tickFormatter={(value) => `€${value}`}
-                                            />
-                                            <Tooltip
-                                                cursor={{ fill: 'transparent' }}
-                                                contentStyle={{ backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))', borderRadius: '8px' }}
-                                                itemStyle={{ color: 'hsl(var(--foreground))' }}
-                                                formatter={(value: any) => [formatCurrency(value || 0), 'Spesa']}
-                                            />
-                                            <Bar
-                                                dataKey="amount"
-                                                fill="#22c55e"
-                                                radius={[4, 4, 0, 0]}
-                                                barSize={60}
-                                            />
-                                        </BarChart>
-                                    </ResponsiveContainer>
+                                    <div className="w-full h-full">
+                                        <ResponsiveContainer width="100%" height="100%">
+                                            <BarChart data={chartData} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
+                                                <CartesianGrid strokeDasharray="3 3" vertical={false} className="stroke-muted/20" />
+                                                <XAxis
+                                                    dataKey="year"
+                                                    stroke="#888888"
+                                                    fontSize={12}
+                                                    tickLine={false}
+                                                    axisLine={false}
+                                                />
+                                                <YAxis
+                                                    stroke="#888888"
+                                                    fontSize={12}
+                                                    tickLine={false}
+                                                    axisLine={false}
+                                                    tickFormatter={(value) => `€${value}`}
+                                                />
+                                                <Tooltip
+                                                    cursor={{ fill: 'transparent' }}
+                                                    contentStyle={{ backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))', borderRadius: '8px' }}
+                                                    itemStyle={{ color: 'hsl(var(--foreground))' }}
+                                                    formatter={(value: any) => [formatCurrency(value || 0), 'Spesa']}
+                                                />
+                                                <Bar
+                                                    dataKey="amount"
+                                                    fill="#22c55e"
+                                                    radius={[4, 4, 0, 0]}
+                                                    barSize={60}
+                                                />
+                                            </BarChart>
+                                        </ResponsiveContainer>
+                                    </div>
                                 ) : (
                                     <div className="h-full flex items-center justify-center text-muted-foreground">
                                         Nessun dato disponibile per il grafico
