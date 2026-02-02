@@ -7,6 +7,7 @@ import { format } from 'date-fns';
 import { it } from 'date-fns/locale';
 import { useState } from 'react';
 import { CheckOutDialog } from './CheckOutDialog';
+import { CheckInDialog } from './CheckInDialog';
 
 interface GuestCardProps {
     event: DashboardEvent;
@@ -17,6 +18,7 @@ interface GuestCardProps {
 export function GuestCard({ event, type, onRefresh }: GuestCardProps) {
     const isArrival = type === 'arrival';
     const [showCheckOutDialog, setShowCheckOutDialog] = useState(false);
+    const [showCheckInDialog, setShowCheckInDialog] = useState(false);
 
     // Theme configurations
     const theme = isArrival
@@ -39,8 +41,8 @@ export function GuestCard({ event, type, onRefresh }: GuestCardProps) {
 
     const handleButtonClick = () => {
         if (isArrival) {
-            // Check-in functionality (can be implemented later)
-            console.log('Check-in clicked for:', event.id);
+            // Check-in functionality - open dialog
+            setShowCheckInDialog(true);
         } else {
             // Check-out functionality
             setShowCheckOutDialog(true);
@@ -49,6 +51,13 @@ export function GuestCard({ event, type, onRefresh }: GuestCardProps) {
 
     const handleCheckOutSuccess = () => {
         setShowCheckOutDialog(false);
+        if (onRefresh) {
+            onRefresh();
+        }
+    };
+
+    const handleCheckInSuccess = () => {
+        setShowCheckInDialog(false);
         if (onRefresh) {
             onRefresh();
         }
@@ -117,6 +126,18 @@ export function GuestCard({ event, type, onRefresh }: GuestCardProps) {
                     onOpenChange={setShowCheckOutDialog}
                     event={event}
                     onSuccess={handleCheckOutSuccess}
+                />
+            )}
+
+            {/* Check-in Dialog */}
+            {isArrival && (
+                <CheckInDialog
+                    open={showCheckInDialog}
+                    onOpenChange={setShowCheckInDialog}
+                    event={event}
+                    booking={null}
+                    onClose={() => setShowCheckInDialog(false)}
+                    onSuccess={handleCheckInSuccess}
                 />
             )}
         </>

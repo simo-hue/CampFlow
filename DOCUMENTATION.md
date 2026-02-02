@@ -1167,3 +1167,46 @@ If SQL migration is performed (`20260130_dev_panel_functions.sql`):
 
 For now, storage monitoring (the primary requirement) works perfectly without migration.
 
+---
+
+## Check-in Button Fix on Arrivals Page (2026-02-02)
+
+### Problem
+The "Check-in" button on the `/arrivals` page was not functional - clicking it only logged to console without any action.
+
+### Root Cause
+In `GuestCard.tsx`, the `handleButtonClick` function for arrivals was only doing `console.log` as a placeholder, while check-out functionality was already implemented.
+
+### Solution
+Created a reusable `CheckInDialog` component that:
+1. Fetches full booking data via `/api/bookings/[id]` when triggered from arrivals
+2. Displays the complete check-in form (same as `/checkin` page)
+3. Handles guest data entry, validation, and submission
+
+### Implementation Files
+- **New**: `src/components/shared/CheckInDialog.tsx` - Reusable dialog component
+- **Modified**: `src/components/shared/GuestCard.tsx` - Integrated CheckInDialog for arrivals
+
+### User Flow
+1. Navigate to `/arrivals` page
+2. Click the "Check-in" button on an arrival card
+3. Dialog loads booking data and displays guest forms
+4. Fill in guest information (same validation as `/checkin`)
+5. Toggle "Alloggiati Web" if sent to Questura
+6. Click "Conferma Check-in"
+7. Success toast appears, booking status updated to `checked_in`
+
+### Key Features
+- **Lazy Loading**: Fetches full booking data only when dialog opens
+- **Shared Logic**: Uses the same `GuestForm` component as the main check-in page
+- **Data Compatibility**: Works with both full booking objects and simplified event data
+- **Auto-refresh**: Optionally triggers parent list refresh after successful check-in
+
+### Bug Fix: DialogTitle Accessibility (2026-02-02)
+**Problem**: Console error "DialogContent requires a DialogTitle for accessibility"
+
+**Cause**: When the `CheckInDialog` was in loading state, it only rendered a spinner without the `DialogHeader` containing `DialogTitle`, violating Radix UI accessibility requirements.
+
+**Solution**: Moved `DialogHeader` with `DialogTitle` outside the loading conditional so it always renders. The title dynamically shows "Check-in" during loading and "Check-in: [Customer Name]" when data is loaded.
+
+**Best Practice**: Always ensure Radix UI Dialog components have a `DialogTitle` present, even during loading states. Use conditional content within the title rather than conditionally rendering the entire header.

@@ -165,7 +165,7 @@ export default function ArrivalsPage() {
                                             </h3>
                                             <div className="space-y-3">
                                                 {groupedArrivals[date].map(arrival => (
-                                                    <GuestCard key={arrival.id} event={arrival} type="arrival" />
+                                                    <GuestCard key={arrival.id} event={arrival} type="arrival" onRefresh={loadArrivals} />
                                                 ))}
                                             </div>
                                         </div>
@@ -174,7 +174,7 @@ export default function ArrivalsPage() {
                             ) : (
                                 <div className="space-y-3">
                                     {filteredArrivals.map((arrival) => (
-                                        <GuestCard key={arrival.id} event={arrival} type="arrival" />
+                                        <GuestCard key={arrival.id} event={arrival} type="arrival" onRefresh={loadArrivals} />
                                     ))}
                                 </div>
                             )}
