@@ -69,7 +69,7 @@ export async function GET(request: Request) {
                 pitches!inner(number, suffix, type),
                 customers!inner(first_name, last_name)
             `)
-            .in('status', ['checked_in', 'checked_out'])
+            .in('status', ['checked_in', 'checked_out', 'confirmed'])
             .order('pitches(number)');
 
         if (departuresError) {

@@ -1228,3 +1228,7 @@ Created a reusable `CheckInDialog` component that:
 - *Details*: Fixed the "Annual Spending Trend" chart in the customer details page failing to render.
 - *Cause*: The chart's container relied on `flex-1` height within a complex flex layout, causing `ResponsiveContainer` to collapse to zero height.
 - *Solution*: Replaced relative styling with an explicit fixed height (`h-[400px]`) for the chart container, ensuring the library can correctly calculate dimensions.
+
+[2026-02-02]: Fixed Departures Page Missing Results
+* Details: Updated `/api/today` to include `confirmed` bookings in the departures list. Previously only `checked_in` and `checked_out` were included, causing "ghost" departures for guests who were confirmed but not checked in properly.
+* Tech Notes: Modified Supabase query in `src/app/api/today/route.ts`.
