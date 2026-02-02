@@ -1232,3 +1232,7 @@ Created a reusable `CheckInDialog` component that:
 [2026-02-02]: Fixed Departures Page Missing Results
 * Details: Updated `/api/today` to include `confirmed` bookings in the departures list. Previously only `checked_in` and `checked_out` were included, causing "ghost" departures for guests who were confirmed but not checked in properly.
 * Tech Notes: Modified Supabase query in `src/app/api/today/route.ts`.
+
+[2026-02-02]: Delete Customer Confirmation
+* Details: Replaced standard browser confirm with a custom AlertDialog showing the customer's name.
+* Tech Notes: Added @radix-ui/react-alert-dialog and corresponding UI component.

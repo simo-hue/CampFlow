@@ -13,6 +13,16 @@ import {
     TableRow,
 } from '@/components/ui/table';
 import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
     Card,
     CardContent,
 } from '@/components/ui/card';
@@ -47,17 +57,26 @@ export default function CustomersPage() {
     const queryClient = useQueryClient();
     const { groups } = useCustomerGroups();
 
-    const handleDelete = async (customer: Customer) => {
-        if (!confirm(`Sei sicuro di voler eliminare ${customer.first_name} ${customer.last_name}?`)) return;
+    // Delete Confirmation State
+    const [customerToDelete, setCustomerToDelete] = useState<Customer | null>(null);
+
+    const confirmDelete = async () => {
+        if (!customerToDelete) return;
 
         try {
-            const res = await fetch(`/api/customers/${customer.id}`, { method: 'DELETE' });
+            const res = await fetch(`/api/customers/${customerToDelete.id}`, { method: 'DELETE' });
             if (!res.ok) throw new Error('Errore eliminazione');
-            toast.success('Cliente eliminato');
+            toast.success('Cliente eliminato con successo');
             queryClient.invalidateQueries({ queryKey: ['customers'] });
         } catch (e: any) {
             toast.error(e.message);
+        } finally {
+            setCustomerToDelete(null);
         }
+    };
+
+    const handleDeleteClick = (customer: Customer) => {
+        setCustomerToDelete(customer);
     };
 
     const { data, isLoading, error } = useQuery({
@@ -212,7 +231,7 @@ export default function CustomersPage() {
 
                                             {/* Actions */}
                                             <div className="col-span-2 flex justify-end">
-                                                <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-destructive hover:text-destructive" onClick={(e) => { e.stopPropagation(); handleDelete(customer); }}>
+                                                <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-destructive hover:text-destructive" onClick={(e) => { e.stopPropagation(); handleDeleteClick(customer); }}>
                                                     <Trash2 className="h-3 w-3" />
                                                 </Button>
                                             </div>
@@ -226,6 +245,23 @@ export default function CustomersPage() {
             </div>
 
 
+            <AlertDialog open={!!customerToDelete} onOpenChange={(open) => !open && setCustomerToDelete(null)}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Sei assolutamente sicuro?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Questa azione non può essere annullata. Stai per eliminare definitivamente il cliente
+                            <span className="font-semibold text-foreground"> {customerToDelete?.first_name} {customerToDelete?.last_name}</span>.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Annulla</AlertDialogCancel>
+                        <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                            Elimina Cliente
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     );
 }
