@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
-import { fetchStats } from "@/lib/api/stats";
 import { KPICard } from "@/components/stats/KPICard";
 import { RevenueChart } from "@/components/stats/RevenueChart";
 import { OccupancyChart } from "@/components/stats/OccupancyChart";
@@ -51,13 +50,21 @@ export default function StatsPage() {
 
     const { start, end } = getDateRange(range);
 
+    async function fetchStatsFromAPI() {
+        const startStr = start.toISOString();
+        const endStr = end.toISOString();
+        const res = await fetch(`/api/stats/analytics?start=${startStr}&end=${endStr}`);
+        if (!res.ok) throw new Error("Failed to fetch stats");
+        return res.json();
+    }
+
     const {
         data: stats,
         isLoading,
         isFetching
     } = useQuery({
         queryKey: ["stats", range],
-        queryFn: () => fetchStats(start, end),
+        queryFn: fetchStatsFromAPI,
         placeholderData: keepPreviousData,
     });
 

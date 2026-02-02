@@ -1210,3 +1210,16 @@ Created a reusable `CheckInDialog` component that:
 **Solution**: Moved `DialogHeader` with `DialogTitle` outside the loading conditional so it always renders. The title dynamically shows "Check-in" during loading and "Check-in: [Customer Name]" when data is loaded.
 
 **Best Practice**: Always ensure Radix UI Dialog components have a `DialogTitle` present, even during loading states. Use conditional content within the title rather than conditionally rendering the entire header.
+
+# Change Log
+
+## [2026-02-02]: Statistics & Charts Fixes
+### Weekly Occupancy Chart Fix
+- *Details*: Fixed the "Panoramica Settimanale" chart on the dashboard that was showing empty.
+- *Cause*: Row Level Security (RLS) policies blocked client-side Supabase queries used by the widget.
+- *Solution*: Created new API route `/api/stats/weekly-occupancy/route.ts` using `supabaseAdmin` (service key) to bypass RLS and fetch data securely on the server.
+
+### Statistics Page Fix
+- *Details*: Fixed the Statistics page (`/stats`) showing empty data.
+- *Cause*: Same RLS issue blocking the client-side `fetchStats` function.
+- *Solution*: Created new API route `/api/stats/analytics/route.ts` that implements the full analytics logic (KPIs, revenue, trends) using `supabaseAdmin`. Refactored `src/app/stats/page.tsx` to use this API.
