@@ -1,16 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { KPICard } from "@/components/stats/KPICard";
 import { RevenueChart } from "@/components/stats/RevenueChart";
 import { OccupancyChart } from "@/components/stats/OccupancyChart";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import {
     Euro,
     Users,
     CalendarDays,
     Clock,
-    Loader2
+    Loader2,
+    Lock
 } from "lucide-react";
 import {
     Tabs,
@@ -24,6 +27,40 @@ type TimeRange = "7d" | "30d" | "90d" | "year";
 
 export default function StatsPage() {
     const [range, setRange] = useState<TimeRange>("30d");
+    const [isUnlocked, setIsUnlocked] = useState(false);
+    const [passwordInput, setPasswordInput] = useState("");
+    const [error, setError] = useState(false);
+
+    useEffect(() => {
+        const unlocked = localStorage.getItem("statsUnlocked");
+        if (unlocked === "true") {
+            setIsUnlocked(true);
+        }
+    }, []);
+
+    const handleUnlock = (e: React.FormEvent) => {
+        e.preventDefault();
+        const correctPassword = process.env.NEXT_PUBLIC_STATS_PSW;
+        
+        if (!correctPassword) {
+            console.error("NEXT_PUBLIC_STATS_PSW is not defined in environment variables.");
+            setError(true);
+            return;
+        }
+
+        if (passwordInput.trim() === correctPassword.trim()) {
+            setIsUnlocked(true);
+            localStorage.setItem("statsUnlocked", "true");
+            setError(false);
+        } else {
+            setError(true);
+            // Vibrate if supported
+            if (typeof navigator !== "undefined" && navigator.vibrate) {
+                navigator.vibrate(200);
+            }
+            setTimeout(() => setError(false), 2000);
+        }
+    };
 
     const getDateRange = (r: TimeRange) => {
         let end = endOfDay(new Date());
@@ -69,9 +106,42 @@ export default function StatsPage() {
     });
 
     return (
-        <div className="flex-1 space-y-4 p-8 pt-6">
-            <div className="flex items-center justify-between space-y-2">
-                <h2 className="text-3xl font-bold tracking-tight">Dashboard Statistiche</h2>
+        <div className="relative flex-1 p-8 pt-6 min-h-[calc(100vh-4rem)]">
+            {!isUnlocked && (
+                <div className="absolute inset-0 z-50 flex items-center justify-center bg-background/60 backdrop-blur-sm transition-all duration-300">
+                    <div className="bg-card p-8 rounded-xl shadow-lg border w-full max-w-[400px] flex flex-col items-center">
+                        <div className="bg-primary/10 p-4 rounded-full mb-4">
+                            <Lock className="w-8 h-8 text-primary" />
+                        </div>
+                        <h2 className="text-2xl font-bold mb-2">Area Protetta</h2>
+                        <p className="text-muted-foreground text-center mb-6">
+                            Inserisci la password per visualizzare le statistiche.
+                        </p>
+                        <form onSubmit={handleUnlock} className="w-full flex flex-col space-y-4">
+                            <div className="flex space-x-2">
+                                <Input
+                                    type="password"
+                                    placeholder="Password"
+                                    value={passwordInput}
+                                    onChange={(e) => setPasswordInput(e.target.value)}
+                                    className={error ? "border-red-500 focus-visible:ring-red-500" : ""}
+                                    autoFocus
+                                />
+                                <Button type="submit">Sblocca</Button>
+                            </div>
+                            {error && (
+                                <p className="text-red-500 text-sm text-center animate-in fade-in slide-in-from-top-1">
+                                    Password errata. Riprova.
+                                </p>
+                            )}
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            <div className={`space-y-4 transition-all duration-500 ${!isUnlocked ? "opacity-40 pointer-events-none select-none blur-[8px] max-h-[80vh] overflow-hidden" : ""}`}>
+                <div className="flex items-center justify-between space-y-2">
+                    <h2 className="text-3xl font-bold tracking-tight">Dashboard Statistiche</h2>
                 <div className="flex items-center space-x-2">
                     <Tabs value={range} onValueChange={(v) => setRange(v as TimeRange)} className="space-y-4">
                         <TabsList>
@@ -134,6 +204,7 @@ export default function StatsPage() {
                         </div>
                     </div>
                 ) : null}
+            </div>
             </div>
         </div>
     );

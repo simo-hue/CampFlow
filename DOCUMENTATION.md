@@ -1236,3 +1236,7 @@ Created a reusable `CheckInDialog` component that:
 [2026-02-02]: Delete Customer Confirmation
 * Details: Replaced standard browser confirm with a custom AlertDialog showing the customer's name.
 * Tech Notes: Added @radix-ui/react-alert-dialog and corresponding UI component.
+
+[2026-04-14]: Statistics Page Password Protection
+* Details: Added a lock screen to the statistics page that blurs the content and requires a password to view.
+* Tech Notes: Implemented using React `useState` and `useEffect` with `localStorage` for session persistence. Reads access code from `NEXT_PUBLIC_STATS_PSW` environment variable. Uses `lucide-react` for icons and standard UI components (`Input`, `Button`).
