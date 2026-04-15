@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { FileText, Loader2, CalendarIcon } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -39,10 +39,22 @@ const genderLabel = (g: string | null | undefined): string => {
     return 'N/D';
 };
 
-export function ArrivalsReportButton() {
+interface ArrivalsReportButtonProps {
+    defaultDate?: string;
+}
+
+export function ArrivalsReportButton({ defaultDate }: ArrivalsReportButtonProps) {
     const [open, setOpen] = useState(false);
-    const [date, setDate] = useState(getTodayItaly());
+    const [date, setDate] = useState(defaultDate || getTodayItaly());
     const [loading, setLoading] = useState(false);
+
+    // Update internal date when defaultDate prop changes (e.g. view toggle)
+    // and the dialog is actually opened
+    useEffect(() => {
+        if (defaultDate) {
+            setDate(defaultDate);
+        }
+    }, [defaultDate, open]);
 
     const handleGenerate = async () => {
         setLoading(true);

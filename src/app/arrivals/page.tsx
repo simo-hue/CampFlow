@@ -139,7 +139,9 @@ export default function ArrivalsPage() {
                             </div>
                             <div className="flex items-center gap-2">
                                 <DateToggle currentView={view} onToggle={handleViewToggle} />
-                                <ArrivalsReportButton />
+                                <ArrivalsReportButton 
+                                    defaultDate={view === 'tomorrow' ? format(addDays(new Date(), 1), 'yyyy-MM-dd') : format(new Date(), 'yyyy-MM-dd')} 
+                                />
                             </div>
                         </div>
                     </div>

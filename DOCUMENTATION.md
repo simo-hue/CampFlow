@@ -1268,3 +1268,9 @@ Created a reusable `CheckInDialog` component that:
 - [2026-04-15 13:16]: Modifica Nome File Report
   - *Details*: Modificato il formato del nome file PDF generato per i report arrivi: ora utilizza spazi invece di underscore (es. "arrivi 15 aprile 2026.pdf").
 
+- [2026-04-15 13:19]: Data Default Dinamica nel Report
+  - *Details*: La data predefinita nel pannello "Stampa Arrivi" ora si aggiorna automaticamente in base al selettore attivo (Oggi/Domani) nella pagina Arrivi.
+
+- [2026-04-15 13:20]: Fix Bug Report Arrivi
+  - *Details*: Risolto errore "useEffect is not defined" nel componente ArrivalsReportButton.
+
