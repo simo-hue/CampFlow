@@ -2,7 +2,7 @@
 > **The Modern, Open-Source Property Management System for Campsites & Glamping ( suitable also for hotels and resorts).**
 
 [![Website](https://img.shields.io/badge/Website-Live_Demo-2ea043?style=for-the-badge&logo=google-chrome)](https://simo-hue.github.io/CampFlow/)
-[![License](https://img.shields.io/badge/License-Proprietary-blue?style=for-the-badge)](https://simo-hue.github.io/CampFlow/)
+[![License](https://img.shields.io/badge/License-AGPL_v3-red?style=for-the-badge)](LICENSE)
 [![Status](https://img.shields.io/badge/Status-Production_Ready-success?style=for-the-badge)](https://simo-hue.github.io/CampFlow/)
 
 **CampFlow** is a next-generation **Property Management System (PMS)** engineered for speed, reliability, and ease of use. Designed specifically for campsites, RV parks, and glamping resorts, it eliminates overbooking risks with physical database constraints and offers a blazing fast Progressive Web App (PWA) experience.
@@ -119,5 +119,5 @@ Please follow standard GitHub flow: Fork -> Branch -> PR.
 ---
 
 ### License
-Proprietary © 2026 CampFlow. All rights reserved.
+Licensed under the [GNU Affero General Public License v3.0](LICENSE) © 2026 CampFlow.
 *Designed with ❤️ for the camping industry.*

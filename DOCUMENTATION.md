@@ -1287,3 +1287,19 @@ Created a reusable `CheckInDialog` component that:
 - [2026-04-15 15:45]: Responsive Design Audit
   - *Details*: Fully refactored and optimized layouts for Arrival, Departures, Check-in, Customers, Stats, Settings, and Header components to achieve full responsiveness across mobile, tablet, and desktop viewports.
   - *Tech Notes*: Adapted grid table layouts to mobile card lists in Check-in and Customers. Introduced a responsive Header with a hamburger menu for mobile devices. Updated Settings to use modern mobile select/tablet tabs layout. Optimized KPI grids in the Stats component.
+# Licensing
+
+## AGPL v3.0 Implementation (2026-04-19)
+
+### Overview
+Moved from a "Proprietary" status to a formal **Open-Source license (AGPL v3.0)**. This decision was made to protect the project's open-source nature while allowing for commercial distribution.
+
+### Why AGPL v3.0?
+- **Network Copyleft**: Specifically chosen because CampFlow is a web-based service (SaaS). AGPL ensures that if someone modifies the code and runs it as a service, they must also release their modifications.
+- **Protection from "Fork & Close"**: Prevents competitors from taking the codebase, making proprietary improvements, and selling a closed version.
+- **Commercial Usage**: AGPL allows selling the software, but requires the source code of modifications to remain open. This facilitates a "Dual Licensing" model if needed in the future.
+
+### Changes
+- **LICENSE file**: Created with the full text of the GNU Affero General Public License v3.0.
+- **package.json**: Added `"license": "AGPL-3.0-only"`.
+- **README.md**: Updated the license badge to AGPL v3 and updated the footer section.
