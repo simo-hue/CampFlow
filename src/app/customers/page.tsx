@@ -197,11 +197,11 @@ export default function CustomersPage() {
                                                 {/* Name & Avatar */}
                                                 <div className="col-span-5 flex items-center gap-3">
                                                     <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm shrink-0">
-                                                        {customer.first_name[0]}{customer.last_name[0]}
+                                                        {customer.last_name[0]}{customer.first_name[0]}
                                                     </div>
                                                     <div className="min-w-0">
                                                         <div className="font-semibold text-foreground group-hover:text-primary transition-colors truncate">
-                                                            {customer.first_name} {customer.last_name}
+                                                            {customer.last_name} {customer.first_name}
                                                         </div>
                                                         <div className="text-xs text-muted-foreground hidden lg:block">ID: {customer.id.slice(0, 8)}...</div>
                                                         {customer.customer_groups && (
@@ -242,10 +242,10 @@ export default function CustomersPage() {
                                             {/* Mobile Card */}
                                             <div className="md:hidden px-4 py-3 flex items-center gap-3">
                                                 <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm shrink-0">
-                                                    {customer.first_name[0]}{customer.last_name[0]}
+                                                    {customer.last_name[0]}{customer.first_name[0]}
                                                 </div>
                                                 <div className="flex-1 min-w-0">
-                                                    <div className="font-semibold text-sm truncate">{customer.first_name} {customer.last_name}</div>
+                                                    <div className="font-semibold text-sm truncate">{customer.last_name} {customer.first_name}</div>
                                                     <div className="text-xs text-muted-foreground truncate">{customer.email || 'Nessuna email'}</div>
                                                     {customer.customer_groups && (
                                                         <Badge variant="outline" className="mt-1 text-[10px] px-1 py-0" style={{ borderColor: customer.customer_groups.color, color: customer.customer_groups.color }}>
@@ -275,7 +275,7 @@ export default function CustomersPage() {
                         <AlertDialogTitle>Sei assolutamente sicuro?</AlertDialogTitle>
                         <AlertDialogDescription>
                             Questa azione non può essere annullata. Stai per eliminare definitivamente il cliente
-                            <span className="font-semibold text-foreground"> {customerToDelete?.first_name} {customerToDelete?.last_name}</span>.
+                            <span className="font-semibold text-foreground"> {customerToDelete?.last_name} {customerToDelete?.first_name}</span>.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>

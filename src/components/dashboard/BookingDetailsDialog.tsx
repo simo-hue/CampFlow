@@ -138,7 +138,7 @@ export function BookingDetailsDialog({ bookingId, open, onClose }: BookingDetail
                                 </h3>
                                 <div className="bg-muted/30 p-3 rounded-lg space-y-2 text-sm">
                                     <p className="font-medium text-base">
-                                        {booking.customer?.first_name} {booking.customer?.last_name}
+                                        {booking.customer?.last_name} {booking.customer?.first_name}
                                     </p>
                                     {booking.customer?.phone && (
                                         <div className="flex items-center gap-2 text-muted-foreground">

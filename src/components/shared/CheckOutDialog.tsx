@@ -46,7 +46,7 @@ export function CheckOutDialog({ open, onOpenChange, event, onSuccess }: CheckOu
             }
 
             toast.success('Check-out completato!', {
-                description: `${event.customers.first_name} ${event.customers.last_name} ha lasciato la piazzola ${event.pitches.number}`
+                description: `${event.customers.last_name} ${event.customers.first_name} ha lasciato la piazzola ${event.pitches.number}`
             });
 
             onOpenChange(false);
@@ -75,11 +75,11 @@ export function CheckOutDialog({ open, onOpenChange, event, onSuccess }: CheckOu
                     {/* Guest Info */}
                     <div className="flex items-center gap-3 p-4 bg-muted/30 rounded-lg border">
                         <div className="h-12 w-12 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400 font-bold">
-                            {event.customers.first_name[0]}{event.customers.last_name[0]}
+                            {event.customers.last_name[0]}{event.customers.first_name[0]}
                         </div>
                         <div>
                             <h4 className="font-semibold text-lg">
-                                {event.customers.first_name} {event.customers.last_name}
+                                {event.customers.last_name} {event.customers.first_name}
                             </h4>
                             <div className="flex items-center gap-2 text-sm text-muted-foreground">
                                 <UserIcon className="h-3.5 w-3.5" />

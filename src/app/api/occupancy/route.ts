@@ -68,7 +68,7 @@ export async function GET(request: NextRequest) {
             const customerData = Array.isArray(booking.customer) ? booking.customer[0] : booking.customer;
 
             bookingInfo = {
-                customer_name: `${(customerData as {first_name?: string, last_name?: string})?.first_name || ''} ${(customerData as {first_name?: string, last_name?: string})?.last_name || ''}`.trim() || 'N/A',
+                customer_name: `${(customerData as {first_name?: string, last_name?: string})?.last_name || ''} ${(customerData as {first_name?: string, last_name?: string})?.first_name || ''}`.trim() || 'N/A',
                 check_in: periodMatch ? periodMatch[1] : 'N/A',
                 check_out: periodMatch ? periodMatch[2] : 'N/A',
                 guests_count: booking.guests_count,

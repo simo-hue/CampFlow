@@ -270,7 +270,7 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                     <Link href="/customers" className='text-sm text-muted-foreground hover:text-foreground flex items-center justify-center gap-1 mb-2'>
                         <ArrowLeft className="h-3 w-3" /> Torna alla lista
                     </Link>
-                    <h1 className="text-3xl font-bold tracking-tight">{customer.first_name} {customer.last_name}</h1>
+                    <h1 className="text-3xl font-bold tracking-tight">{customer.last_name} {customer.first_name}</h1>
                     <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
                         <Badge variant="secondary" className="font-normal">
                             Cliente dal {format(new Date(customer.created_at), 'MMM yyyy', { locale: it })}

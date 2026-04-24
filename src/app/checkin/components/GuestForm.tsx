@@ -88,7 +88,7 @@ export function GuestForm({
                     </div>
                     <div>
                         <h3 className="font-semibold text-base flex items-center gap-2">
-                            {guest.first_name || `Ospite ${index + 1}`} {guest.last_name}
+                            {guest.last_name} {guest.first_name || `Ospite ${index + 1}`}
                             {isHeadOfFamily && (
                                 <Badge variant="default" className="bg-blue-600 hover:bg-blue-700 h-5 px-1.5 text-[10px]">
                                     Capo Famiglia

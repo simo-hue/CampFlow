@@ -92,7 +92,7 @@ export function CustomerAutocomplete({ onSelect, onClear, selectedCustomerId }: 
                 >
                     {selectedCustomerId
                         ? (selectedCustomer
-                            ? `${selectedCustomer.first_name} ${selectedCustomer.last_name}`
+                            ? `${selectedCustomer.last_name} ${selectedCustomer.first_name}`
                             : "Cliente Selezionato")
                         : "Cerca cliente esistente..."}
                     <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -133,7 +133,7 @@ export function CustomerAutocomplete({ onSelect, onClear, selectedCustomerId }: 
                                         )}
                                     />
                                     <div className="flex flex-col">
-                                        <span className='font-medium'>{customer.first_name} {customer.last_name}</span>
+                                        <span className='font-medium'>{customer.last_name} {customer.first_name}</span>
                                         <span className="text-xs text-muted-foreground">
                                             {customer.phone} • {customer.email}
                                             {customer.license_plate && ` • ${customer.license_plate}`}

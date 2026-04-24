@@ -76,7 +76,7 @@ export function GuestCard({ event, type, onRefresh }: GuestCardProps) {
 
                         <div className="min-w-0">
                             <h4 className="font-bold text-lg truncate flex items-center gap-2">
-                                {event.customers.first_name} {event.customers.last_name}
+                                {event.customers.last_name} {event.customers.first_name}
                             </h4>
 
                             <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground mt-1">

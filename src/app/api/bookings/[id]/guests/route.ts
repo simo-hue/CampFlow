@@ -59,7 +59,7 @@ export async function PUT(
             // Veicolo
             license_plate: g.license_plate || null,
             // Legacy/Computed
-            full_name: `${g.first_name} ${g.last_name}`.trim(),
+            full_name: `${g.last_name} ${g.first_name}`.trim(),
             guest_type: g.guest_type || 'adult'
         }));
 

@@ -129,7 +129,7 @@ export async function POST(request: NextRequest) {
             );
 
             if (exactMatch) {
-                console.log(`✅ Found existing customer: ${exactMatch.first_name} ${exactMatch.last_name} (${exactMatch.id})`);
+                console.log(`✅ Found existing customer: ${exactMatch.last_name} ${exactMatch.first_name} (${exactMatch.id})`);
                 customerId = exactMatch.id;
 
                 // Optional: Update email/notes if changed

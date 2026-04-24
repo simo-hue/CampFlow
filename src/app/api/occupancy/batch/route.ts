@@ -102,7 +102,7 @@ export async function GET(request: NextRequest) {
                 check_in: periodMatch ? periodMatch[1] : null,
                 check_out: periodMatch ? periodMatch[2] : null,
                 booking_period: booking.booking_period,
-                customer_name: `${(customerData as { first_name?: string, last_name?: string })?.first_name || ''} ${(customerData as { first_name?: string, last_name?: string })?.last_name || ''}`.trim() || 'N/A',
+                customer_name: `${(customerData as { first_name?: string, last_name?: string })?.last_name || ''} ${(customerData as { first_name?: string, last_name?: string })?.first_name || ''}`.trim() || 'N/A',
                 guests_count: booking.guests_count,
                 status: booking.status,
             };

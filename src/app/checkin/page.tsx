@@ -88,7 +88,7 @@ export default function CheckInPage() {
     const filteredBookings = bookings.filter((b: any) => {
         // 1. Text Search
         const term = searchTerm.toLowerCase();
-        const fullName = `${b.customer?.first_name} ${b.customer?.last_name}`.toLowerCase();
+        const fullName = `${b.customer?.last_name} ${b.customer?.first_name}`.toLowerCase();
         const matchesSearch = !searchTerm || fullName.includes(term);
 
         // 2. Status Filter
@@ -197,7 +197,7 @@ export default function CheckInPage() {
                                 <div className="divide-y">
                                     {filteredBookings.map((booking) => {
                                         const { start, end } = parseBookingPeriod(booking.booking_period);
-                                        const customerName = `${booking.customer?.first_name || ''} ${booking.customer?.last_name || ''}`.trim();
+                                        const customerName = `${booking.customer?.last_name || ''} ${booking.customer?.first_name || ''}`.trim();
                                         const isCheckedIn = booking.status === 'checked_in';
 
                                         return (
@@ -209,7 +209,7 @@ export default function CheckInPage() {
                                                     {/* Ospite */}
                                                     <div className="col-span-5 flex items-center gap-3">
                                                         <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm shrink-0">
-                                                            {booking.customer?.first_name?.[0]}{booking.customer?.last_name?.[0]}
+                                                            {booking.customer?.last_name?.[0]}{booking.customer?.first_name?.[0]}
                                                         </div>
                                                         <div className="min-w-0">
                                                             <div className="font-semibold text-foreground group-hover:text-primary transition-colors truncate">
@@ -272,7 +272,7 @@ export default function CheckInPage() {
                                                 {/* Mobile Card */}
                                                 <div className="md:hidden px-4 py-3 flex items-center gap-3">
                                                     <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm shrink-0">
-                                                        {booking.customer?.first_name?.[0]}{booking.customer?.last_name?.[0]}
+                                                        {booking.customer?.last_name?.[0]}{booking.customer?.first_name?.[0]}
                                                     </div>
                                                     <div className="flex-1 min-w-0">
                                                         <div className="font-semibold text-sm truncate">{customerName || 'Cliente Sconosciuto'}</div>
@@ -599,7 +599,7 @@ function CheckInDialog({ open, onOpenChange, booking, onClose, onSuccess }: {
                     <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
                         <div>
                             <DialogTitle className="text-3xl flex items-center gap-2">
-                                Check-in: {booking.customer?.first_name} {booking.customer?.last_name}
+                                Check-in: {booking.customer?.last_name} {booking.customer?.first_name}
                             </DialogTitle>
                             <DialogDescription className="text-lg mt-1">
                                 Inserisci i dati di tutti gli ospiti ({guests.length} presenti).
@@ -660,7 +660,7 @@ function CheckInDialog({ open, onOpenChange, booking, onClose, onSuccess }: {
                                         )}>
                                             {idx + 1}
                                         </div>
-                                        <span>{g.first_name || `Ospite ${idx + 1}`}</span>
+                                        <span>{g.last_name || 'Ospite'} {g.first_name || idx + 1}</span>
                                         {g.is_head_of_family && <Crown className="w-3.5 h-3.5 opacity-70" />}
                                         {hasError && <Info className="w-3 h-3 text-destructive" />}
                                     </button>
