@@ -42,6 +42,9 @@ export function BookingCreationModal({
     initialData
 }: BookingCreationModalProps) {
     const isEditMode = !!bookingId;
+    // Booking states
+    const [checkInState, setCheckInState] = useState(checkIn);
+    const [checkOutState, setCheckOutState] = useState(checkOut);
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
     const [customerEmail, setCustomerEmail] = useState('');
@@ -67,6 +70,11 @@ export function BookingCreationModal({
     // Initialize state from initialData
     useEffect(() => {
         if (open && initialData) {
+            const periodMatch = initialData.booking_period?.match(/\[([^,]+),([^\)]+)\)/);
+            if (periodMatch) {
+                setCheckInState(periodMatch[1]);
+                setCheckOutState(periodMatch[2]);
+            }
             setFirstName(initialData.customer?.first_name || '');
             setLastName(initialData.customer?.last_name || '');
             setCustomerEmail(initialData.customer?.email || '');
@@ -81,25 +89,41 @@ export function BookingCreationModal({
             setCurrentPitchId(initialData.pitch_id || pitchId);
         } else if (open && !isEditMode) {
             resetForm();
+            setCheckInState(checkIn);
+            setCheckOutState(checkOut);
             setCurrentPitchId(pitchId);
         }
-    }, [open, initialData, isEditMode, pitchId]);
+    }, [open, initialData, isEditMode, pitchId, checkIn, checkOut]);
 
-    // Fetch all pitches for reassignment
+    // Fetch available pitches for reassignment
     useEffect(() => {
         if (open && isEditMode) {
             setLoadingPitches(true);
-            fetch('/api/pitches')
+            const params = new URLSearchParams({
+                check_in: checkInState,
+                check_out: checkOutState,
+                exclude_booking_id: bookingId || ''
+            });
+            
+            fetch(`/api/availability?${params.toString()}`)
                 .then(res => res.json())
-                .then(data => setAllPitches(data.pitches || []))
-                .catch(err => console.error("Error fetching pitches:", err))
+                .then(data => {
+                    const pitches = data.pitches || [];
+                    setAllPitches(pitches);
+                    
+                    // If current pitch is not in the list (e.g. status changed or other), 
+                    // and we haven't changed pitch yet, keep it.
+                    // But usually exclude_booking_id handles the occupancy check.
+                })
+                .catch(err => console.error("Error fetching available pitches:", err))
                 .finally(() => setLoadingPitches(false));
         }
-    }, [open, isEditMode]);
+    }, [open, isEditMode, checkInState, checkOutState, bookingId]);
 
-    const nights = calculateNights(checkIn, checkOut);
+    const nights = calculateNights(checkInState, checkOutState);
 
     // Pricing State
+
     const [totalPrice, setTotalPrice] = useState(0);
     const [priceBreakdown, setPriceBreakdown] = useState<PriceBreakdownDay[]>([]);
     const [loadingPrice, setLoadingPrice] = useState(false);
@@ -163,7 +187,8 @@ export function BookingCreationModal({
                 setChildAgeMax(childMaxAge);
 
                 const res = await fetch(
-                    `/api/pricing/calculate?checkIn=${checkIn}&checkOut=${checkOut}&pitchType=${pitchType}&guests=${guestsCount}&children=${childrenCount}&dogs=${dogsCount}&cars=${carsCount}&guestPrice=${personPrice}&childPrice=${childPrice}&dogPrice=${dogPrice}&carPrice=${carPrice}&customerId=${selectedCustomerId || ''}&groupId=${selectedGroupId}`
+                    `/api/pricing/calculate?checkIn=${checkInState}&checkOut=${checkOutState}&pitchType=${pitchType}&guests=${guestsCount}&children=${childrenCount}&dogs=${dogsCount}&cars=${carsCount}&guestPrice=${personPrice}&childPrice=${childPrice}&dogPrice=${dogPrice}&carPrice=${carPrice}&customerId=${selectedCustomerId || ''}&groupId=${selectedGroupId}`
+
                 );
 
                 if (!res.ok) throw new Error("Failed to calculate price");
@@ -185,7 +210,8 @@ export function BookingCreationModal({
         };
 
         fetchPrice();
-    }, [checkIn, checkOut, pitchType, nights, guestsCount, childrenCount, dogsCount, carsCount, selectedCustomerId, selectedGroupId]);
+    }, [checkInState, checkOutState, pitchType, nights, guestsCount, childrenCount, dogsCount, carsCount, selectedCustomerId, selectedGroupId]);
+
 
     const handleCustomerSelect = (customer: any) => {
         setSelectedCustomerId(customer.id);
@@ -246,8 +272,8 @@ export function BookingCreationModal({
         try {
             const payload = {
                 pitch_id: currentPitchId,
-                check_in: checkIn,
-                check_out: checkOut,
+                check_in: checkInState,
+                check_out: checkOutState,
                 guests_count: guestsCount + childrenCount,
                 children_count: childrenCount,
                 dogs_count: dogsCount,
@@ -336,15 +362,40 @@ export function BookingCreationModal({
                         <Calendar className="h-5 w-5" />
                         {isEditMode ? 'Modifica Prenotazione' : `Nuova Prenotazione - Piazzola ${pitchNumber}`}
                     </DialogTitle>
-                    <DialogDescription>
-                        <span className="flex items-center gap-2 mt-2">
-                            <Badge variant="secondary">
-                                {formatDateLong(checkIn)} → {formatDateLong(checkOut)}
-                            </Badge>
-                            <Badge variant="outline">
-                                {nights === 0 ? "1 giorno" : `${nights} ${nights === 1 ? "notte" : "notti"}`}
-                            </Badge>
-                        </span>
+                    <DialogDescription asChild>
+                        <div className="flex flex-col gap-2 mt-2">
+                            <div className="flex items-center gap-2">
+                                <Badge variant="secondary">
+                                    {formatDateLong(checkInState)} → {formatDateLong(checkOutState)}
+                                </Badge>
+                                <Badge variant="outline">
+                                    {nights === 0 ? "1 giorno" : `${nights} ${nights === 1 ? "notte" : "notti"}`}
+                                </Badge>
+                            </div>
+                            
+                            {isEditMode && (
+                                <div className="grid grid-cols-2 gap-2 mt-1">
+                                    <div className="space-y-1">
+                                        <Label className="text-[10px] uppercase">Arrivo</Label>
+                                        <Input 
+                                            type="date" 
+                                            value={checkInState} 
+                                            onChange={(e) => setCheckInState(e.target.value)}
+                                            className="h-8 text-xs"
+                                        />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <Label className="text-[10px] uppercase">Partenza</Label>
+                                        <Input 
+                                            type="date" 
+                                            value={checkOutState} 
+                                            onChange={(e) => setCheckOutState(e.target.value)}
+                                            className="h-8 text-xs"
+                                        />
+                                    </div>
+                                </div>
+                            )}
+                        </div>
                     </DialogDescription>
                 </DialogHeader>
 

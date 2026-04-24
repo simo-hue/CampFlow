@@ -1314,13 +1314,15 @@ Moved from a "Proprietary" status to a formal **Open-Source license (AGPL v3.0)*
     - Updated `validateForm()` in `src/app/checkin/page.tsx` to comment out the mandatory check for `guest.address`.
     - Added "(facoltativo)" label to the address field in `src/app/checkin/components/GuestForm.tsx` and `src/app/customers/[id]/page.tsx`.
 
-- [2026-04-24 19:30]: Enhanced Booking Editing
-  - *Details*: Implemented the ability to edit existing bookings directly from the occupancy page. This includes modifying customer details, guest counts, notes, and the assigned pitch or tent.
+- [2026-04-24 19:35]: Enhanced Booking Editing & Availability-Aware Reassignment
+  - *Details*: Implemented the ability to edit existing bookings directly from the occupancy page, including date modifications and intelligent pitch reassignment.
   - *Tech Notes*:
-    - **API**: Expanded `PATCH /api/bookings/[id]` to support updating all booking fields and associated customer data. Added overbooking detection (Postgres code 23P01) during updates.
+    - **API**: 
+        - Expanded `PATCH /api/bookings/[id]` to support updating all booking fields.
+        - Updated `GET /api/availability` to support `exclude_booking_id`, allowing a booking to "see itself" as available during reassignment.
     - **UI**: 
-        - Enhanced `BookingCreationModal.tsx` with an "Edit Mode" that initializes state from existing booking data.
-        - Added a **Pitch Selector** inside the modal for reassignment.
-        - Added a "Modifica" button to `BookingDetailsDialog.tsx` to trigger the edit flow.
-    - **Caching**: Automated cache invalidation via `invalidateOccupancyCache()` upon successful update to ensure the occupancy grid reflects changes immediately.
+        - `BookingCreationModal.tsx` now supports editing check-in/check-out dates.
+        - The **Pitch Selector** now dynamically filters available pitches using the availability API, re-evaluating whenever dates are changed.
+        - Price calculation is now reactive to date changes in edit mode.
+    - **Caching**: Automated cache invalidation via `invalidateOccupancyCache()` upon successful update.
 

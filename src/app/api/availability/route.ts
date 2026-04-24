@@ -70,13 +70,21 @@ export async function GET(request: NextRequest) {
             );
         }
 
+        const excludeBookingId = searchParams.get('exclude_booking_id');
+
         // Query per piazzole disponibili
         // Usa overlap operator (&& ) con daterange
-        const { data: occupiedPitches, error: occupiedError } = await supabaseAdmin
+        let occupiedQuery = supabaseAdmin
             .from('bookings')
             .select('pitch_id')
             .neq('status', 'cancelled')
             .overlaps('booking_period', `[${checkIn},${checkOut})`);
+
+        if (excludeBookingId) {
+            occupiedQuery = occupiedQuery.neq('id', excludeBookingId);
+        }
+
+        const { data: occupiedPitches, error: occupiedError } = await occupiedQuery;
 
         if (occupiedError) {
             console.error('Error checking occupied pitches:', occupiedError);
