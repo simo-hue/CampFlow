@@ -255,7 +255,8 @@ export function GuestForm({
 
                             <div className="space-y-3">
                                 <div className="space-y-1">
-                                    <Label className={cn("text-xs text-muted-foreground", errors.address && "text-destructive")}>Indirizzo</Label>
+                                    <Label className={cn("text-xs text-muted-foreground", errors.address && "text-destructive")}>Indirizzo (facoltativo)</Label>
+
                                     <Input
                                         value={guest.address || ''}
                                         onChange={e => handleChange('address', e.target.value)}

@@ -408,6 +408,8 @@ Implemented a dynamic system for managing campsite sectors and global configurat
 ## Confirmations
 - **Safety**: Critical actions (Delete Sector, Delete/Split/Merge Pitch) now require explicit confirmation via a custom `ConfirmationDialog` UI, replacing browser alerts.
 
+
+
 # Recharts Build Warning Fix (2026-01-25)
 
 ## Problem
@@ -1303,3 +1305,12 @@ Moved from a "Proprietary" status to a formal **Open-Source license (AGPL v3.0)*
 - **LICENSE file**: Created with the full text of the GNU Affero General Public License v3.0.
 - **package.json**: Added `"license": "AGPL-3.0-only"`.
 - **README.md**: Updated the license badge to AGPL v3 and updated the footer section.
+
+- [2026-04-24 08:58]: Database Cleanup Instructions
+  - *Details*: Provided SQL queries to wipe booking history and customer data.
+- [2026-04-24 17:25]: Optional Address Field in Check-in
+  - *Details*: The address field is now optional during the check-in process. This change was implemented to streamline the check-in flow when address information is not immediately available or required.
+  - *Tech Notes*: 
+    - Updated `validateForm()` in `src/app/checkin/page.tsx` to comment out the mandatory check for `guest.address`.
+    - Added "(facoltativo)" label to the address field in `src/app/checkin/components/GuestForm.tsx` and `src/app/customers/[id]/page.tsx`.
+

@@ -494,7 +494,7 @@ function CheckInDialog({ open, onOpenChange, booking, onClose, onSuccess }: {
 
             // Head of Family Fields
             if (guest.is_head_of_family) {
-                if (!guest.address) guestErrors.address = true;
+                // if (!guest.address) guestErrors.address = true; // Address is now optional
                 if (!guest.residence_city) guestErrors.residence_city = true;
                 if (!guest.residence_country) guestErrors.residence_country = true;
                 if (!guest.document_number) guestErrors.document_number = true;

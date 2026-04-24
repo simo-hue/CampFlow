@@ -404,8 +404,9 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                                 </h3>
                                 <div className="space-y-4">
                                     <div className="space-y-2">
-                                        <Label className="text-muted-foreground">Indirizzo</Label>
+                                        <Label className="text-muted-foreground">Indirizzo (facoltativo)</Label>
                                         <Input className="bg-background/80" disabled={!isEditing} value={formData.address || ''} onChange={e => handleInputChange('address', e.target.value)} placeholder="Via Roma, 1" />
+
                                     </div>
                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                         <div className="md:col-span-1 space-y-2">

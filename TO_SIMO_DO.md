@@ -79,3 +79,4 @@ Crea 1 funzione SQL:
 - **Sicurezza**: `SECURITY DEFINER` (sicura)
 - **Performance**: Veloce (~50-100ms)
 - **Dipendenze**: Nessuna (usa solo PostgreSQL native)
+
