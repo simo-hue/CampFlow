@@ -65,42 +65,69 @@ async function checkDbConnection() {
 
 async function getStats() {
     const supabase = supabaseAdmin;
-    let rpcData = null;
-    try {
-        const { data, error } = await supabase.rpc('get_db_stats');
-        if (!error && data) rpcData = data;
-    } catch (e) {}
+    let totalSize: number | null = null;
+    let counts = {
+        customers: 0,
+        bookings: 0,
+        logs: 0,
+        pitches: 0
+    };
+    let source: 'rpc' | 'fallback' = 'fallback';
 
-    if (rpcData) {
-        return {
-            sizeBytes: rpcData.size_bytes,
-            customers: rpcData.customers,
-            bookings: rpcData.bookings,
-            logs: rpcData.logs,
-            pitches: rpcData.pitches,
-            source: 'rpc' as const
-        };
+    try {
+        // 1. Try to get accurate storage stats if function exists
+        const { data: storageData } = await supabase.rpc('get_storage_stats');
+        if (storageData && Array.isArray(storageData)) {
+            totalSize = storageData.reduce((acc, curr) => acc + (Number(curr.total_size_bytes) || 0), 0);
+        }
+
+        // 2. Try to get counts via RPC if function exists
+        const { data: dbStats, error: rpcError } = await supabase.rpc('get_db_stats');
+        if (!rpcError && dbStats) {
+            // Some RPCs return an array, some a single object depending on definition
+            const stats = Array.isArray(dbStats) ? dbStats[0] : dbStats;
+            if (stats) {
+                counts.bookings = Number(stats.total_bookings || stats.bookings) || 0;
+                counts.customers = Number(stats.total_customers || stats.customers) || 0;
+                counts.pitches = Number(stats.total_pitches || stats.pitches) || 0;
+                source = 'rpc';
+            }
+        }
+    } catch (e) {
+        console.warn('RPC Stats fetch failed, falling back to manual counts');
     }
 
-    const [
-        { count: customers },
-        { count: bookings },
-        { count: logs },
-        { count: pitches }
-    ] = await Promise.all([
-        supabase.from('customers').select('*', { count: 'exact', head: true }),
-        supabase.from('bookings').select('*', { count: 'exact', head: true }),
-        supabase.from('app_logs').select('*', { count: 'exact', head: true }),
-        supabase.from('pitches').select('*', { count: 'exact', head: true })
-    ]);
+    // 3. Fallback or complement data
+    try {
+        if (source === 'fallback') {
+            const [
+                { count: customers },
+                { count: bookings },
+                { count: logs },
+                { count: pitches }
+            ] = await Promise.all([
+                supabase.from('customers').select('*', { count: 'exact', head: true }),
+                supabase.from('bookings').select('*', { count: 'exact', head: true }),
+                supabase.from('app_logs').select('*', { count: 'exact', head: true }),
+                supabase.from('pitches').select('*', { count: 'exact', head: true })
+            ]);
+            counts.customers = customers || 0;
+            counts.bookings = bookings || 0;
+            counts.logs = logs || 0;
+            counts.pitches = pitches || 0;
+        } else {
+            // Always get logs count manually as it's often missing from summary RPCs
+            const { count: logsCount } = await supabase.from('app_logs').select('*', { count: 'exact', head: true });
+            counts.logs = logsCount || 0;
+        }
+    } catch (e) {
+        console.error('Manual stats fallback failed:', e);
+    }
 
     return {
-        sizeBytes: null,
-        customers: customers || 0,
-        bookings: bookings || 0,
-        logs: logs || 0,
-        pitches: pitches || 0,
-        source: 'fallback' as const
+        sizeBytes: totalSize,
+        ...counts,
+        source
     };
 }
 
