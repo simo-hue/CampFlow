@@ -1,4 +1,5 @@
 'use client';
+import { logger } from '@/lib/logger';
 
 import { useState, useEffect } from 'react';
 import {
@@ -59,7 +60,7 @@ export function BookingDetailsDialog({ bookingId, open, onClose, onDeleteSuccess
                 })
                 .then(data => setBooking(data))
                 .catch(err => {
-                    console.error(err);
+                    logger.error(err instanceof Error ? err.message : String(err), { error: err });
                     setError("Impossibile caricare i dettagli della prenotazione");
                 })
                 .finally(() => setLoading(false));
@@ -89,7 +90,7 @@ export function BookingDetailsDialog({ bookingId, open, onClose, onDeleteSuccess
                 onDeleteSuccess();
             }
         } catch (err) {
-            console.error(err);
+            logger.error(err instanceof Error ? err.message : String(err), { error: err });
             setError("Impossibile eliminare la prenotazione");
             setShowDeleteAlert(false);
         } finally {

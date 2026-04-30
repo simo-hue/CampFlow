@@ -1,4 +1,5 @@
 'use client';
+import { logger } from '@/lib/logger';
 
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
@@ -50,7 +51,7 @@ export default function DeparturesPage() {
                 toast.error('Errore caricamento partenze');
             }
         } catch (error) {
-            console.error('Error loading departures:', error);
+            logger.error('Error loading departures:', { error });
             toast.error('Errore imprevisto', {
                 description: 'Impossibile caricare i dati delle partenze'
             });

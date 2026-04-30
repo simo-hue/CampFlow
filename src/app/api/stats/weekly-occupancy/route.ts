@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { logToDb } from '@/lib/logger-server';
 import { supabaseAdmin } from '@/lib/supabase/server';
 import { format, parseISO, startOfDay, endOfDay, addDays, eachDayOfInterval } from 'date-fns';
 
@@ -52,6 +53,7 @@ export async function GET(request: NextRequest) {
             .overlaps('booking_period', rangeStr);
 
         if (error) {
+            await logToDb('error', '[weekly-occupancy] Query error:', error);
             console.error('[weekly-occupancy] Query error:', error);
             return NextResponse.json(
                 { error: 'Failed to fetch occupancy data' },
@@ -108,6 +110,7 @@ export async function GET(request: NextRequest) {
         return NextResponse.json(result);
 
     } catch (error) {
+        await logToDb('error', '[weekly-occupancy] API error:', error);
         console.error('[weekly-occupancy] API error:', error);
         return NextResponse.json(
             { error: 'Internal server error' },

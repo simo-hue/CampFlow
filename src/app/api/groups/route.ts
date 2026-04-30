@@ -1,5 +1,6 @@
 
 import { NextResponse } from 'next/server';
+import { logToDb } from '@/lib/logger-server';
 import { supabaseAdmin } from '@/lib/supabase/server';
 
 export async function GET() {
@@ -106,6 +107,7 @@ export async function POST(request: Request) {
 
         return NextResponse.json({ group });
     } catch (error: any) {
+        await logToDb('error', 'Error creating group:', error);
         console.error('Error creating group:', error);
 
         // Manual Rollback: Delete the group if it was created but subsequent steps failed

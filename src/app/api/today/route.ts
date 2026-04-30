@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { logToDb } from '@/lib/logger-server';
 import { supabaseAdmin } from '@/lib/supabase/server';
 import { getTodayItaly } from '@/lib/utils';
 import { addDays, format, parseISO, isValid } from 'date-fns';
@@ -46,6 +47,7 @@ export async function GET(request: Request) {
             .order('pitches(number)');
 
         if (arrivalsError) {
+            await logToDb('error', 'Error fetching arrivals:', arrivalsError);
             console.error('Error fetching arrivals:', arrivalsError);
             return NextResponse.json({ error: 'Failed to fetch arrivals' }, { status: 500 });
         }
@@ -74,6 +76,7 @@ export async function GET(request: Request) {
             .order('pitches(number)');
 
         if (departuresError) {
+            await logToDb('error', 'Error fetching departures:', departuresError);
             console.error('Error fetching departures:', departuresError);
             return NextResponse.json({ error: 'Failed to fetch departures' }, { status: 500 });
         }
@@ -97,6 +100,7 @@ export async function GET(request: Request) {
         });
 
     } catch (error) {
+        await logToDb('error', 'Today API error:', error);
         console.error('Today API error:', error);
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }

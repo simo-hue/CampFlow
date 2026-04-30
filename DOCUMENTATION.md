@@ -58,3 +58,19 @@
 - Standardized currency and numeric formatting within the tooltips.
 - Added Italian localization for date formatting in tooltips.
 - Verified build stability with `npm run build`.
+
+## [2026-04-30 12:25]: Multi-Guest Customer Registration at Check-in
+*Details*: Modified the check-in flow so that ALL guests in a booking (not only the head of family) are saved as individual customer records in the `customers` table. This allows secondary guests (e.g., "Maria" in a 2-person booking) to be found and tracked in the Customers page.
+*Tech Notes*:
+- Created `src/app/api/customers/upsert-guest/route.ts`: New `POST` endpoint that performs a smart upsert. Match strategy: `first_name + last_name + birth_date` (case-insensitive). If a match is found, updates their anagrafica/document data. If not found, creates a new customer record.
+- Since secondary guests don't have a phone number at check-in time, the `phone` field defaults to `''` (empty string) to satisfy the `NOT NULL` DB constraint.
+- Modified `src/app/checkin/page.tsx` (`handleConfirmCheckIn`): After saving `booking_guests`, iterates over all non-head-of-family guests with valid names and calls `/api/customers/upsert-guest` for each. This is non-critical (failures are logged but don't block the check-in).
+- TypeScript verified with `tsc --noEmit` — no errors.
+
+## [2026-04-30 12:35]: Universal Error Logging Persistence
+*Details*: Audited and updated all error logging across the entire application (Frontend Components, Library utilities, and API Endpoints) to ensure every `console.error` is also persisted to the Supabase `app_logs` table.
+*Tech Notes*:
+- Backend (`src/app/api`): Added `await logToDb('error', ...)` alongside `console.error` to ensure API failures are visible in the sys-monitor panel.
+- Frontend/Shared (`src/app`, `src/components`, `src/lib`): Replaced raw `console.error` calls with the central `logger.error` utility from `src/lib/logger.ts`, which automatically queues the log for DB persistence via a Server Action.
+- Fixed several TypeScript signature mismatches (`Expected 1-2 arguments, but got 3` etc.) to strictly comply with `logger.error(message: string, meta?: LogMeta)`.
+- Verified build stability with `tsc --noEmit`. No regressions introduced.

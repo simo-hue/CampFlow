@@ -1,4 +1,5 @@
 'use client';
+import { logger } from '@/lib/logger';
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Badge } from '@/components/ui/badge';
@@ -85,7 +86,7 @@ class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { has
     }
 
     componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-        console.error("OccupancyViewer Crash:", error, errorInfo);
+        logger.error("OccupancyViewer Crash:", { error, errorInfo });
     }
 
     render() {
@@ -261,7 +262,7 @@ function SectorOccupancyViewerContent() {
             setFullDataCache(pitchesWithOccupancy);
             setCachedData(cacheKey, pitchesWithOccupancy);
         } catch (error) {
-            console.error('Error loading occupancy:', error);
+            logger.error('Error loading occupancy:', { error });
             toast.error("Errore caricamento dati");
         } finally {
             setLoading(false);

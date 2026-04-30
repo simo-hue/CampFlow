@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { logToDb } from '@/lib/logger-server';
 import { supabaseAdmin } from '@/lib/supabase/server';
 
 /**
@@ -82,6 +83,7 @@ export async function POST(request: Request) {
             .eq('id', keepPitch.id);
 
         if (updateError) {
+            await logToDb('error', 'Error updating pitch suffix:', updateError);
             console.error('Error updating pitch suffix:', updateError);
             return NextResponse.json({ error: 'Failed to merge pitches' }, { status: 500 });
         }
@@ -92,6 +94,7 @@ export async function POST(request: Request) {
             .eq('id', deletePitch.id);
 
         if (deleteError) {
+            await logToDb('error', 'Error deleting pitch:', deleteError);
             console.error('Error deleting pitch:', deleteError);
             // Rollback: restore suffix
             await supabaseAdmin
@@ -114,6 +117,7 @@ export async function POST(request: Request) {
             pitch: mergedPitch,
         });
     } catch (error) {
+        await logToDb('error', 'Merge pitch error:', error);
         console.error('Merge pitch error:', error);
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }

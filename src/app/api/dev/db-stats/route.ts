@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { logToDb } from '@/lib/logger-server';
 import { supabaseAdmin } from '@/lib/supabase/server';
 
 /**
@@ -23,6 +24,7 @@ export async function GET() {
         return handleEstimatedData();
 
     } catch (error) {
+        await logToDb('error', 'DB Stats API error:', error);
         console.error('DB Stats API error:', error);
         // Try fallback on any error
         return handleEstimatedData();
@@ -76,6 +78,7 @@ async function handleAccurateData(storageData: any[]) {
         });
 
     } catch (error) {
+        await logToDb('error', 'Error processing accurate data:', error);
         console.error('Error processing accurate data:', error);
         return handleEstimatedData();
     }
@@ -167,6 +170,7 @@ async function handleEstimatedData() {
         });
 
     } catch (error) {
+        await logToDb('error', 'Fallback error:', error);
         console.error('Fallback error:', error);
         return NextResponse.json(
             {

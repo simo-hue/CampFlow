@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { logToDb } from '@/lib/logger-server';
 import { supabaseAdmin } from '@/lib/supabase/server';
 
 /**
@@ -48,6 +49,7 @@ export async function GET(request: NextRequest) {
             .order('suffix');
 
         if (error) {
+            await logToDb('error', 'Error fetching sector pitches:', error);
             console.error('Error fetching sector pitches:', error);
             return NextResponse.json(
                 { error: 'Failed to fetch pitches' },
@@ -62,6 +64,7 @@ export async function GET(request: NextRequest) {
         });
 
     } catch (error) {
+        await logToDb('error', 'Sector pitches API error:', error);
         console.error('Sector pitches API error:', error);
         return NextResponse.json(
             { error: 'Internal server error' },

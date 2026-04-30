@@ -1,4 +1,5 @@
 'use client';
+import { logger } from '@/lib/logger';
 
 import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -115,7 +116,7 @@ export function BookingCreationModal({
                     // and we haven't changed pitch yet, keep it.
                     // But usually exclude_booking_id handles the occupancy check.
                 })
-                .catch(err => console.error("Error fetching available pitches:", err))
+                .catch(err => logger.error("Error fetching available pitches:", { error: err }))
                 .finally(() => setLoadingPitches(false));
         }
     }, [open, isEditMode, checkInState, checkOutState, bookingId]);
@@ -142,7 +143,7 @@ export function BookingCreationModal({
                     setCustomerGroups(data.groups || []);
                 }
             } catch (error) {
-                console.error("Failed to fetch customer groups", error);
+                logger.error("Failed to fetch customer groups", { error });
             }
         }
         fetchGroups();
@@ -197,7 +198,7 @@ export function BookingCreationModal({
                 setTotalPrice(data.totalPrice || 0);
                 setPriceBreakdown(data.breakdown || []);
             } catch (error) {
-                console.error("Price calculation error:", error);
+                logger.error("Price calculation error:", { error });
                 toast.error("Errore calcolo prezzo", {
                     description: "Usando tariffa predefinita"
                 });
@@ -320,7 +321,7 @@ export function BookingCreationModal({
             }, 1000);
 
         } catch (error) {
-            console.error(`Error ${isEditMode ? 'updating' : 'creating'} booking:`, error);
+            logger.error(`Error ${isEditMode ? 'updating' : 'creating'} booking:`, { error });
             toast.error(`Errore ${isEditMode ? 'modifica' : 'prenotazione'}`, { 
                 description: error instanceof Error ? error.message : "Errore durante il salvataggio" 
             });

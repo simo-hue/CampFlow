@@ -1,4 +1,5 @@
 'use client';
+import { logger } from '@/lib/logger';
 
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -41,7 +42,7 @@ export function DeveloperPanel() {
             setRecordCounts(data.recordCounts || {});
             toast.success('Database statistics updated');
         } catch (error) {
-            console.error('Error fetching database stats:', error);
+            logger.error('Error fetching database stats:', { error });
             toast.error('Failed to fetch database statistics');
         } finally {
             setLoading(false);

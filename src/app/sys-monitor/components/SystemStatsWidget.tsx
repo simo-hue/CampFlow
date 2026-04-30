@@ -1,4 +1,5 @@
 'use client';
+import { logger } from '@/lib/logger';
 
 import { useEffect, useState } from 'react';
 import { 
@@ -87,7 +88,7 @@ export default function SystemStatsWidget({ initialStats }: { initialStats?: Sta
                 throw new Error('Fetch failed');
             }
         } catch (err) {
-            console.error('Failed to refresh telemetry:', err);
+            logger.error('Failed to refresh telemetry:', { error: err });
             setIsStale(true);
             // Try to load from localStorage if state is empty
             if (!stats) {

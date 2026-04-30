@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { logToDb } from '@/lib/logger-server';
 import { supabaseAdmin } from '@/lib/supabase/server';
 
 export async function PUT(
@@ -27,6 +28,7 @@ export async function PUT(
             .eq('booking_id', bookingId);
 
         if (deleteError) {
+            await logToDb('error', 'Error deleting old guests:', deleteError);
             console.error('Error deleting old guests:', deleteError);
             throw new Error('Failed to clear old guests');
         }
@@ -70,6 +72,7 @@ export async function PUT(
             .select();
 
         if (insertError) {
+            await logToDb('error', 'Error inserting guests — Supabase error:', JSON.stringify(insertError, null, 2));
             console.error('Error inserting guests — Supabase error:', JSON.stringify(insertError, null, 2));
             return NextResponse.json(
                 { error: 'Failed to insert guests', detail: insertError.message, hint: insertError.hint },
@@ -80,6 +83,7 @@ export async function PUT(
         return NextResponse.json({ success: true, guests: data });
 
     } catch (error) {
+        await logToDb('error', 'Guests update error:', error);
         console.error('Guests update error:', error);
         return NextResponse.json(
             { error: 'Internal server error' },

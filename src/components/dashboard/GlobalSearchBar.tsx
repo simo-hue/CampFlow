@@ -1,4 +1,5 @@
 'use client';
+import { logger } from '@/lib/logger';
 
 import { useState, useEffect, useCallback } from 'react';
 import {
@@ -45,7 +46,7 @@ export function GlobalSearchBar() {
                 setCustomers(data.customers || []);
             }
         } catch (error) {
-            console.error('Search error:', error);
+            logger.error('Search error:', { error });
 
             toast.error("Errore imprevisto", { description: error instanceof Error ? error.message : "Riprova più tardi" });
         }

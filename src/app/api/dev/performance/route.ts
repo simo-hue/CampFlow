@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { logToDb } from '@/lib/logger-server';
 import { supabaseAdmin } from '@/lib/supabase/server';
 
 /**
@@ -15,6 +16,7 @@ export async function GET() {
             .rpc('get_performance_metrics');
 
         if (error) {
+            await logToDb('error', 'Error fetching performance metrics:', error);
             console.error('Error fetching performance metrics:', error);
             throw error;
         }
@@ -28,6 +30,7 @@ export async function GET() {
         });
 
     } catch (error) {
+        await logToDb('error', 'Performance metrics API error:', error);
         console.error('Performance metrics API error:', error);
         return NextResponse.json(
             { error: 'Failed to fetch performance metrics' },

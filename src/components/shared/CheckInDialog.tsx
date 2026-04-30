@@ -1,4 +1,5 @@
 'use client';
+import { logger } from '@/lib/logger';
 
 import { useState, useEffect, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
@@ -69,7 +70,7 @@ export function CheckInDialog({ open, onOpenChange, booking, event, onClose, onS
                     setFullBooking(data.booking || data);
                 })
                 .catch(err => {
-                    console.error('Error fetching booking:', err);
+                    logger.error('Error fetching booking:', { error: err });
                     toast.error('Errore caricamento prenotazione');
                 })
                 .finally(() => setLoading(false));
@@ -317,7 +318,7 @@ export function CheckInDialog({ open, onOpenChange, booking, event, onClose, onS
             toast.success("Check-in completato con successo!");
             onSuccess();
         } catch (error) {
-            console.error(error);
+            logger.error(error instanceof Error ? error.message : String(error), { error });
             toast.error("Errore durante il check-in");
         } finally {
             setSending(false);

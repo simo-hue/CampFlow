@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { logToDb } from '@/lib/logger-server';
 import { supabaseAdmin } from '@/lib/supabase/server';
 
 /**
@@ -22,6 +23,7 @@ export async function GET(request: Request) {
             });
 
         if (error) {
+            await logToDb('error', 'Error fetching logs:', error);
             console.error('Error fetching logs:', error);
             throw error;
         }
@@ -29,6 +31,7 @@ export async function GET(request: Request) {
         return NextResponse.json({ logs: data || [] });
 
     } catch (error) {
+        await logToDb('error', 'Logs API error:', error);
         console.error('Logs API error:', error);
         return NextResponse.json(
             { error: 'Failed to fetch logs' },
@@ -52,6 +55,7 @@ export async function DELETE(request: Request) {
             .rpc('cleanup_old_logs', { days_to_keep: daysToKeep });
 
         if (error) {
+            await logToDb('error', 'Error cleaning up logs:', error);
             console.error('Error cleaning up logs:', error);
             throw error;
         }
@@ -65,6 +69,7 @@ export async function DELETE(request: Request) {
         });
 
     } catch (error) {
+        await logToDb('error', 'Cleanup logs API error:', error);
         console.error('Cleanup logs API error:', error);
         return NextResponse.json(
             { error: 'Failed to cleanup logs' },

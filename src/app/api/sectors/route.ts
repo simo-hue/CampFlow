@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { logToDb } from '@/lib/logger-server';
 import { supabaseAdmin } from '@/lib/supabase/server';
 
 export async function GET() {
@@ -12,6 +13,7 @@ export async function GET() {
 
         return NextResponse.json({ sectors: data });
     } catch (error) {
+        await logToDb('error', 'Error fetching sectors:', error);
         console.error('Error fetching sectors:', error);
         return NextResponse.json({ error: 'Failed to fetch sectors' }, { status: 500 });
     }
@@ -36,6 +38,7 @@ export async function POST(request: Request) {
 
         return NextResponse.json({ sector: data }, { status: 201 });
     } catch (error) {
+        await logToDb('error', 'Error creating sector:', error);
         console.error('Error creating sector:', error);
         return NextResponse.json({ error: 'Failed to create sector' }, { status: 500 });
     }
@@ -61,6 +64,7 @@ export async function PUT(request: Request) {
 
         return NextResponse.json({ sector: data });
     } catch (error) {
+        await logToDb('error', 'Error updating sector:', error);
         console.error('Error updating sector:', error);
         return NextResponse.json({ error: 'Failed to update sector' }, { status: 500 });
     }
@@ -103,6 +107,7 @@ export async function DELETE(request: Request) {
 
         return NextResponse.json({ success: true });
     } catch (error) {
+        await logToDb('error', 'Error deleting sector:', error);
         console.error('Error deleting sector:', error);
         return NextResponse.json({ error: 'Failed to delete sector' }, { status: 500 });
     }

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { logger } from '@/lib/logger';
 import {
     Dialog,
     DialogContent,
@@ -94,7 +95,7 @@ export function PitchDialog({ open, onOpenChange, onSubmit, initialData, sectors
             }
             onOpenChange(false);
         } catch (err: any) {
-            console.error('Error submitting form:', err);
+            logger.error('Error submitting form:', { error: err });
             // If the error object has a message (from API response thrown by caller), display it.
             // Assuming onSubmit might throw an Error with the message.
             if (err instanceof Error) {

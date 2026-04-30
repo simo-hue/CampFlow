@@ -1,4 +1,5 @@
 'use client';
+import { logger } from '@/lib/logger';
 
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
@@ -51,7 +52,7 @@ export default function ArrivalsPage() {
                 toast.error('Errore caricamento arrivi');
             }
         } catch (error) {
-            console.error('Error loading arrivals:', error);
+            logger.error('Error loading arrivals:', { error });
             toast.error('Errore imprevisto', {
                 description: 'Impossibile caricare i dati degli arrivi'
             });

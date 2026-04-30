@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { logToDb } from '@/lib/logger-server';
 import { supabaseAdmin } from '@/lib/supabase/server';
 import type { DashboardStats } from '@/lib/types';
 import { getTodayItaly } from '@/lib/utils';
@@ -20,6 +21,7 @@ export async function GET() {
             .rpc('get_dashboard_stats', { target_date: today });
 
         if (error) {
+            await logToDb('error', 'Error fetching dashboard stats:', error);
             console.error('Error fetching dashboard stats:', error);
             throw error;
         }
@@ -49,6 +51,7 @@ export async function GET() {
         return NextResponse.json(stats);
 
     } catch (error) {
+        await logToDb('error', 'Stats API error:', error);
         console.error('Stats API error:', error);
         return NextResponse.json(
             { error: 'Internal server error' },

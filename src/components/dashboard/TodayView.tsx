@@ -1,4 +1,5 @@
 'use client';
+import { logger } from '@/lib/logger';
 
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -45,7 +46,7 @@ export function TodayView() {
                 setData(todayData);
             }
         } catch (error) {
-            console.error('Error loading today events:', error);
+            logger.error('Error loading today events:', { error });
 
             toast.error("Errore imprevisto", { description: error instanceof Error ? error.message : "Riprova più tardi" });
         } finally {

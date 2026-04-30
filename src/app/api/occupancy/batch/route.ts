@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { logToDb } from '@/lib/logger-server';
 import { supabaseAdmin } from '@/lib/supabase/server';
 
 /**
@@ -54,6 +55,7 @@ export async function GET(request: NextRequest) {
         const { data: pitches, error: pitchesError } = await pitchQuery;
 
         if (pitchesError) {
+            await logToDb('error', 'Error fetching pitches:', pitchesError);
             console.error('Error fetching pitches:', pitchesError);
             return NextResponse.json(
                 { error: 'Failed to fetch pitches' },
@@ -84,6 +86,7 @@ export async function GET(request: NextRequest) {
             .in('pitch_id', pitches.map(p => p.id));
 
         if (bookingsError) {
+            await logToDb('error', 'Error fetching bookings:', bookingsError);
             console.error('Error fetching bookings:', bookingsError);
             return NextResponse.json(
                 { error: 'Failed to fetch bookings' },
@@ -121,6 +124,7 @@ export async function GET(request: NextRequest) {
         });
 
     } catch (error) {
+        await logToDb('error', 'Batch occupancy API error:', error);
         console.error('Batch occupancy API error:', error);
         return NextResponse.json(
             { error: 'Internal server error' },

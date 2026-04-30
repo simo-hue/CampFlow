@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { logToDb } from '@/lib/logger-server';
 import { supabaseAdmin } from '@/lib/supabase/server';
 import type { PricingSeason } from '@/lib/types';
 
@@ -25,6 +26,7 @@ export async function GET(request: Request) {
         const { data, error } = await query;
 
         if (error) {
+            await logToDb('error', 'Error fetching pricing seasons:', error);
             console.error('Error fetching pricing seasons:', error);
             return NextResponse.json(
                 { error: 'Failed to fetch pricing seasons' },
@@ -34,6 +36,7 @@ export async function GET(request: Request) {
 
         return NextResponse.json({ seasons: data || [] });
     } catch (error) {
+        await logToDb('error', 'Unexpected error in GET /api/pricing/seasons:', error);
         console.error('Unexpected error in GET /api/pricing/seasons:', error);
         return NextResponse.json(
             { error: 'Internal server error' },
@@ -111,6 +114,7 @@ export async function POST(request: Request) {
             .single();
 
         if (error) {
+            await logToDb('error', 'Error creating pricing season:', error);
             console.error('Error creating pricing season:', error);
             return NextResponse.json(
                 { error: error.message || 'Failed to create pricing season' },
@@ -120,6 +124,7 @@ export async function POST(request: Request) {
 
         return NextResponse.json({ season: data }, { status: 201 });
     } catch (error) {
+        await logToDb('error', 'Unexpected error in POST /api/pricing/seasons:', error);
         console.error('Unexpected error in POST /api/pricing/seasons:', error);
         return NextResponse.json(
             { error: 'Internal server error' },
@@ -184,6 +189,7 @@ export async function PUT(request: Request) {
             .single();
 
         if (error) {
+            await logToDb('error', 'Error updating pricing season:', error);
             console.error('Error updating pricing season:', error);
             return NextResponse.json(
                 { error: error.message || 'Failed to update pricing season' },
@@ -200,6 +206,7 @@ export async function PUT(request: Request) {
 
         return NextResponse.json({ season: data });
     } catch (error) {
+        await logToDb('error', 'Unexpected error in PUT /api/pricing/seasons:', error);
         console.error('Unexpected error in PUT /api/pricing/seasons:', error);
         return NextResponse.json(
             { error: 'Internal server error' },
@@ -234,6 +241,7 @@ export async function DELETE(request: Request) {
             .single();
 
         if (error) {
+            await logToDb('error', 'Error deleting pricing season:', error);
             console.error('Error deleting pricing season:', error);
             return NextResponse.json(
                 { error: error.message || 'Failed to delete pricing season' },
@@ -250,6 +258,7 @@ export async function DELETE(request: Request) {
 
         return NextResponse.json({ message: 'Season deactivated successfully', season: data });
     } catch (error) {
+        await logToDb('error', 'Unexpected error in DELETE /api/pricing/seasons:', error);
         console.error('Unexpected error in DELETE /api/pricing/seasons:', error);
         return NextResponse.json(
             { error: 'Internal server error' },

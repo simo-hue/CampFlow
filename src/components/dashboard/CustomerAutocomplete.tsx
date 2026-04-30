@@ -1,4 +1,5 @@
 'use client';
+import { logger } from '@/lib/logger';
 
 import * as React from 'react';
 import { Check, ChevronsUpDown, User, Search } from 'lucide-react';
@@ -57,7 +58,7 @@ export function CustomerAutocomplete({ onSelect, onClear, selectedCustomerId }: 
                 const data = await res.json();
                 setCustomers(data.customers || []);
             } catch (error) {
-                console.error('Search error:', error);
+                logger.error('Search error:', { error });
                 toast.error("Errore ricerca clienti");
             } finally {
                 setLoading(false);

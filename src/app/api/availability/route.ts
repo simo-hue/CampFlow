@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { logToDb } from '@/lib/logger-server';
 import { supabaseAdmin } from '@/lib/supabase/server';
 
 /**
@@ -63,6 +64,7 @@ export async function GET(request: NextRequest) {
         const { data: allPitches, error: pitchesError } = await query;
 
         if (pitchesError) {
+            await logToDb('error', 'Error fetching pitches:', pitchesError);
             console.error('Error fetching pitches:', pitchesError);
             return NextResponse.json(
                 { error: 'Failed to fetch pitches' },
@@ -87,6 +89,7 @@ export async function GET(request: NextRequest) {
         const { data: occupiedPitches, error: occupiedError } = await occupiedQuery;
 
         if (occupiedError) {
+            await logToDb('error', 'Error checking occupied pitches:', occupiedError);
             console.error('Error checking occupied pitches:', occupiedError);
             return NextResponse.json(
                 { error: 'Failed to check availability' },
@@ -113,6 +116,7 @@ export async function GET(request: NextRequest) {
         });
 
     } catch (error) {
+        await logToDb('error', 'Availability API error:', error);
         console.error('Availability API error:', error);
         return NextResponse.json(
             { error: 'Internal server error' },

@@ -1,4 +1,5 @@
 'use client';
+import { logger } from '@/lib/logger';
 
 import { useState } from 'react';
 import { useSectors } from '@/hooks/useSectors';
@@ -68,7 +69,7 @@ export function SectorManagement() {
             }
             setDialogOpen(false);
         } catch (error) {
-            console.error('Error saving sector:', error);
+            logger.error('Error saving sector:', { error });
             // Toast handled in hook
         }
     };

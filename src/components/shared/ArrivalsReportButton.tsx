@@ -1,4 +1,5 @@
 'use client';
+import { logger } from '@/lib/logger';
 
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
@@ -76,7 +77,7 @@ export function ArrivalsReportButton({ defaultDate, view }: ArrivalsReportButton
 
             toast.success('Riepilogo generato con successo!');
         } catch (error) {
-            console.error(error);
+            logger.error(error instanceof Error ? error.message : String(error), { error });
             toast.error('Errore durante la generazione del riepilogo');
         } finally {
             setLoading(false);

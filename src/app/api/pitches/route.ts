@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { logToDb } from '@/lib/logger-server';
 import { supabaseAdmin } from '@/lib/supabase/server';
 import type { CreatePitchRequest, UpdatePitchRequest } from '@/lib/types';
 
@@ -26,12 +27,14 @@ export async function GET(request: Request) {
         const { data, error } = await query;
 
         if (error) {
+            await logToDb('error', 'Error fetching pitches:', error);
             console.error('Error fetching pitches:', error);
             return NextResponse.json({ error: 'Failed to fetch pitches' }, { status: 500 });
         }
 
         return NextResponse.json({ pitches: data || [] });
     } catch (error) {
+        await logToDb('error', 'Pitches API error:', error);
         console.error('Pitches API error:', error);
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
@@ -102,6 +105,7 @@ export async function POST(request: Request) {
                 .select();
 
             if (error) {
+                await logToDb('error', 'Error creating double pitch:', error);
                 console.error('Error creating double pitch:', error);
                 return NextResponse.json({ error: 'Failed to create pitch' }, { status: 500 });
             }
@@ -116,6 +120,7 @@ export async function POST(request: Request) {
                 .single();
 
             if (error) {
+                await logToDb('error', 'Error creating pitch:', error);
                 console.error('Error creating pitch:', error);
                 return NextResponse.json({ error: 'Failed to create pitch' }, { status: 500 });
             }
@@ -123,6 +128,7 @@ export async function POST(request: Request) {
             return NextResponse.json({ pitch: data }, { status: 201 });
         }
     } catch (error) {
+        await logToDb('error', 'Pitches POST error:', error);
         console.error('Pitches POST error:', error);
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
@@ -156,12 +162,14 @@ export async function PUT(request: Request) {
             .single();
 
         if (error) {
+            await logToDb('error', 'Error updating pitch:', error);
             console.error('Error updating pitch:', error);
             return NextResponse.json({ error: 'Failed to update pitch' }, { status: 500 });
         }
 
         return NextResponse.json({ pitch: data });
     } catch (error) {
+        await logToDb('error', 'Pitches PUT error:', error);
         console.error('Pitches PUT error:', error);
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
@@ -200,12 +208,14 @@ export async function DELETE(request: Request) {
             .eq('id', pitchId);
 
         if (error) {
+            await logToDb('error', 'Error deleting pitch:', error);
             console.error('Error deleting pitch:', error);
             return NextResponse.json({ error: 'Failed to delete pitch' }, { status: 500 });
         }
 
         return NextResponse.json({ success: true });
     } catch (error) {
+        await logToDb('error', 'Pitches DELETE error:', error);
         console.error('Pitches DELETE error:', error);
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }

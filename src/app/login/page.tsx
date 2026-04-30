@@ -1,4 +1,5 @@
 'use client';
+import { logger } from '@/lib/logger';
 
 import { useState } from 'react';
 import { loginAction } from './actions';
@@ -22,7 +23,7 @@ export default function LoginPage() {
             }
         } catch (error) {
             // If it's a redirect error, we let it pass (it means success)
-            console.error(error);
+            logger.error(error instanceof Error ? error.message : String(error), { error });
         }
     };
 

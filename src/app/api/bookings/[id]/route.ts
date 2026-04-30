@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { logToDb } from '@/lib/logger-server';
 import { supabaseAdmin } from '@/lib/supabase/server';
 
 export async function GET(
@@ -20,6 +21,7 @@ export async function GET(
             .single();
 
         if (error) {
+            await logToDb('error', 'Error fetching booking details:', error);
             console.error('Error fetching booking details:', error);
             return NextResponse.json(
                 { error: 'Failed to fetch booking details' },
@@ -37,6 +39,7 @@ export async function GET(
         return NextResponse.json(booking);
 
     } catch (error) {
+        await logToDb('error', 'Booking GET error:', error);
         console.error('Booking GET error:', error);
         return NextResponse.json(
             { error: 'Internal server error' },
@@ -85,6 +88,7 @@ export async function PATCH(
                     .eq('id', currentBooking.customer_id);
 
                 if (customerError) {
+                    await logToDb('error', 'Error updating customer:', customerError);
                     console.error('Error updating customer:', customerError);
                     // We continue even if customer update fails, but log it
                 }
@@ -137,6 +141,7 @@ export async function PATCH(
             .single();
 
         if (error) {
+            await logToDb('error', 'Error updating booking:', error);
             console.error('Error updating booking:', error);
             
             // Handle overbooking error
@@ -156,6 +161,7 @@ export async function PATCH(
         return NextResponse.json(data);
 
     } catch (error) {
+        await logToDb('error', 'Booking PATCH error:', error);
         console.error('Booking PATCH error:', error);
         return NextResponse.json(
             { error: 'Internal server error' },
@@ -177,6 +183,7 @@ export async function DELETE(
             .eq('id', id);
 
         if (error) {
+            await logToDb('error', 'Error deleting booking:', error);
             console.error('Error deleting booking:', error);
             return NextResponse.json(
                 { error: 'Failed to delete booking' },
@@ -187,6 +194,7 @@ export async function DELETE(
         return NextResponse.json({ success: true });
 
     } catch (error) {
+        await logToDb('error', 'Booking DELETE error:', error);
         console.error('Booking DELETE error:', error);
         return NextResponse.json(
             { error: 'Internal server error' },

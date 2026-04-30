@@ -1,5 +1,6 @@
 
 import { NextResponse } from 'next/server';
+import { logToDb } from '@/lib/logger-server';
 import { supabaseAdmin } from '@/lib/supabase/server';
 
 export async function DELETE(
@@ -19,6 +20,7 @@ export async function DELETE(
             .eq('id', id);
 
         if (error) {
+            await logToDb('error', '[API] Delete error:', error);
             console.error('[API] Delete error:', error);
             throw error;
         }
@@ -31,6 +33,7 @@ export async function DELETE(
 
         return NextResponse.json({ success: true, count });
     } catch (error: any) {
+        await logToDb('error', '[API] Delete exception:', error);
         console.error('[API] Delete exception:', error);
         return NextResponse.json({ error: error.message }, { status: 500 });
     }

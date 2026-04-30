@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { logToDb } from '@/lib/logger-server';
 import { supabaseAdmin } from '@/lib/supabase/server';
 
 /**
@@ -12,6 +13,7 @@ export async function POST() {
             .rpc('vacuum_analyze_all');
 
         if (error) {
+            await logToDb('error', 'Error running vacuum:', error);
             console.error('Error running vacuum:', error);
             throw error;
         }
@@ -22,6 +24,7 @@ export async function POST() {
         });
 
     } catch (error) {
+        await logToDb('error', 'Vacuum API error:', error);
         console.error('Vacuum API error:', error);
         return NextResponse.json(
             { error: 'Failed to run vacuum operation' },

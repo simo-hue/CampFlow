@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { logToDb } from '@/lib/logger-server';
 import { supabaseAdmin } from '@/lib/supabase/server';
 import { calculatePrice } from '@/lib/pricing';
 import type { CreateBookingRequest } from '@/lib/types';
@@ -163,6 +164,7 @@ export async function POST(request: NextRequest) {
                     .single();
 
                 if (customerError || !newCustomer) {
+                    await logToDb('error', 'Error creating customer:', customerError);
                     console.error('Error creating customer:', customerError);
                     return NextResponse.json(
                         { error: 'Errore durante la creazione del cliente' },
@@ -192,6 +194,7 @@ export async function POST(request: NextRequest) {
             .single();
 
         if (bookingError) {
+            await logToDb('error', 'Error creating booking:', bookingError);
             console.error('Error creating booking:', bookingError);
 
             // Check for exclusion constraint violation (overbooking)
@@ -224,6 +227,7 @@ export async function POST(request: NextRequest) {
                 .insert(guestsToInsert);
 
             if (guestsError) {
+                await logToDb('error', 'Error inserting guests:', guestsError);
                 console.error('Error inserting guests:', guestsError);
                 // Non-critical: we continue even if guest names fail (user can add them at check-in)
             }
@@ -239,6 +243,7 @@ export async function POST(request: NextRequest) {
         }, { status: 201 });
 
     } catch (error) {
+        await logToDb('error', 'Bookings API error:', error);
         console.error('Bookings API error:', error);
         return NextResponse.json(
             { error: 'Internal server error' },
@@ -284,6 +289,7 @@ export async function GET(request: NextRequest) {
         const { data: bookings, error } = await query;
 
         if (error) {
+            await logToDb('error', 'Error fetching bookings:', error);
             console.error('Error fetching bookings:', error);
             return NextResponse.json(
                 { error: 'Failed to fetch bookings' },
@@ -294,6 +300,7 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ bookings });
 
     } catch (error) {
+        await logToDb('error', 'Bookings GET API error:', error);
         console.error('Bookings GET API error:', error);
         return NextResponse.json(
             { error: 'Internal server error' },

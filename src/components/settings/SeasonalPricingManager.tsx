@@ -1,4 +1,5 @@
 'use client';
+import { logger } from '@/lib/logger';
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
@@ -44,7 +45,7 @@ export function SeasonalPricingManager() {
             });
             setDialogOpen(false);
         } catch (error) {
-            console.error('Error saving season:', error);
+            logger.error('Error saving season:', { error });
             // Toast handled in hook
         }
     };
@@ -60,7 +61,7 @@ export function SeasonalPricingManager() {
             await deleteSeason.mutateAsync(seasonToDelete.id);
             setSeasonToDelete(null);
         } catch (error) {
-            console.error("Error deleting season:", error);
+            logger.error("Error deleting season:", { error });
         }
     };
 

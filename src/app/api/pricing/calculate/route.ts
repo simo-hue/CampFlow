@@ -1,5 +1,6 @@
 
 import { NextResponse } from 'next/server';
+import { logToDb } from '@/lib/logger-server';
 import { supabaseAdmin } from '@/lib/supabase/server';
 import type { PriceCalculation, PitchType } from '@/lib/types';
 import { calculatePrice, getPriceBreakdown } from '@/lib/pricing';
@@ -46,6 +47,7 @@ export async function GET(request: Request) {
             .eq('is_active', true);
 
         if (error) {
+            await logToDb('error', 'Error fetching seasons:', error);
             console.error('Error fetching seasons:', error);
             return NextResponse.json({ error: error.message }, { status: 500 });
         }
@@ -117,6 +119,7 @@ export async function GET(request: Request) {
         });
 
     } catch (error: any) {
+        await logToDb('error', 'Calculation error:', error);
         console.error('Calculation error:', error);
         return NextResponse.json(
             { error: error.message || 'Internal server error' },

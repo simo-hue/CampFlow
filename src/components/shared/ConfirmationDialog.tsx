@@ -1,4 +1,5 @@
 'use client';
+import { logger } from '@/lib/logger';
 
 import {
     Dialog,
@@ -40,7 +41,7 @@ export function ConfirmationDialog({
             await onConfirm();
             onOpenChange(false);
         } catch (error) {
-            console.error('Error in confirmation dialog:', error);
+            logger.error('Error in confirmation dialog:', { error });
         } finally {
             setLoading(false);
         }

@@ -1,4 +1,5 @@
 import { Button } from '@/components/ui/button';
+import { logger } from '@/lib/logger';
 import {
     Dialog,
     DialogContent,
@@ -52,7 +53,7 @@ export function CheckOutDialog({ open, onOpenChange, event, onSuccess }: CheckOu
             onOpenChange(false);
             onSuccess();
         } catch (error) {
-            console.error('Check-out error:', error);
+            logger.error('Check-out error:', { error });
             toast.error('Errore durante il check-out', {
                 description: 'Impossibile completare l\'operazione. Riprova.'
             });

@@ -1,6 +1,7 @@
 'use server';
 
 import { cookies } from 'next/headers';
+import { logger } from '@/lib/logger';
 import { redirect } from 'next/navigation';
 
 const AUTH_COOKIE_NAME = 'sys_monitor_auth';
@@ -105,7 +106,7 @@ export async function resetSystemAction() {
         revalidatePath('/');
         return { success: true, message: 'System successfully reset to factory defaults.' };
     } catch (error: any) {
-        console.error('System Reset Failed:', error);
+        logger.error('System Reset Failed:', { error });
         return { success: false, error: error.message };
     }
 }
@@ -140,7 +141,7 @@ export async function clearBookingsAction() {
         console.log('[ClearBookings] Success');
         return { success: true, message: 'All bookings have been successfully deleted.' };
     } catch (error: any) {
-        console.error('Clear Bookings Failed:', error);
+        logger.error('Clear Bookings Failed:', { error });
         return { success: false, error: error.message };
     }
 }
@@ -163,7 +164,7 @@ export async function clearCustomersAction() {
         console.log('[ClearCustomers] Success');
         return { success: true, message: 'All customers (and their bookings) have been successfully deleted.' };
     } catch (error: any) {
-        console.error('Clear Customers Failed:', error);
+        logger.error('Clear Customers Failed:', { error });
         return { success: false, error: error.message };
     }
 }
@@ -271,7 +272,7 @@ export async function generateBackupAction(selectedTables?: string[]) {
 
         return { success: true, backup: backupData };
     } catch (error: any) {
-        console.error('Backup generation failed:', error);
+        logger.error('Backup generation failed:', { error });
         return { success: false, error: error.message };
     }
 }

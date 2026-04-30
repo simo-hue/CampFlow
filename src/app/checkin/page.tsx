@@ -1,4 +1,5 @@
 'use client';
+import { logger } from '@/lib/logger';
 
 import { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
@@ -58,7 +59,7 @@ export default function CheckInPage() {
             const data = await res.json();
             setBookings(data.bookings || []);
         } catch (error) {
-            console.error(error);
+            logger.error(error instanceof Error ? error.message : String(error), { error });
             toast.error("Errore caricamento", { description: "Impossibile caricare la lista prenotazioni" });
         } finally {
             setLoading(false);
@@ -567,6 +568,59 @@ function CheckInDialog({ open, onOpenChange, booking, onClose, onSuccess }: {
 
             if (!guestsRes.ok) throw new Error("Errore salvataggio ospiti");
 
+            // 2b. Save non-head-of-family guests as separate customer records
+            const secondaryGuests = guests.filter(g => !g.is_head_of_family && g.first_name && g.last_name);
+            for (const guest of secondaryGuests) {
+                try {
+                    const upsertRes = await fetch('/api/customers/upsert-guest', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            first_name: guest.first_name,
+                            last_name: guest.last_name,
+                            birth_date: guest.birth_date || null,
+                            birth_country: guest.birth_country || null,
+                            birth_province: guest.birth_province || null,
+                            birth_city: guest.birth_city || null,
+                            gender: guest.gender || null,
+                            citizenship: guest.citizenship || null,
+                            address: guest.address || null,
+                            residence_country: guest.residence_country || null,
+                            residence_province: guest.residence_province || null,
+                            residence_city: guest.residence_city || null,
+                            residence_zip: guest.residence_zip || null,
+                            document_type: guest.document_type || null,
+                            document_number: guest.document_number || null,
+                            document_issue_date: guest.document_issue_date || null,
+                            document_issuer: guest.document_issuer || null,
+                            document_issue_city: guest.document_issue_city || null,
+                            document_issue_country: guest.document_issue_country || null,
+                            license_plate: guest.license_plate || null,
+                        })
+                    });
+
+                    if (!upsertRes.ok) {
+                        const errData = await upsertRes.json().catch(() => ({}));
+                        // Log to console (server-side) — the API already persists to app_logs
+                        logger.error(
+                            `[checkin] ❌ upsert-guest failed for "${guest.last_name} ${guest.first_name}"`,
+                            { status: upsertRes.status, detail: errData?.detail || errData?.error }
+                        );
+                        // Non-blocking warning toast visible to the operator
+                        toast.warning(`Attenzione: impossibile salvare "${guest.last_name} ${guest.first_name}" come cliente`, {
+                            description: 'L\'errore è stato registrato nei log di sistema. Il check-in è stato completato.',
+                            duration: 8000,
+                        });
+                    }
+                } catch (upsertErr) {
+                    logger.error(`[checkin] ❌ Network error during upsert-guest for "${guest.last_name} ${guest.first_name}"`, { error: upsertErr });
+                    toast.warning(`Attenzione: errore di rete per "${guest.last_name} ${guest.first_name}"`, {
+                        description: 'Controlla i log di sistema.',
+                        duration: 8000,
+                    });
+                }
+            }
+
             // 3. Update Booking Status & Questura
             const bookingRes = await fetch(`/api/bookings/${booking.id}`, {
                 method: 'PATCH',
@@ -582,7 +636,7 @@ function CheckInDialog({ open, onOpenChange, booking, onClose, onSuccess }: {
             toast.success("Check-in completato con successo!");
             onSuccess();
         } catch (error) {
-            console.error(error);
+            logger.error(error instanceof Error ? error.message : String(error), { error });
             toast.error("Errore durante il check-in");
         } finally {
             setSending(false);

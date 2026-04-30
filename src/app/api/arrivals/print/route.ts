@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { logToDb } from '@/lib/logger-server';
 import { supabaseAdmin } from '@/lib/supabase/server';
 import { getTodayItaly } from '@/lib/utils';
 
@@ -25,6 +26,7 @@ export async function GET(request: Request) {
             .order('created_at', { ascending: false });
 
         if (error) {
+            await logToDb('error', 'Error fetching arrivals:', error);
             console.error('Error fetching arrivals:', error);
             return NextResponse.json({ error: 'Failed to fetch arrivals' }, { status: 500 });
         }
@@ -47,6 +49,7 @@ export async function GET(request: Request) {
         return NextResponse.json({ date: startTarget, endDate: endTarget, arrivals });
 
     } catch (error) {
+        await logToDb('error', 'Arrivals print API error:', error);
         console.error('Arrivals print API error:', error);
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }

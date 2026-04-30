@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { logToDb } from '@/lib/logger-server';
 import { supabaseAdmin } from '@/lib/supabase/server';
 
 /**
@@ -49,6 +50,7 @@ export async function GET(request: NextRequest) {
             .overlaps('booking_period', `[${checkIn},${checkOut})`);
 
         if (error) {
+            await logToDb('error', 'Error checking occupancy:', error);
             console.error('Error checking occupancy:', error);
             return NextResponse.json(
                 { error: 'Failed to check occupancy' },
@@ -83,6 +85,7 @@ export async function GET(request: NextRequest) {
         });
 
     } catch (error) {
+        await logToDb('error', 'Occupancy API error:', error);
         console.error('Occupancy API error:', error);
         return NextResponse.json(
             { error: 'Internal server error' },

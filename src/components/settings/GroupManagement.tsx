@@ -1,4 +1,5 @@
 'use client';
+import { logger } from '@/lib/logger';
 
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
@@ -83,7 +84,7 @@ export function GroupManagement() {
             }
             setDialogOpen(false);
         } catch (e: any) {
-            console.error(e);
+            logger.error(e instanceof Error ? e.message : String(e), { error: e });
             if (e.message?.includes('customer_groups_name_key') || e.message?.includes('duplicate key')) {
                 setError("Esiste già un gruppo con questo nome. Scegli un nome diverso.");
             } else {

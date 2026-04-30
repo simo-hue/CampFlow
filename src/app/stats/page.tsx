@@ -1,4 +1,5 @@
 "use client";
+import { logger } from '@/lib/logger';
 
 import { useState, useEffect } from "react";
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
@@ -43,7 +44,7 @@ export default function StatsPage() {
         const correctPassword = process.env.NEXT_PUBLIC_STATS_PSW;
         
         if (!correctPassword) {
-            console.error("NEXT_PUBLIC_STATS_PSW is not defined in environment variables.");
+            logger.error("NEXT_PUBLIC_STATS_PSW is not defined in environment variables.");
             setError(true);
             return;
         }

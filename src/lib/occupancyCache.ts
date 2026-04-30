@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 
 
 const CACHE_KEY_PREFIX = 'occupancy_cache_v5_';
@@ -31,7 +32,7 @@ export function getCachedData(key: string): any | null {
         console.log('📦 Cache HIT:', key);
         return parsed.data;
     } catch (error) {
-        console.error('Error reading cache:', error);
+        logger.error('Error reading cache:', { error });
         return null;
     }
 }
@@ -46,6 +47,6 @@ export function setCachedData(key: string, data: any) {
         };
         localStorage.setItem(CACHE_KEY_PREFIX + key, JSON.stringify(cacheObject));
     } catch (error) {
-        console.error('Error writing cache:', error);
+        logger.error('Error writing cache:', { error });
     }
 }

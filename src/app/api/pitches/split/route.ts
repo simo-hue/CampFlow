@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { logToDb } from '@/lib/logger-server';
 import { supabaseAdmin } from '@/lib/supabase/server';
 
 /**
@@ -69,6 +70,7 @@ export async function POST(request: Request) {
             .eq('id', pitch_id);
 
         if (updateError) {
+            await logToDb('error', 'Error updating pitch to suffix a:', updateError);
             console.error('Error updating pitch to suffix a:', updateError);
             return NextResponse.json({ error: 'Failed to split pitch' }, { status: 500 });
         }
@@ -86,6 +88,7 @@ export async function POST(request: Request) {
             .single();
 
         if (createError) {
+            await logToDb('error', 'Error creating pitch b:', createError);
             console.error('Error creating pitch b:', createError);
             // Rollback: revert suffix to empty
             await supabaseAdmin
@@ -108,6 +111,7 @@ export async function POST(request: Request) {
             pitches: [updatedPitch, newPitch],
         });
     } catch (error) {
+        await logToDb('error', 'Split pitch error:', error);
         console.error('Split pitch error:', error);
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }

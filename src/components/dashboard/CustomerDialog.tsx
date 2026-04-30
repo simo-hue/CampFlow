@@ -1,4 +1,5 @@
 'use client';
+import { logger } from '@/lib/logger';
 
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
@@ -108,7 +109,7 @@ export function CustomerDialog({ customer, open, onClose, onSuccess }: CustomerD
             onSuccess();
             onClose();
         } catch (error: any) {
-            console.error(error);
+            logger.error(error instanceof Error ? error.message : String(error), { error });
             toast.error(error.message);
         } finally {
             setLoading(false);

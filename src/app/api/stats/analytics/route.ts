@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { logToDb } from '@/lib/logger-server';
 import { supabaseAdmin } from '@/lib/supabase/server';
 import { Booking, BookingWithDetails } from '@/lib/types';
 import { eachDayOfInterval, format, parseISO, subDays, differenceInCalendarDays, startOfDay, endOfDay, addDays } from 'date-fns';
@@ -45,6 +46,7 @@ export async function GET(request: NextRequest) {
             .overlaps('booking_period', rangeStr);
 
         if (error) {
+            await logToDb('error', '[stats-analytics] Query error:', error);
             console.error('[stats-analytics] Query error:', error);
             throw error;
         }
@@ -187,6 +189,7 @@ export async function GET(request: NextRequest) {
         });
 
     } catch (error) {
+        await logToDb('error', '[stats-analytics] Internal error:', error);
         console.error('[stats-analytics] Internal error:', error);
         return NextResponse.json(
             { error: 'Internal server error' },
