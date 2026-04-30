@@ -10,6 +10,20 @@ interface CustomTooltipProps {
     isCurrency?: boolean;
 }
 
+const getColor = (item: any) => {
+    const name = item.name?.toLowerCase();
+    const color = item.color || item.fill;
+    
+    // If it's a gradient URL, we use fallbacks based on name
+    if (typeof color === 'string' && color.startsWith('url')) {
+        if (name.includes('piazzola')) return '#ea580c';
+        if (name.includes('tenda')) return '#02c01eff';
+        return 'hsl(var(--primary))';
+    }
+    
+    return color || 'hsl(var(--primary))';
+};
+
 export function CustomTooltip({ active, payload, label, valuePrefix = "", isCurrency = false }: CustomTooltipProps) {
     if (active && payload && payload.length) {
         return (
@@ -25,8 +39,8 @@ export function CustomTooltip({ active, payload, label, valuePrefix = "", isCurr
                         <div key={index} className="flex items-center justify-between gap-4">
                             <div className="flex items-center gap-2">
                                 <div 
-                                    className="w-2.5 h-2.5 rounded-full ring-1 ring-black/5" 
-                                    style={{ backgroundColor: item.color || item.fill || 'var(--primary)' }} 
+                                    className="w-2.5 h-2.5 rounded-full ring-1 ring-black/5 shadow-sm" 
+                                    style={{ backgroundColor: getColor(item) }} 
                                 />
                                 <span className="text-sm font-medium text-foreground">
                                     {item.name}
@@ -44,3 +58,4 @@ export function CustomTooltip({ active, payload, label, valuePrefix = "", isCurr
 
     return null;
 }
+
