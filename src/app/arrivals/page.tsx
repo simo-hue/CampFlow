@@ -4,7 +4,7 @@ import { logger } from '@/lib/logger';
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, ArrowDownCircle, Search, CalendarIcon } from 'lucide-react';
-import { format, addDays, startOfDay } from 'date-fns';
+import { format, addDays, subDays, startOfDay } from 'date-fns';
 import { it } from 'date-fns/locale';
 import { toast } from 'sonner';
 import Link from 'next/link';
@@ -14,7 +14,7 @@ import { DateToggle } from '@/components/shared/DateToggle';
 import { Input } from '@/components/ui/input';
 import { ArrivalsReportButton } from '@/components/shared/ArrivalsReportButton';
 
-type ViewType = 'today' | 'tomorrow' | 'week';
+type ViewType = 'yesterday' | 'today' | 'tomorrow' | 'week';
 
 export default function ArrivalsPage() {
     const [view, setView] = useState<ViewType>('today');
@@ -33,7 +33,10 @@ export default function ArrivalsPage() {
             let startDate = today;
             let endDate = today;
 
-            if (view === 'tomorrow') {
+            if (view === 'yesterday') {
+                startDate = subDays(today, 1);
+                endDate = startDate;
+            } else if (view === 'tomorrow') {
                 startDate = addDays(today, 1);
                 endDate = startDate;
             } else if (view === 'week') {
@@ -124,7 +127,12 @@ export default function ArrivalsPage() {
                                         <CalendarIcon className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
                                         {view === 'week'
                                             ? "Prossimi 7 giorni"
-                                            : format(view === 'tomorrow' ? addDays(new Date(), 1) : new Date(), 'EEEE d MMMM yyyy', { locale: it })
+                                            : format(
+                                                view === 'tomorrow' ? addDays(new Date(), 1)
+                                                : view === 'yesterday' ? subDays(new Date(), 1)
+                                                : new Date(),
+                                                'EEEE d MMMM yyyy', { locale: it }
+                                              )
                                         }
                                     </p>
                                 </div>
@@ -146,7 +154,11 @@ export default function ArrivalsPage() {
                                 <DateToggle currentView={view} onToggle={handleViewToggle} />
                                 <ArrivalsReportButton 
                                     view={view}
-                                    defaultDate={view === 'tomorrow' ? format(addDays(new Date(), 1), 'yyyy-MM-dd') : format(new Date(), 'yyyy-MM-dd')} 
+                                    defaultDate={
+                                        view === 'tomorrow' ? format(addDays(new Date(), 1), 'yyyy-MM-dd')
+                                        : view === 'yesterday' ? format(subDays(new Date(), 1), 'yyyy-MM-dd')
+                                        : format(new Date(), 'yyyy-MM-dd')
+                                    } 
                                 />
                             </div>
                         </div>
@@ -201,7 +213,7 @@ export default function ArrivalsPage() {
                                         ))}
                                         {filteredArrivals.filter(a => a.status !== 'checked_in').length === 0 && (
                                             <div className="text-center py-8 bg-muted/20 rounded-xl border-2 border-dashed border-muted">
-                                                <p className="text-muted-foreground italic text-sm">Tutti i check-in di {view === 'today' ? 'oggi' : 'domani'} completati!</p>
+                                                <p className="text-muted-foreground italic text-sm">Tutti i check-in di {view === 'today' ? 'oggi' : view === 'yesterday' ? 'ieri' : 'domani'} completati!</p>
                                             </div>
                                         )}
                                     </div>

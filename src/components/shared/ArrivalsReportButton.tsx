@@ -42,7 +42,7 @@ const genderLabel = (g: string | null | undefined): string => {
 
 interface ArrivalsReportButtonProps {
     defaultDate?: string;
-    view?: 'today' | 'tomorrow' | 'week';
+    view?: 'yesterday' | 'today' | 'tomorrow' | 'week';
 }
 
 export function ArrivalsReportButton({ defaultDate, view }: ArrivalsReportButtonProps) {

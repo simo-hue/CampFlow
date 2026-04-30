@@ -13,7 +13,7 @@ import { GuestCard } from '@/components/shared/GuestCard';
 import { DateToggle } from '@/components/shared/DateToggle';
 import { Input } from '@/components/ui/input';
 
-type ViewType = 'today' | 'tomorrow' | 'week';
+type ViewType = 'yesterday' | 'today' | 'tomorrow' | 'week';
 
 export default function DeparturesPage() {
     const [view, setView] = useState<ViewType>('today');

@@ -74,3 +74,13 @@
 - Frontend/Shared (`src/app`, `src/components`, `src/lib`): Replaced raw `console.error` calls with the central `logger.error` utility from `src/lib/logger.ts`, which automatically queues the log for DB persistence via a Server Action.
 - Fixed several TypeScript signature mismatches (`Expected 1-2 arguments, but got 3` etc.) to strictly comply with `logger.error(message: string, meta?: LogMeta)`.
 - Verified build stability with `tsc --noEmit`. No regressions introduced.
+
+## [2026-04-30 22:27]: Aggiunta opzione "Ieri" nel selettore data — Pagina Arrivi
+*Details*: Aggiunta la voce "Ieri" come prima opzione nel selettore del periodo temporale nella pagina `/arrivals`. L'ordine risultante è: **Ieri | Oggi | Domani | Settimana**.
+*Tech Notes*:
+- `src/components/shared/DateToggle.tsx`: Aggiunto `'yesterday'` al tipo union `DateToggleProps` e button "Ieri" come primo elemento.
+- `src/app/arrivals/page.tsx`: Aggiunto `'yesterday'` al tipo `ViewType`, importato `subDays` da `date-fns`, aggiunta logica per calcolare la data di ieri, aggiornato subtitle e messaggio "tutti completati", aggiornato `defaultDate` per `ArrivalsReportButton`.
+- `src/components/shared/ArrivalsReportButton.tsx`: Aggiunto `'yesterday'` al tipo `view?` nell'interfaccia per compatibilità TypeScript.
+- `src/app/departures/page.tsx`: Aggiornato `ViewType` locale per includere `'yesterday'` (compatibilità con `DateToggle` condiviso).
+- Build verificata con `npm run build`. Nessuna regressione.
+
