@@ -12,6 +12,7 @@ import {
 import { format, parseISO } from "date-fns";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency } from "@/lib/utils";
+import { CustomTooltip } from "./CustomTooltip";
 
 interface RevenueChartProps {
     data: { date: string; value: number }[];
@@ -76,31 +77,18 @@ export function RevenueChart({ data, action }: RevenueChartProps) {
                                 tickFormatter={(value) => formatCurrency(value)}
                             />
                             <Tooltip
-                                formatter={(value: any) => [formatCurrency(value), "Ricavi"]}
-                                labelFormatter={(label) => format(parseISO(label), "d MMMM yyyy")}
-                                contentStyle={{
-                                    backgroundColor: 'hsl(var(--card))',
-                                    color: 'hsl(var(--foreground))',
-                                    borderRadius: '0.5rem',
-                                    border: '1px solid hsl(var(--border))',
-                                    boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
-                                    padding: '8px 12px',
-                                }}
-                                labelStyle={{
-                                    color: 'hsl(var(--muted-foreground))',
-                                    marginBottom: '0.25rem',
-                                    fontSize: '0.875rem',
-                                }}
-                                itemStyle={{
-                                    paddingTop: '0.25rem',
-                                    fontSize: '0.875rem',
-                                    fontWeight: 500
+                                content={<CustomTooltip isCurrency />}
+                                cursor={{
+                                    stroke: 'hsl(var(--muted-foreground))',
+                                    strokeWidth: 1,
+                                    strokeDasharray: '4 4',
                                 }}
                             />
                             <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="var(--color-border)" />
                             <Area
                                 type="monotone"
                                 dataKey="value"
+                                name="Ricavi"
                                 stroke="url(#colorRevenueStroke)"
                                 strokeWidth={2}
                                 fillOpacity={1}

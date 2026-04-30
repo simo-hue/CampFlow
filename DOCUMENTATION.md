@@ -49,4 +49,12 @@
 *Details*: Replaced the default browser `window.confirm` with a custom `AlertDialog` component from Shadcn UI to maintain a cohesive user experience when deleting reservations.
 *Tech Notes*:
 - Integrated `AlertDialog`, `AlertDialogAction`, `AlertDialogCancel`, and related components in `BookingDetailsDialog.tsx`.
-- Managed deletion state with `showDeleteAlert` and handled async loading states directly within the custom dialog.
+## [2026-04-30 12:20]: Chart Readability & Premium Tooltip Implementation
+*Details*: Improved chart tooltip visibility and aesthetics in the `/stats` page. Solved the "overlapping/transparent" issue by implementing a custom premium tooltip with better contrast and glassmorphism effects.
+*Tech Notes*:
+- Created `src/components/stats/CustomTooltip.tsx`: A flexible, premium tooltip component with `backdrop-blur-md`, solid background (`bg-card/95`), and refined typography.
+- Integrated `CustomTooltip` into `RevenueChart.tsx` and `OccupancyChart.tsx`.
+- Implemented a vertical cursor line (`strokeDasharray: '4 4'`) for both charts to improve mouse-tracking precision.
+- Standardized currency and numeric formatting within the tooltips.
+- Added Italian localization for date formatting in tooltips.
+- Verified build stability with `npm run build`.

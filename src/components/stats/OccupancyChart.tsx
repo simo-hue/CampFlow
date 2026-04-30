@@ -12,6 +12,7 @@ import {
 } from "recharts";
 import { format, parseISO } from "date-fns";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { CustomTooltip } from "./CustomTooltip";
 
 interface OccupancyChartProps {
     data: { date: string; piazzola: number; tenda: number; total: number }[];
@@ -76,25 +77,12 @@ export function OccupancyChart({ data, title = "Occupazione Giornaliera", action
                                 axisLine={false}
                             />
                             <Tooltip
-                                contentStyle={{
-                                    backgroundColor: 'hsl(var(--card))',
-                                    color: 'hsl(var(--foreground))',
-                                    borderRadius: '0.5rem',
-                                    border: '1px solid hsl(var(--border))',
-                                    boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
-                                    padding: '8px 12px',
+                                content={<CustomTooltip />}
+                                cursor={{
+                                    stroke: 'hsl(var(--muted-foreground))',
+                                    strokeWidth: 1,
+                                    strokeDasharray: '4 4',
                                 }}
-                                labelStyle={{
-                                    color: 'hsl(var(--muted-foreground))',
-                                    marginBottom: '0.25rem',
-                                    fontSize: '0.875rem',
-                                }}
-                                itemStyle={{
-                                    paddingTop: '0.25rem',
-                                    fontSize: '0.875rem',
-                                    fontWeight: 500
-                                }}
-                                labelFormatter={(label) => format(parseISO(label), "d MMMM yyyy")}
                             />
                             <Legend />
                             <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="var(--color-border)" />
