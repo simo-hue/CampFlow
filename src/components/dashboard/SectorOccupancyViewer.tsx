@@ -866,6 +866,9 @@ function SectorOccupancyViewerContent() {
                 open={showDetailsModal}
                 onClose={() => setShowDetailsModal(false)}
                 bookingId={selectedBookingId}
+                onDeleteSuccess={() => {
+                    loadSectorOccupancy(true);
+                }}
             />
         </div>
     );

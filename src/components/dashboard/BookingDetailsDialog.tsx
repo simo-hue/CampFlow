@@ -8,6 +8,16 @@ import {
     DialogTitle,
     DialogDescription
 } from '@/components/ui/dialog';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -19,7 +29,8 @@ import {
     Phone,
     Mail,
     MapPin,
-    FileText
+    FileText,
+    Trash2
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { it } from 'date-fns/locale';
@@ -29,9 +40,10 @@ interface BookingDetailsDialogProps {
     bookingId: string | null;
     open: boolean;
     onClose: () => void;
+    onDeleteSuccess?: () => void;
 }
 
-export function BookingDetailsDialog({ bookingId, open, onClose }: BookingDetailsDialogProps) {
+export function BookingDetailsDialog({ bookingId, open, onClose, onDeleteSuccess }: BookingDetailsDialogProps) {
     const [booking, setBooking] = useState<any>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -62,6 +74,28 @@ export function BookingDetailsDialog({ bookingId, open, onClose }: BookingDetail
     };
 
     const [showEditModal, setShowEditModal] = useState(false);
+    const [showDeleteAlert, setShowDeleteAlert] = useState(false);
+
+    const executeDelete = async () => {
+        setLoading(true);
+        try {
+            const res = await fetch(`/api/bookings/${booking.id}`, {
+                method: 'DELETE',
+            });
+            if (!res.ok) throw new Error("Errore durante l'eliminazione");
+            setShowDeleteAlert(false);
+            onClose();
+            if (onDeleteSuccess) {
+                onDeleteSuccess();
+            }
+        } catch (err) {
+            console.error(err);
+            setError("Impossibile eliminare la prenotazione");
+            setShowDeleteAlert(false);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const periodMatch = booking?.booking_period?.match(/\[([^,]+),([^\)]+)\)/);
     const checkIn = periodMatch ? periodMatch[1] : null;
@@ -184,9 +218,15 @@ export function BookingDetailsDialog({ bookingId, open, onClose }: BookingDetail
                             )}
 
                             <div className="pt-4 flex justify-between gap-2 border-t">
-                                <Button variant="ghost" onClick={() => setShowEditModal(true)}>
-                                    Modifica
-                                </Button>
+                                <div className="flex gap-2">
+                                    <Button variant="destructive" onClick={() => setShowDeleteAlert(true)} disabled={loading}>
+                                        {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Trash2 className="h-4 w-4 mr-2" />}
+                                        Elimina
+                                    </Button>
+                                    <Button variant="ghost" onClick={() => setShowEditModal(true)}>
+                                        Modifica
+                                    </Button>
+                                </div>
                                 <div className="flex gap-2">
                                     <Button variant="outline" onClick={onClose}>Chiudi</Button>
                                 </div>
@@ -212,6 +252,32 @@ export function BookingDetailsDialog({ bookingId, open, onClose }: BookingDetail
                         onClose(); // Close details too to refresh
                     }}
                 />
+            )}
+            {booking && (
+                <AlertDialog open={showDeleteAlert} onOpenChange={setShowDeleteAlert}>
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                            <AlertDialogTitle>Sei assolutamente sicuro?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                                Questa azione non può essere annullata. Questo eliminerà definitivamente la prenotazione di <strong className="text-foreground">{booking?.customer?.last_name} {booking?.customer?.first_name}</strong> e libererà la piazzola.
+                            </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                            <AlertDialogCancel disabled={loading}>Annulla</AlertDialogCancel>
+                            <AlertDialogAction
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    executeDelete();
+                                }}
+                                className="bg-destructive hover:bg-destructive/90 text-destructive-foreground"
+                                disabled={loading}
+                            >
+                                {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Trash2 className="w-4 h-4 mr-2" />}
+                                Elimina Prenotazione
+                            </AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
             )}
         </>
     );

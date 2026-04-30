@@ -37,3 +37,16 @@
 - Updated `generateBackupAction` to accept an optional array of table names.
 - Added a checklist UI with "Select/Deselect All" functionality in `DatabaseManagerWidget`.
 - Dynamic filename generation based on export scope (`full` vs `partial`).
+
+## [2026-04-30 12:00]: Reservation Deletion Feature
+*Details*: Added the ability to permanently delete a reservation from the occupancy page to handle canceled bookings.
+*Tech Notes*:
+- Implemented `DELETE` method in `api/bookings/[id]/route.ts`.
+- Added a destructive "Elimina" button in `BookingDetailsDialog.tsx` with confirmation prompt.
+- Updated `SectorOccupancyViewer.tsx` to pass `onDeleteSuccess` callback to `BookingDetailsDialog` for refreshing the grid after deletion.
+
+## [2026-04-30 12:10]: Custom Deletion Confirmation Dialog
+*Details*: Replaced the default browser `window.confirm` with a custom `AlertDialog` component from Shadcn UI to maintain a cohesive user experience when deleting reservations.
+*Tech Notes*:
+- Integrated `AlertDialog`, `AlertDialogAction`, `AlertDialogCancel`, and related components in `BookingDetailsDialog.tsx`.
+- Managed deletion state with `showDeleteAlert` and handled async loading states directly within the custom dialog.

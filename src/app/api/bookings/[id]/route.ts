@@ -163,3 +163,34 @@ export async function PATCH(
         );
     }
 }
+
+export async function DELETE(
+    request: NextRequest,
+    { params }: { params: Promise<{ id: string }> }
+) {
+    try {
+        const { id } = await params;
+
+        const { error } = await supabaseAdmin
+            .from('bookings')
+            .delete()
+            .eq('id', id);
+
+        if (error) {
+            console.error('Error deleting booking:', error);
+            return NextResponse.json(
+                { error: 'Failed to delete booking' },
+                { status: 500 }
+            );
+        }
+
+        return NextResponse.json({ success: true });
+
+    } catch (error) {
+        console.error('Booking DELETE error:', error);
+        return NextResponse.json(
+            { error: 'Internal server error' },
+            { status: 500 }
+        );
+    }
+}
