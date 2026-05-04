@@ -20,6 +20,7 @@ const lowSeason: PricingSeason = {
     car_price_per_day: 2,
     priority: 10,
     is_active: true,
+    is_recurring: true,
     description: null,
     created_at: '',
     updated_at: ''
@@ -40,6 +41,7 @@ const highSeason: PricingSeason = {
     car_price_per_day: 4,
     priority: 20, // Higher priority
     is_active: true,
+    is_recurring: true,
     description: null,
     created_at: '',
     updated_at: ''

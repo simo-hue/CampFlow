@@ -16,6 +16,7 @@ const mockSeason: PricingSeason = {
     car_price_per_day: 2,
     priority: 1,
     is_active: true,
+    is_recurring: true,
     description: null,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString()
