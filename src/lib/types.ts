@@ -82,6 +82,7 @@ export interface PricingSeason {
     priority: number; // Higher = wins in overlaps
     color: string; // Hex code for UI
     is_active: boolean;
+    is_recurring: boolean;
     created_at: string;
     updated_at: string;
 }

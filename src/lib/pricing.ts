@@ -17,8 +17,26 @@ export function getApplicableSeason(date: Date, seasons: PricingSeason[]): Prici
     // Filter seasons that cover the date and are active
     const applicableSeasons = seasons.filter(season => {
         if (!season.is_active) return false;
+        
         const start = parseISO(season.start_date);
         const end = parseISO(season.end_date);
+
+        if (season.is_recurring) {
+            // Check year-independently
+            // Normalize all to a leap year (2000) to handle Feb 29 correctly
+            const dNorm = new Date(2000, date.getMonth(), date.getDate());
+            const sNorm = new Date(2000, start.getMonth(), start.getDate());
+            const eNorm = new Date(2000, end.getMonth(), end.getDate());
+
+            if (sNorm <= eNorm) {
+                // Standard range (e.g., June to August)
+                return dNorm >= sNorm && dNorm <= eNorm;
+            } else {
+                // Year-crossing range (e.g., Dec to Jan)
+                return dNorm >= sNorm || dNorm <= eNorm;
+            }
+        }
+
         return isWithinInterval(date, { start, end });
     });
 
@@ -182,8 +200,8 @@ export function calculatePrice(
     pitchType: PitchType,
     context: CalculationContext
 ): number {
-    const startDate = typeof checkIn === 'string' ? new Date(checkIn) : checkIn;
-    const endDate = typeof checkOut === 'string' ? new Date(checkOut) : checkOut;
+    const startDate = typeof checkIn === 'string' ? parseISO(checkIn) : checkIn;
+    const endDate = typeof checkOut === 'string' ? parseISO(checkOut) : checkOut;
 
     // Validate dates
     if (startDate >= endDate) {
@@ -257,8 +275,8 @@ export function getPriceBreakdown(
     total: number;
     breakdown: { date: string; rate: number; seasonName: string; seasonColor: string, isBundle?: boolean }[];
 } {
-    const startDate = typeof checkIn === 'string' ? new Date(checkIn) : checkIn;
-    const endDate = typeof checkOut === 'string' ? new Date(checkOut) : checkOut;
+    const startDate = typeof checkIn === 'string' ? parseISO(checkIn) : checkIn;
+    const endDate = typeof checkOut === 'string' ? parseISO(checkOut) : checkOut;
 
     const breakdown: { date: string; rate: number; seasonName: string; seasonColor: string, isBundle?: boolean }[] = [];
     const currentDate = new Date(startDate);

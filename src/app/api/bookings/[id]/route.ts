@@ -120,6 +120,9 @@ export async function PATCH(
         }
 
         if (body.guests_count !== undefined) updates.guests_count = body.guests_count;
+        if (body.children_count !== undefined) updates.children_count = body.children_count;
+        if (body.dogs_count !== undefined) updates.dogs_count = body.dogs_count;
+        if (body.cars_count !== undefined) updates.cars_count = body.cars_count;
 
         if (Object.keys(updates).length === 0) {
             return NextResponse.json(

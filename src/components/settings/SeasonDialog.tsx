@@ -42,6 +42,7 @@ export function SeasonDialog({ open, onOpenChange, onSubmit, initialData }: Seas
     const [carPrice, setCarPrice] = useState('5');
     const [priority, setPriority] = useState(5);
     const [color, setColor] = useState('#3b82f6');
+    const [isRecurring, setIsRecurring] = useState(true);
 
     // Reset form when dialog opens/closes or initialData changes
     useEffect(() => {
@@ -59,6 +60,7 @@ export function SeasonDialog({ open, onOpenChange, onSubmit, initialData }: Seas
                 setCarPrice((initialData.car_price_per_day ?? 5).toString());
                 setPriority(initialData.priority);
                 setColor(initialData.color);
+                setIsRecurring(initialData.is_recurring ?? true);
             } else {
                 // Reset for new season
                 setName('');
@@ -73,6 +75,7 @@ export function SeasonDialog({ open, onOpenChange, onSubmit, initialData }: Seas
                 setCarPrice('5');
                 setPriority(5);
                 setColor('#3b82f6');
+                setIsRecurring(true);
             }
         }
     }, [open, initialData]);
@@ -93,6 +96,7 @@ export function SeasonDialog({ open, onOpenChange, onSubmit, initialData }: Seas
             car_price_per_day: parseFloat(carPrice),
             priority,
             color,
+            is_recurring: isRecurring,
         };
 
         onSubmit(data);
@@ -110,7 +114,8 @@ export function SeasonDialog({ open, onOpenChange, onSubmit, initialData }: Seas
         parseFloat(dogPrice) !== (initialData.dog_price_per_day ?? 5) ||
         parseFloat(carPrice) !== (initialData.car_price_per_day ?? 5) ||
         priority !== initialData.priority ||
-        color !== initialData.color
+        color !== initialData.color ||
+        isRecurring !== (initialData.is_recurring ?? true)
     ) : true;
 
     const isValid = name && startDate && endDate && piazzolaPrice && tendaPrice && isDirty;
@@ -151,6 +156,25 @@ export function SeasonDialog({ open, onOpenChange, onSubmit, initialData }: Seas
                                 onChange={(e) => setDescription(e.target.value)}
                                 rows={2}
                             />
+                        </div>
+
+                        {/* Recurring Toggle */}
+                        <div className="flex items-center space-x-2 p-3 bg-secondary/30 rounded-lg border">
+                            <input 
+                                type="checkbox" 
+                                id="is_recurring" 
+                                checked={isRecurring}
+                                onChange={(e) => setIsRecurring(e.target.checked)}
+                                className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
+                            />
+                            <div className="grid gap-1.5 leading-none">
+                                <Label htmlFor="is_recurring" className="font-semibold cursor-pointer leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                                    Ricorrente Annualmente
+                                </Label>
+                                <p className="text-sm text-muted-foreground">
+                                    Se attivo, la stagione si applicherà ogni anno nella stessa fascia di mesi/giorni.
+                                </p>
+                            </div>
                         </div>
 
                         {/* Date Range */}

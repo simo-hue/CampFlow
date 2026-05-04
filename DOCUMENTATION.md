@@ -1,4 +1,4 @@
-# DOCUMENTATION
+# Project Documentation
 
 ## [2026-04-24 19:50]: Global Name Display Standardization
 *Details*: Standardized the customer name display format to "Cognome Nome" (Last Name First Name) across the entire application. This change ensures a more professional and sorted view in lists and reports.
@@ -84,3 +84,14 @@
 - `src/app/departures/page.tsx`: Aggiornato `ViewType` locale per includere `'yesterday'` (compatibilità con `DateToggle` condiviso).
 - Build verificata con `npm run build`. Nessuna regressione.
 
+- [2026-05-04 16:30]: Fixed Seasonal Pricing Discrepancies
+  - *Details*: Resolved multiple issues in the pricing logic that caused August bookings to show incorrect rates.
+  - *Bug Fixes*:
+    - Standardized date parsing using `parseISO` to fix "off-by-one" and timezone errors (last day of season was being excluded).
+    - Fixed double-counting of children in the `POST /api/bookings` route.
+    - Added persistence for `children_count`, `dogs_count`, and `cars_count` in the `bookings` table (code updated, migration provided).
+  - *Tech Notes*:
+    - Database: Added migration `supabase/migrations/add_booking_extras_columns.sql`.
+    - Logic: `calculatePrice` and `getPriceBreakdown` now use local-time parsing for all input dates.
+    - UI: `BookingCreationModal` correctly displays the applied season name.
+  - *Critical Discovery*: Identified that existing seasons in the DB were set for 2025, causing 2026 bookings to fallback to the default low-season rate.

@@ -1,82 +1,14 @@
-# 📊 Database Storage Monitor - Azione Richiesta
+# MANUAL ACTIONS REQUIRED
 
-## ⚠️ IMPORTANTE: Per Dati ACCURATI
+1. **Database Migrations**: Run the new migrations to add missing columns.
+   - Run: `supabase/migrations/add_booking_extras_columns.sql`
+   - Run: `supabase/migrations/add_recurring_seasons.sql`
+   (Eseguili nel SQL Editor di Supabase).
 
-Al momento il pannello mostra **stime** (badge giallo "≈ Estimated").  
-Per vedere le **dimensioni reali** (come Supabase Dashboard), devi eseguire 1 semplice migrazione SQL.
+2. **Imposta le Stagioni come Ricorrenti**:
+   - Vai in **Settings -> Stagioni**.
+   - Ora troverai un'opzione "Ricorrente Annualmente" (già attiva per le nuove stagioni).
+   - Per le stagioni esistenti, assicurati che sia attiva se vuoi che l'anno venga ignorato.
+   - In questo modo, le tue impostazioni per Agosto funzioneranno ogni anno senza dover cambiare le date!
 
----
-
-## 🎯 Migrazione SQL (5 minuti)
-
-### Opzione A: Supabase Dashboard (Raccomandato)
-
-1. **Vai su** https://supabase.com/dashboard
-2. **Seleziona** il tuo progetto CampFlow
-3. **Click** su **SQL Editor** (menu laterale)  
-4. **Apri il file** sul tuo computer:
-   ```
-   /Users/simo/Downloads/DEV/CampFlow/supabase/migrations/incremental/20260130_storage_stats.sql
-   ```
-5. **Seleziona TUTTO** il contenuto del file
-6. **Incolla** nell'editor SQL di Supabase
-7. **Click RUN** (o Cmd+Enter)
-8. **Verifica** che appaia **"Success"** ✅
-
-### Opzione B: Supabase CLI
-
-```bash
-cd /Users/simo/Downloads/DEV/CampFlow
-supabase db push
-```
-
----
-
-## ✅ Verifica Installazione
-
-Dopo aver eseguito la migrazione, verifica che la funzione sia stata creata:
-
-```sql
-SELECT routine_name 
-FROM information_schema.routines 
-WHERE routine_name = 'get_storage_stats';
-```
-
-**Risultato atteso**: 1 riga con `get_storage_stats`
-
----
-
-## 🎉 Dopo la Migrazione
-
-1. **Ricarica** la pagina `/settings`
-2. **Vai su** "Dev" tab
-3. **Verifica** che ora vedi:
-   - Badge **"✓ Accurate"** verde (invece di giallo)
-   - **Dimensione reale** del database (es. "29 MB")
-   - **Dimensioni precise** per ogni tabella
-
-Il badge verde conferma che stai vedendo dati PostgreSQL reali, identici a quelli di Supabase Dashboard!
-
----
-
-## 📊 Confronto: Prima vs Dopo
-
-### Prima della Migrazione (Stime)
-- Database Size: **562.99 KB** ❌ (sbagliato!)
-- Badge: **≈ Estimated** (giallo)
-- Accuracy: ~50-70%
-
-### Dopo la Migrazione (Dati Reali)
-- Database Size: **29 MB** ✅ (uguale a Supabase!)
-- Badge: **✓ Accurate** (verde)
-- Accuracy: 100%
-
-## 🛠️ Cosa Fa la Migrazione
-
-Crea 1 function SQL:
-- **Nome**: `get_storage_stats()`
-- **Scopo**: Ritorna dimensioni reali usando `pg_total_relation_size()`
-- **Sicurezza**: `SECURITY DEFINER` (sicura)
-- **Performance**: Veloce (~50-100ms)
-- **Dipendenze**: Nessuna (usa solo PostgreSQL native)
-
+3. **Verify Pricing**: After updating the dates, create a test booking for August to verify that the "Alta Stagione" rate is correctly applied.

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { logToDb } from '@/lib/logger-server';
 import { supabaseAdmin } from '@/lib/supabase/server';
 import { calculatePrice } from '@/lib/pricing';
+import { parseISO } from 'date-fns';
 import type { CreateBookingRequest } from '@/lib/types';
 
 
@@ -25,8 +26,8 @@ export async function POST(request: NextRequest) {
         }
 
         // Validate dates
-        const checkInDate = new Date(body.check_in);
-        const checkOutDate = new Date(body.check_out);
+        const checkInDate = parseISO(body.check_in);
+        const checkOutDate = parseISO(body.check_out);
 
         if (checkInDate >= checkOutDate) {
             return NextResponse.json(
@@ -67,7 +68,7 @@ export async function POST(request: NextRequest) {
         // Calculate total price with context
         const pricingContext = {
             seasons: seasons || [],
-            guests: body.guests_count,
+            guests: body.guests_count - (body.children_count || 0), // Subtract children to get adults
             children: body.children_count || 0,
             dogs: body.dogs_count || 0,
             cars: body.cars_count || 0
@@ -186,6 +187,9 @@ export async function POST(request: NextRequest) {
                 customer_id: customerId,
                 booking_period: bookingPeriod,
                 guests_count: body.guests_count,
+                children_count: body.children_count || 0,
+                dogs_count: body.dogs_count || 0,
+                cars_count: body.cars_count || 0,
                 total_price: totalPrice,
                 status: 'confirmed',
                 notes: body.notes || null,

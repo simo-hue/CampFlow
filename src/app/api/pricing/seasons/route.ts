@@ -55,7 +55,7 @@ export async function POST(request: Request) {
         const body = await request.json();
 
         // Validation
-        const { name, start_date, end_date, piazzola_price_per_day, tenda_price_per_day, person_price_per_day, child_price_per_day, dog_price_per_day, car_price_per_day, priority, color, description } = body;
+        const { name, start_date, end_date, piazzola_price_per_day, tenda_price_per_day, person_price_per_day, child_price_per_day, dog_price_per_day, car_price_per_day, priority, color, description, is_recurring } = body;
 
         if (!name || !start_date || !end_date) {
             return NextResponse.json(
@@ -105,6 +105,7 @@ export async function POST(request: Request) {
             priority: priority !== undefined ? parseInt(priority) : 0,
             color: color || '#3b82f6',
             is_active: true,
+            is_recurring: is_recurring !== undefined ? !!is_recurring : true,
         };
 
         const { data, error } = await supabase
@@ -152,7 +153,7 @@ export async function PUT(request: Request) {
 
         const body = await request.json();
         // Validation
-        const { name, start_date, end_date, piazzola_price_per_day, tenda_price_per_day, person_price_per_day, child_price_per_day, dog_price_per_day, car_price_per_day, priority, color, description, is_active } = body;
+        const { name, start_date, end_date, piazzola_price_per_day, tenda_price_per_day, person_price_per_day, child_price_per_day, dog_price_per_day, car_price_per_day, priority, color, description, is_active, is_recurring } = body;
 
         // Build update object (only include provided fields)
         const updates: Partial<PricingSeason> = {};
@@ -170,6 +171,7 @@ export async function PUT(request: Request) {
         if (priority !== undefined) updates.priority = parseInt(priority);
         if (color !== undefined) updates.color = color;
         if (is_active !== undefined) updates.is_active = is_active;
+        if (is_recurring !== undefined) updates.is_recurring = is_recurring;
 
         // Validate if date fields are provided
         if (updates.start_date && updates.end_date) {
