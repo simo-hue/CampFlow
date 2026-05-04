@@ -95,3 +95,4 @@
     - Logic: `calculatePrice` and `getPriceBreakdown` now use local-time parsing for all input dates.
     - UI: `BookingCreationModal` correctly displays the applied season name.
   - *Critical Discovery*: Identified that existing seasons in the DB were set for 2025, causing 2026 bookings to fallback to the default low-season rate.
+  - *Build Fixes*: Fixed TypeScript errors in `scripts/` (mock data missing `is_recurring`) to allow successful Vercel deployment.
