@@ -81,7 +81,8 @@ export function BookingCreationModal({
             setCustomerEmail(initialData.customer?.email || '');
             setCustomerPhone(initialData.customer?.phone || '');
             setLicensePlate(initialData.customer?.license_plate || '');
-            setGuestsCount(initialData.guests_count || 2);
+            const adultsCount = (initialData.guests_count || 2) - (initialData.children_count || 0);
+            setGuestsCount(adultsCount > 0 ? adultsCount : 2);
             setChildrenCount(initialData.children_count || 0);
             setCarsCount(initialData.cars_count || 0);
             setDogsCount(initialData.dogs_count || 0);

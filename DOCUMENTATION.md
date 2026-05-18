@@ -96,3 +96,10 @@
     - UI: `BookingCreationModal` correctly displays the applied season name.
   - *Critical Discovery*: Identified that existing seasons in the DB were set for 2025, causing 2026 bookings to fallback to the default low-season rate.
   - *Build Fixes*: Fixed TypeScript errors in `scripts/` (mock data missing `is_recurring`) to allow successful Vercel deployment.
+
+## [2026-05-18 18:05]: Risoluzione bug conteggio ospiti/bambini in riapertura prenotazione
+*Details*: Risolto il bug per cui rientrando in una prenotazione esistente (es. con 2 adulti e 1 bambino), il sistema mostrava 3 adulti e 1 bambino (incrementando gli adulti del numero di bambini ad ogni salvataggio/riapertura).
+*Tech Notes*:
+- `src/components/dashboard/BookingCreationModal.tsx`: Corretto il caricamento di `guestsCount` (Adulti) da `initialData`. Ora calcola gli adulti sottraendo i bambini (`children_count`) dal totale degli ospiti (`guests_count`), salvato in DB.
+- Verificato che la computazione del prezzo in `pricing/calculate` e il salvataggio rimangono corretti e coerenti.
+- Build verificata con successo tramite `npm run build`.
