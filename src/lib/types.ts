@@ -57,6 +57,7 @@ export interface CustomerGroup {
     name: string;
     description?: string;
     color: string;
+    force_manual_price?: boolean;
     season_configurations?: GroupSeasonConfiguration[]; // For frontend convenience
     bundles?: GroupBundle[]; // For frontend convenience
     created_at: string;
@@ -161,6 +162,7 @@ export interface Booking {
     guests_count: number;
     dogs_count: number;
     total_price: number;
+    is_manual_price?: boolean;
     status: BookingStatus;
     notes?: string;
     created_at: string;
@@ -224,6 +226,8 @@ export interface CreateBookingRequest {
     cars_count?: number;    // Added for seasonal pricing
 
     notes?: string | null;
+    total_price?: number;
+    is_manual_price?: boolean;
 }
 
 export interface DashboardStats {

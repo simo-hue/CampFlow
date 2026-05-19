@@ -16,6 +16,7 @@ import { invalidateOccupancyCache } from '@/lib/occupancyCache';
 import { CustomerAutocomplete } from './CustomerAutocomplete';
 import { toast } from "sonner";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Switch } from '@/components/ui/switch';
 
 interface BookingCreationModalProps {
     open: boolean;
@@ -89,6 +90,7 @@ export function BookingCreationModal({
             setNotes(initialData.notes || '');
             setSelectedCustomerId(initialData.customer_id || null);
             setCurrentPitchId(initialData.pitch_id || pitchId);
+            setIsManualPrice(initialData.is_manual_price || false);
         } else if (open && !isEditMode) {
             resetForm();
             setCheckInState(checkIn);
@@ -125,14 +127,26 @@ export function BookingCreationModal({
     const nights = calculateNights(checkInState, checkOutState);
 
     // Pricing State
-
     const [totalPrice, setTotalPrice] = useState(0);
     const [priceBreakdown, setPriceBreakdown] = useState<PriceBreakdownDay[]>([]);
     const [loadingPrice, setLoadingPrice] = useState(false);
+    const [isManualPrice, setIsManualPrice] = useState(false);
 
     // Customer Groups State
     const [customerGroups, setCustomerGroups] = useState<any[]>([]);
     const [selectedGroupId, setSelectedGroupId] = useState<string>('none');
+
+    const activeGroup = customerGroups.find(g => g.id === selectedGroupId);
+    const groupForcesManual = activeGroup?.force_manual_price || false;
+
+    // Automatically toggle manual price if group forces it
+    useEffect(() => {
+        if (groupForcesManual) {
+            setIsManualPrice(true);
+        } else if (open && !isEditMode) {
+            setIsManualPrice(false);
+        }
+    }, [selectedGroupId, customerGroups, groupForcesManual, open, isEditMode]);
 
     // Fetch customer groups
     useEffect(() => {
@@ -167,6 +181,10 @@ export function BookingCreationModal({
     // Fetch price from API whenever dates, pitch type, or counts change
     useEffect(() => {
         const fetchPrice = async () => {
+            if (isManualPrice) {
+                // If it is manual price, do NOT fetch from API to override the state!
+                return;
+            }
             setLoadingPrice(true);
             try {
                 let personPrice = 10;
@@ -212,7 +230,7 @@ export function BookingCreationModal({
         };
 
         fetchPrice();
-    }, [checkInState, checkOutState, pitchType, nights, guestsCount, childrenCount, dogsCount, carsCount, selectedCustomerId, selectedGroupId]);
+    }, [checkInState, checkOutState, pitchType, nights, guestsCount, childrenCount, dogsCount, carsCount, selectedCustomerId, selectedGroupId, isManualPrice]);
 
 
     const handleCustomerSelect = (customer: any) => {
@@ -282,6 +300,7 @@ export function BookingCreationModal({
                 cars_count: carsCount,
                 notes: notes,
                 total_price: totalPrice,
+                is_manual_price: isManualPrice,
                 customer: {
                     first_name: firstName,
                     last_name: lastName,
@@ -344,6 +363,7 @@ export function BookingCreationModal({
         setNotes('');
         setSuccess(false);
         setSelectedGroupId('none');
+        setIsManualPrice(false);
     };
 
     const handleClose = () => {
@@ -633,26 +653,70 @@ export function BookingCreationModal({
 
                 {!success && (
                     <div className="pt-4 border-t">
-                        <div className="flex justify-between items-center p-4 bg-blue-50 dark:bg-blue-950/30 rounded-lg">
-                            <div className="flex flex-col gap-1">
-                                <div className="flex items-center gap-2">
-                                    <Euro className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                                    <span className="font-semibold text-lg">Totale Stimato</span>
+                        <div className="flex flex-col gap-3 p-4 bg-blue-50 dark:bg-blue-950/30 rounded-lg">
+                            <div className="flex justify-between items-center">
+                                <div className="flex flex-col gap-1">
+                                    <div className="flex items-center gap-2">
+                                        <Euro className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                                        <span className="font-semibold text-lg font-sans">
+                                            {isManualPrice ? 'Prezzo Personalizzato' : 'Totale Stimato'}
+                                        </span>
+                                    </div>
+                                    {!isManualPrice && priceBreakdown.length > 0 && priceBreakdown[0].seasonName && (
+                                        <p className="text-xs text-muted-foreground font-medium ml-7">
+                                            Stagione: {priceBreakdown[0].seasonName}
+                                        </p>
+                                    )}
+                                    {isManualPrice && (
+                                        <p className="text-xs text-amber-600 dark:text-amber-400 font-medium ml-7 flex items-center gap-1">
+                                            <Info className="h-3 w-3" />
+                                            {groupForcesManual 
+                                                ? 'Forzato dal gruppo del cliente' 
+                                                : 'Inserimento manuale attivo'}
+                                        </p>
+                                    )}
                                 </div>
-                                {priceBreakdown.length > 0 && priceBreakdown[0].seasonName && (
-                                    <p className="text-xs text-muted-foreground font-medium ml-7">
-                                        Stagione: {priceBreakdown[0].seasonName}
-                                    </p>
-                                )}
-                            </div>
-                            <div className="text-right">
-                                <span className="font-bold text-2xl text-blue-600 dark:text-blue-400">
-                                    {formatCurrency(totalPrice)}
-                                </span>
-                                <div className="text-xs text-muted-foreground">
-                                    {nights === 0 ? "1 giorno" : `${nights} ${nights === 1 ? "notte" : "notti"}`}
+                                <div className="text-right flex items-center gap-3">
+                                    {isManualPrice ? (
+                                        <div className="relative w-36">
+                                            <Input
+                                                type="number"
+                                                min="0"
+                                                step="0.01"
+                                                value={totalPrice}
+                                                onChange={(e) => setTotalPrice(parseFloat(e.target.value) || 0)}
+                                                className="font-bold text-lg text-right pr-6 h-10 border-blue-300 focus-visible:ring-blue-400 bg-background"
+                                                disabled={loading}
+                                            />
+                                            <span className="absolute right-2 top-2 text-sm font-semibold text-muted-foreground">€</span>
+                                        </div>
+                                    ) : (
+                                        <div className="text-right">
+                                            <span className="font-bold text-2xl text-blue-600 dark:text-blue-400">
+                                                {formatCurrency(totalPrice)}
+                                            </span>
+                                            <div className="text-xs text-muted-foreground">
+                                                {nights === 0 ? "1 giorno" : `${nights} ${nights === 1 ? "notte" : "notti"}`}
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
+                            
+                            {/* Manual Override Toggle (only visible if the group does not force manual pricing) */}
+                            {!groupForcesManual && (
+                                <div className="flex items-center justify-between border-t border-blue-200/50 dark:border-blue-800/30 pt-2 mt-1">
+                                    <Label htmlFor="manual-price-toggle" className="text-xs text-muted-foreground cursor-pointer font-medium">
+                                        Modifica il prezzo manualmente
+                                    </Label>
+                                    <Switch
+                                        id="manual-price-toggle"
+                                        checked={isManualPrice}
+                                        onCheckedChange={setIsManualPrice}
+                                        disabled={loading}
+                                    />
+                                </div>
+                            )}
                         </div>
                     </div>
                 )}

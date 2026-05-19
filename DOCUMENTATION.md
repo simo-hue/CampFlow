@@ -103,3 +103,18 @@
 - `src/components/dashboard/BookingCreationModal.tsx`: Corretto il caricamento di `guestsCount` (Adulti) da `initialData`. Ora calcola gli adulti sottraendo i bambini (`children_count`) dal totale degli ospiti (`guests_count`), salvato in DB.
 - Verificato che la computazione del prezzo in `pricing/calculate` e il salvataggio rimangono corretti e coerenti.
 - Build verificata con successo tramite `npm run build`.
+
+## [2026-05-19 14:50]: Supporto Tariffazione Manuale & Prezzi Personalizzati Amici
+*Details*: Implementato il supporto completo per la tariffazione manuale e prezzi personalizzati. Consente di bypassare il calcolo automatico del prezzo sia in modo on-demand (tramite toggle nella creazione prenotazione) sia in modo automatico per gruppi di clienti specifici (es. "Amici" o "Clienti Fidelizzati").
+*Tech Notes*:
+- **Database**: Creata la migrazione `supabase/migrations/add_manual_pricing_support.sql` per aggiungere `force_manual_price` a `customer_groups` e `is_manual_price` a `bookings`.
+- **TypeScript**: Aggiornati i tipi in `src/lib/types.ts` (`CustomerGroup`, `Booking`, `CreateBookingRequest`).
+- **Backend API**:
+  - `POST /api/bookings`: Rispetta il prezzo manuale se `is_manual_price` è attivo, salvando il flag nel DB.
+  - `PATCH /api/bookings/[id]`: Consente l'aggiornamento del flag `is_manual_price`.
+  - `groups` endpoints: Integrato il salvataggio di `force_manual_price` nelle chiamate POST e PUT.
+- **Frontend UI**:
+  - `GroupManagement.tsx`: Aggiunto switch "Forza Prezzo Manuale" che disabilita e nasconde le configurazioni tariffarie stagionali/sconti per quel gruppo e ne indica chiaramente lo stato manuale.
+  - `BookingCreationModal.tsx`: Aggiunto toggle "Modifica prezzo manualmente" che trasforma il prezzo stimato in un campo di input modificabile. Se il cliente appartiene a un gruppo che forza il prezzo manuale, l'input viene abilitato automaticamente e il toggle rimosso per garantire coerenza.
+  - `BookingDetailsDialog.tsx`: Mostra il prezzo totale della prenotazione e un badge "Manuale" se impostato manualmente.
+- **Build**: Compilazione verificata con successo tramite Next.js Turbopack (`npm run build`).

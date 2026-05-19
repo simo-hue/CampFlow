@@ -46,13 +46,13 @@ export async function PUT(
     try {
         const { id } = await params;
         const body = await request.json();
-        const { name, description, color, season_configurations, bundles } = body;
+        const { name, description, color, force_manual_price, season_configurations, bundles } = body;
         const supabase = supabaseAdmin;
 
         // 1. Update Group details
         const { error: groupError } = await supabase
             .from('customer_groups')
-            .update({ name, description, color })
+            .update({ name, description, color, force_manual_price: force_manual_price || false })
             .eq('id', id);
 
         if (groupError) throw groupError;

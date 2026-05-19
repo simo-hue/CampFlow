@@ -31,7 +31,8 @@ import {
     Mail,
     MapPin,
     FileText,
-    Trash2
+    Trash2,
+    Euro
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { it } from 'date-fns/locale';
@@ -163,6 +164,29 @@ export function BookingDetailsDialog({ bookingId, open, onClose, onDeleteSuccess
                                         <Users className="w-3 h-3" /> Ospiti
                                     </h4>
                                     <p className="font-medium">{booking.guests_count}</p>
+                                </div>
+                                <div className="space-y-1">
+                                    <h4 className="text-xs font-medium text-muted-foreground uppercase flex items-center gap-1">
+                                        <Euro className="w-3 h-3 text-blue-500" /> Prezzo Totale
+                                    </h4>
+                                    <div className="flex items-center gap-1.5">
+                                        <span className="font-bold text-blue-600 dark:text-blue-400">
+                                            {new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR' }).format(booking.total_price)}
+                                        </span>
+                                        {booking.is_manual_price && (
+                                            <Badge variant="outline" className="text-[9px] h-4 py-0 px-1 border-amber-300 text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/20 font-normal">
+                                                Manuale
+                                            </Badge>
+                                        )}
+                                    </div>
+                                </div>
+                                <div className="space-y-1">
+                                    <h4 className="text-xs font-medium text-muted-foreground uppercase flex items-center gap-1">
+                                        <Users className="w-3 h-3" /> Cani / Auto
+                                    </h4>
+                                    <p className="font-medium text-sm text-foreground">
+                                        {booking.dogs_count || 0} {booking.dogs_count === 1 ? 'cane' : 'cani'} • {booking.cars_count || 0} {booking.cars_count === 1 ? 'auto' : 'auto'}
+                                    </p>
                                 </div>
                             </div>
 

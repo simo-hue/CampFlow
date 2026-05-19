@@ -143,11 +143,13 @@ export function GroupManagement() {
                                 <div className="flex gap-2 text-xs text-muted-foreground">
                                     <Tag className="h-3 w-3 mt-0.5" />
                                     <span>
-                                        {group.season_configurations?.some(c => c.discount_percentage)
-                                            ? 'Include Sconti %'
-                                            : 'Tariffe standard'}
+                                        {group.force_manual_price 
+                                            ? 'Prezzo Manuale Forzato' 
+                                            : group.season_configurations?.some(c => c.discount_percentage)
+                                                ? 'Include Sconti %'
+                                                : 'Tariffe standard'}
                                     </span>
-                                    {group.bundles && group.bundles.length > 0 && (
+                                    {(!group.force_manual_price && group.bundles && group.bundles.length > 0) && (
                                         <span className="flex items-center gap-1 ml-2">
                                             <Tag className="h-3 w-3" />
                                             {group.bundles.length} Offerte
@@ -222,60 +224,86 @@ export function GroupManagement() {
                                     placeholder="Note interne..."
                                 />
                             </div>
+                            <div className="col-span-2 flex items-center justify-between border p-3 rounded-lg bg-muted/10">
+                                <div className="space-y-0.5">
+                                    <Label className="text-sm font-medium">Forza Prezzo Manuale</Label>
+                                    <p className="text-xs text-muted-foreground">
+                                        Se attivo, per i clienti di questo gruppo la tariffazione automatica sarà ignorata e dovrai inserire il prezzo a mano.
+                                    </p>
+                                </div>
+                                <Switch
+                                    checked={formData.force_manual_price || false}
+                                    onCheckedChange={(checked) => setFormData(prev => ({ ...prev, force_manual_price: checked }))}
+                                />
+                            </div>
                         </div>
 
                         {/* Seasonal Configuration */}
-                        <div className="space-y-4 border-t pt-4">
-                            <div className="flex items-center justify-between">
-                                <h4 className="font-semibold text-base">Tariffe & Sconti per Stagione</h4>
-                                <TooltipProvider>
-                                    <Tooltip>
-                                        <TooltipTrigger>
-                                            <AlertCircle className="h-4 w-4 text-muted-foreground" />
-                                        </TooltipTrigger>
-                                        <TooltipContent>
-                                            <p className="max-w-xs">
-                                                Puoi applicare uno Sconto % cumulativo su tutto, OPPURE definire Prezzi Personalizzati specifici che sovrascrivono il listino base.
-                                            </p>
-                                        </TooltipContent>
-                                    </Tooltip>
-                                </TooltipProvider>
-                            </div>
-
-                            {seasonsLoading ? (
-                                <div className="text-sm">Caricamento stagioni...</div>
-                            ) : (
-                                <div className="space-y-4">
-                                    {activeSeasons.map(season => (
-                                        <SeasonConfigRow
-                                            key={season.id}
-                                            season={season}
-                                            config={formData.season_configurations?.find(c => c.season_id === season.id) || null}
-                                            bundles={formData.bundles?.filter(b => b.season_id === season.id) || []}
-                                            onConfigChange={(newConfig) => {
-                                                const others = formData.season_configurations?.filter(c => c.season_id !== season.id) || [];
-                                                setFormData({
-                                                    ...formData,
-                                                    season_configurations: [...others, newConfig]
-                                                });
-                                            }}
-                                            onBundleChange={(updatedSeasonBundles) => {
-                                                // Remove all bundles for this season from main list
-                                                const otherBundles = formData.bundles?.filter(b => b.season_id !== season.id) || [];
-                                                // Add updated ones
-                                                // Ensure group_id is set
-                                                const readyBundles = updatedSeasonBundles.map(b => ({ ...b, group_id: editingGroup?.id || '', season_id: season.id }));
-
-                                                setFormData({
-                                                    ...formData,
-                                                    bundles: [...otherBundles, ...readyBundles]
-                                                });
-                                            }}
-                                        />
-                                    ))}
+                        {!formData.force_manual_price ? (
+                            <div className="space-y-4 border-t pt-4">
+                                <div className="flex items-center justify-between">
+                                    <h4 className="font-semibold text-base">Tariffe & Sconti per Stagione</h4>
+                                    <TooltipProvider>
+                                        <Tooltip>
+                                            <TooltipTrigger>
+                                                <AlertCircle className="h-4 w-4 text-muted-foreground" />
+                                            </TooltipTrigger>
+                                            <TooltipContent>
+                                                <p className="max-w-xs">
+                                                    Puoi applicare uno Sconto % cumulativo su tutto, OPPURE definire Prezzi Personalizzati specifici che sovrascrivono il listino base.
+                                                </p>
+                                            </TooltipContent>
+                                        </Tooltip>
+                                    </TooltipProvider>
                                 </div>
-                            )}
-                        </div>
+
+                                {seasonsLoading ? (
+                                    <div className="text-sm">Caricamento stagioni...</div>
+                                ) : (
+                                    <div className="space-y-4">
+                                        {activeSeasons.map(season => (
+                                            <SeasonConfigRow
+                                                key={season.id}
+                                                season={season}
+                                                config={formData.season_configurations?.find(c => c.season_id === season.id) || null}
+                                                bundles={formData.bundles?.filter(b => b.season_id === season.id) || []}
+                                                onConfigChange={(newConfig) => {
+                                                    const others = formData.season_configurations?.filter(c => c.season_id !== season.id) || [];
+                                                    setFormData({
+                                                        ...formData,
+                                                        season_configurations: [...others, newConfig]
+                                                    });
+                                                }}
+                                                onBundleChange={(updatedSeasonBundles) => {
+                                                    // Remove all bundles for this season from main list
+                                                    const otherBundles = formData.bundles?.filter(b => b.season_id !== season.id) || [];
+                                                    // Add updated ones
+                                                    // Ensure group_id is set
+                                                    const readyBundles = updatedSeasonBundles.map(b => ({ ...b, group_id: editingGroup?.id || '', season_id: season.id }));
+
+                                                    setFormData({
+                                                        ...formData,
+                                                        bundles: [...otherBundles, ...readyBundles]
+                                                    });
+                                                }}
+                                            />
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        ) : (
+                            <div className="border-t pt-4">
+                                <div className="bg-amber-50 dark:bg-amber-950/20 text-amber-800 dark:text-amber-200 border border-amber-200/50 p-4 rounded-lg flex items-start gap-3">
+                                    <AlertCircle className="h-5 w-5 mt-0.5" />
+                                    <div className="space-y-1">
+                                        <p className="font-medium text-sm">Tariffazione stagionale disabilitata</p>
+                                        <p className="text-xs text-amber-700/80 dark:text-amber-300/80">
+                                            Le regole di sconto, tariffe personalizzate e pacchetti sono disabilitate perché è attivo l'inserimento manuale forzato del prezzo. Quando crei una prenotazione per i membri di questo gruppo, l'importo totale dovrà essere digitato a mano.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
 
 
                     </div>
@@ -327,68 +355,80 @@ export function GroupManagement() {
                             <h4 className="font-semibold text-sm text-muted-foreground uppercase tracking-wider">Riepilogo Tariffe per Stagione</h4>
 
                             <div className="space-y-4">
-                                {activeSeasons.map(season => {
-                                    if (!viewingGroup) return null;
-                                    const config = viewingGroup.season_configurations?.find(c => c.season_id === season.id);
-                                    const bundles = viewingGroup.bundles?.filter(b => b.season_id === season.id) || [];
-                                    const hasConfig = !!config || bundles.length > 0;
-
-                                    return (
-                                        <div key={season.id} className="border rounded-lg p-3 bg-muted/10">
-                                            <div className="flex items-center gap-2 mb-2" style={{ borderLeft: `3px solid ${season.color}`, paddingLeft: '8px' }}>
-                                                <span className="font-medium text-base">{season.name}</span>
-                                            </div>
-
-                                            <div className="pl-3 text-sm">
-                                                {!hasConfig && (
-                                                    <p className="text-muted-foreground">Nessuna configurazione specifica (Tariffe Standard)</p>
-                                                )}
-
-                                                {config?.discount_percentage ? (
-                                                    <div className="flex items-center gap-2 text-green-600 font-medium">
-                                                        <Tag className="h-4 w-4" />
-                                                        Sconto del {config.discount_percentage}% sul totale
-                                                    </div>
-                                                ) : null}
-
-                                                {config?.custom_rates && Object.keys(config.custom_rates).length > 0 && (
-                                                    <div className="space-y-2 mt-2">
-                                                        <p className="font-medium text-xs text-muted-foreground">Prezzi Personalizzati:</p>
-                                                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                                                            {Object.entries(config.custom_rates).map(([key, val]) => (
-                                                                <div key={key} className="bg-background border rounded px-2 py-1 flex justify-between items-center text-xs">
-                                                                    <span className="capitalize">{key === 'person' ? 'Persona' : key}</span>
-                                                                    <span className="font-mono font-semibold">€{val}</span>
-                                                                </div>
-                                                            ))}
-                                                        </div>
-                                                    </div>
-                                                )}
-
-                                                {bundles.length > 0 && (
-                                                    <div className="space-y-2 mt-3">
-                                                        <p className="font-medium text-xs text-muted-foreground">Pacchetti ({bundles.length}):</p>
-                                                        <div className="space-y-2">
-                                                            {bundles.map((bundle, idx) => (
-                                                                <div key={idx} className="bg-background border rounded p-2 text-xs">
-                                                                    <div className="flex justify-between items-center mb-1">
-                                                                        <span className="font-semibold">{bundle.nights} Notti</span>
-                                                                        <Badge variant="outline" className="text-[10px]">Piazzola €{bundle.pitch_price}</Badge>
-                                                                    </div>
-                                                                    {bundle.unit_prices && Object.keys(bundle.unit_prices).length > 0 && (
-                                                                        <div className="text-muted-foreground text-[10px]">
-                                                                            Extra: {Object.entries(bundle.unit_prices).map(([k, v]) => `${k}: €${v}`).join(', ')}
-                                                                        </div>
-                                                                    )}
-                                                                </div>
-                                                            ))}
-                                                        </div>
-                                                    </div>
-                                                )}
-                                            </div>
+                                {viewingGroup?.force_manual_price ? (
+                                    <div className="bg-amber-50 dark:bg-amber-950/20 text-amber-800 dark:text-amber-200 border border-amber-200/50 p-4 rounded-lg flex items-start gap-3">
+                                        <AlertCircle className="h-5 w-5 mt-0.5" />
+                                        <div className="space-y-1">
+                                            <p className="font-semibold text-sm">Inserimento Manuale Forzato</p>
+                                            <p className="text-xs text-amber-700/80 dark:text-amber-300/80">
+                                                I clienti associati a questo gruppo non usano listini o sconti predefiniti. Per ogni loro prenotazione l'operatore deve inserire l'importo totale a mano.
+                                            </p>
                                         </div>
-                                    );
-                                })}
+                                    </div>
+                                ) : (
+                                    activeSeasons.map(season => {
+                                        if (!viewingGroup) return null;
+                                        const config = viewingGroup.season_configurations?.find(c => c.season_id === season.id);
+                                        const bundles = viewingGroup.bundles?.filter(b => b.season_id === season.id) || [];
+                                        const hasConfig = !!config || bundles.length > 0;
+
+                                        return (
+                                            <div key={season.id} className="border rounded-lg p-3 bg-muted/10">
+                                                <div className="flex items-center gap-2 mb-2" style={{ borderLeft: `3px solid ${season.color}`, paddingLeft: '8px' }}>
+                                                    <span className="font-medium text-base">{season.name}</span>
+                                                </div>
+
+                                                <div className="pl-3 text-sm">
+                                                    {!hasConfig && (
+                                                        <p className="text-muted-foreground">Nessuna configurazione specifica (Tariffe Standard)</p>
+                                                    )}
+
+                                                    {config?.discount_percentage ? (
+                                                        <div className="flex items-center gap-2 text-green-600 font-medium">
+                                                            <Tag className="h-4 w-4" />
+                                                            Sconto del {config.discount_percentage}% sul totale
+                                                        </div>
+                                                    ) : null}
+
+                                                    {config?.custom_rates && Object.keys(config.custom_rates).length > 0 && (
+                                                        <div className="space-y-2 mt-2">
+                                                            <p className="font-medium text-xs text-muted-foreground">Prezzi Personalizzati:</p>
+                                                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                                                                {Object.entries(config.custom_rates).map(([key, val]) => (
+                                                                    <div key={key} className="bg-background border rounded px-2 py-1 flex justify-between items-center text-xs">
+                                                                        <span className="capitalize">{key === 'person' ? 'Persona' : key}</span>
+                                                                        <span className="font-mono font-semibold">€{val}</span>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                    )}
+
+                                                    {bundles.length > 0 && (
+                                                        <div className="space-y-2 mt-3">
+                                                            <p className="font-medium text-xs text-muted-foreground">Pacchetti ({bundles.length}):</p>
+                                                            <div className="space-y-2">
+                                                                {bundles.map((bundle, idx) => (
+                                                                    <div key={idx} className="bg-background border rounded p-2 text-xs">
+                                                                        <div className="flex justify-between items-center mb-1">
+                                                                            <span className="font-semibold">{bundle.nights} Notti</span>
+                                                                            <Badge variant="outline" className="text-[10px]">Piazzola €{bundle.pitch_price}</Badge>
+                                                                        </div>
+                                                                        {bundle.unit_prices && Object.keys(bundle.unit_prices).length > 0 && (
+                                                                            <div className="text-muted-foreground text-[10px]">
+                                                                                Extra: {Object.entries(bundle.unit_prices).map(([k, v]) => `${k}: €${v}`).join(', ')}
+                                                                            </div>
+                                                                        )}
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        );
+                                    })
+                                )}
                             </div>
                         </div>
                     </ScrollArea>

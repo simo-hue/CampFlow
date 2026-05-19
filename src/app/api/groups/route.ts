@@ -53,7 +53,7 @@ export async function POST(request: Request) {
 
     try {
         const body = await request.json();
-        const { name, description, color, season_configurations, bundles } = body;
+        const { name, description, color, force_manual_price, season_configurations, bundles } = body;
 
         // 1. Create Group
         const { data: group, error: groupError } = await supabase
@@ -61,7 +61,8 @@ export async function POST(request: Request) {
             .insert({
                 name,
                 description,
-                color
+                color,
+                force_manual_price: force_manual_price || false
             })
             .select()
             .single();

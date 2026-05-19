@@ -58,23 +58,27 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Fetch active seasons for pricing calculation
-        const { data: seasons } = await supabaseAdmin
-            .from('pricing_seasons')
-            .select('*')
-            .eq('is_active', true)
-            .order('priority', { ascending: false });
+        let totalPrice = body.total_price;
 
-        // Calculate total price with context
-        const pricingContext = {
-            seasons: seasons || [],
-            guests: body.guests_count - (body.children_count || 0), // Subtract children to get adults
-            children: body.children_count || 0,
-            dogs: body.dogs_count || 0,
-            cars: body.cars_count || 0
-        };
+        if (!body.is_manual_price) {
+            // Fetch active seasons for pricing calculation
+            const { data: seasons } = await supabaseAdmin
+                .from('pricing_seasons')
+                .select('*')
+                .eq('is_active', true)
+                .order('priority', { ascending: false });
 
-        const totalPrice = calculatePrice(body.check_in, body.check_out, pitch.type, pricingContext);
+            // Calculate total price with context
+            const pricingContext = {
+                seasons: seasons || [],
+                guests: body.guests_count - (body.children_count || 0), // Subtract children to get adults
+                children: body.children_count || 0,
+                dogs: body.dogs_count || 0,
+                cars: body.cars_count || 0
+            };
+
+            totalPrice = calculatePrice(body.check_in, body.check_out, pitch.type, pricingContext);
+        }
 
         // Step 1: Resolve Customer
         let customerId: string;
@@ -191,6 +195,7 @@ export async function POST(request: NextRequest) {
                 dogs_count: body.dogs_count || 0,
                 cars_count: body.cars_count || 0,
                 total_price: totalPrice,
+                is_manual_price: body.is_manual_price || false,
                 status: 'confirmed',
                 notes: body.notes || null,
             })

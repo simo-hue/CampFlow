@@ -123,6 +123,7 @@ export async function PATCH(
         if (body.children_count !== undefined) updates.children_count = body.children_count;
         if (body.dogs_count !== undefined) updates.dogs_count = body.dogs_count;
         if (body.cars_count !== undefined) updates.cars_count = body.cars_count;
+        if (body.is_manual_price !== undefined) updates.is_manual_price = body.is_manual_price;
 
         if (Object.keys(updates).length === 0) {
             return NextResponse.json(

@@ -3,6 +3,7 @@
 1. **Database Migrations**: Run the new migrations to add missing columns.
    - Run: `supabase/migrations/add_booking_extras_columns.sql`
    - Run: `supabase/migrations/add_recurring_seasons.sql`
+   - Run: `supabase/migrations/add_manual_pricing_support.sql` (Aggiunge il supporto per la tariffazione manuale).
    (Eseguili nel SQL Editor di Supabase).
 
 2. **Imposta le Stagioni come Ricorrenti**:
