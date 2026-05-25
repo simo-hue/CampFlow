@@ -49,7 +49,7 @@ export async function PUT(
         const body = await request.json();
 
         // Separate potential relational fields that can't be updated directly on 'customers'
-        const { group, ...updateData } = body;
+        const { group, customer_groups, ...updateData } = body;
 
         // If group_id is being updated, it will be in updateData (customerDialog handles this)
 
@@ -80,7 +80,7 @@ export async function PATCH(
         const body = await request.json();
 
         // Separate potential relational fields that can't be updated directly on 'customers'
-        const { group, ...updateData } = body;
+        const { group, customer_groups, ...updateData } = body;
 
         const { data, error } = await supabase
             .from('customers')

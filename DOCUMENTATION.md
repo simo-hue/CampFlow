@@ -118,3 +118,11 @@
   - `BookingCreationModal.tsx`: Aggiunto toggle "Modifica prezzo manualmente" che trasforma il prezzo stimato in un campo di input modificabile. Se il cliente appartiene a un gruppo che forza il prezzo manuale, l'input viene abilitato automaticamente e il toggle rimosso per garantire coerenza.
   - `BookingDetailsDialog.tsx`: Mostra il prezzo totale della prenotazione e un badge "Manuale" se impostato manualmente.
 - **Build**: Compilazione verificata con successo tramite Next.js Turbopack (`npm run build`).
+
+## [2026-05-25 17:01]: Risoluzione Errore 500 Aggiornamento Cliente
+*Details*: Risolto un Internal Server Error (500) che si verificava cliccando "Salva Modifiche" nell'anagrafica cliente a causa dell'invio di campi relazionali non validi per l'aggiornamento.
+*Tech Notes*:
+- I metodi `PATCH` e `PUT` in `src/app/api/customers/[id]/route.ts` non filtravano la proprietà relazionale `customer_groups` (inviata dal frontend insieme ai dati del cliente).
+- Il tentativo di aggiornare direttamente la colonna (inesistente) `customer_groups` sulla tabella `customers` causava un'eccezione su Supabase.
+- Aggiunta `customer_groups` alla destrutturazione per escluderla da `updateData` in entrambi i metodi.
+- Build di verifica completata con successo tramite Next.js Turbopack (`npm run build`).
