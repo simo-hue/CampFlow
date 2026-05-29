@@ -126,3 +126,12 @@
 - Il tentativo di aggiornare direttamente la colonna (inesistente) `customer_groups` sulla tabella `customers` causava un'eccezione su Supabase.
 - Aggiunta `customer_groups` alla destrutturazione per escluderla da `updateData` in entrambi i metodi.
 - Build di verifica completata con successo tramite Next.js Turbopack (`npm run build`).
+
+## [2026-05-29 16:00]: Persistenza Gruppo Cliente da Prenotazione
+*Details*: Risolto il bug per cui l'assegnazione di un cliente a un gruppo dalla prenotazione non veniva mantenuta alla riapertura della prenotazione. Il modale ora inizializza correttamente il gruppo dal cliente collegato e gli endpoint prenotazione salvano `customers.group_id` anche quando il cliente esiste già.
+*Tech Notes*:
+- `BookingCreationModal.tsx`: carica `initialData.customer.group_id`, aggiorna il gruppo quando si seleziona un cliente esistente e invia `group_id` in modo esplicito durante modifica/assegnazione.
+- `POST /api/bookings`: aggiorna il gruppo dei clienti esistenti, calcola il prezzo server-side tenendo conto delle configurazioni e dei bundle del gruppo, e non ignora più errori di aggiornamento cliente.
+- `PATCH /api/bookings/[id]`: include `group_id` negli aggiornamenti cliente e restituisce errore se il salvataggio cliente fallisce.
+- `GET /api/pricing/calculate`: corretta la tabella `group_season_configuration` e gestita la selezione esplicita di "nessun gruppo".
+- Build verificata con successo tramite `npm run build`.

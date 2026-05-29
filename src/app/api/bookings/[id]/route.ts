@@ -2,6 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import { logToDb } from '@/lib/logger-server';
 import { supabaseAdmin } from '@/lib/supabase/server';
 
+function normalizeCustomerGroupId(groupId: unknown): string | null | undefined {
+    if (groupId === undefined) return undefined;
+    if (groupId === null || groupId === '' || groupId === 'none') return null;
+    return String(groupId);
+}
+
 export async function GET(
     request: NextRequest,
     { params }: { params: Promise<{ id: string }> }
@@ -72,7 +78,7 @@ export async function PATCH(
 
         // 2. Handle Customer Updates
         if (body.customer && currentBooking.customer_id) {
-            const customerUpdates: any = {};
+            const customerUpdates: Record<string, unknown> = {};
             if (body.customer.first_name) customerUpdates.first_name = body.customer.first_name;
             if (body.customer.last_name) customerUpdates.last_name = body.customer.last_name;
             if (body.customer.email !== undefined) customerUpdates.email = body.customer.email;
@@ -80,6 +86,9 @@ export async function PATCH(
             if (body.customer.address !== undefined) customerUpdates.address = body.customer.address;
             if (body.customer.license_plate !== undefined) customerUpdates.license_plate = body.customer.license_plate;
             if (body.customer.notes !== undefined) customerUpdates.notes = body.customer.notes;
+            if (body.customer.group_id !== undefined) {
+                customerUpdates.group_id = normalizeCustomerGroupId(body.customer.group_id);
+            }
 
             if (Object.keys(customerUpdates).length > 0) {
                 const { error: customerError } = await supabaseAdmin
@@ -90,13 +99,16 @@ export async function PATCH(
                 if (customerError) {
                     await logToDb('error', 'Error updating customer:', customerError);
                     console.error('Error updating customer:', customerError);
-                    // We continue even if customer update fails, but log it
+                    return NextResponse.json(
+                        { error: 'Errore durante l\'aggiornamento del cliente' },
+                        { status: 500 }
+                    );
                 }
             }
         }
 
         // 3. Handle Booking Updates
-        const updates: any = {};
+        const updates: Record<string, unknown> = {};
         if (body.status) updates.status = body.status;
         if (typeof body.questura_sent === 'boolean') updates.questura_sent = body.questura_sent;
         if (body.notes !== undefined) updates.notes = body.notes;

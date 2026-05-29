@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Calendar, Users, FileText, Loader2, Check, Dog, Plus, X, Euro, Car, Baby, Info } from 'lucide-react';
 import { calculateNights, formatDateLong } from '@/lib/dateUtils';
 import { formatCurrency } from '@/lib/utils';
-import type { PitchType, PriceBreakdownDay } from '@/lib/types';
+import type { Customer, PitchType, PriceBreakdownDay } from '@/lib/types';
 import { invalidateOccupancyCache } from '@/lib/occupancyCache';
 import { CustomerAutocomplete } from './CustomerAutocomplete';
 import { toast } from "sonner";
@@ -89,6 +89,7 @@ export function BookingCreationModal({
             setDogsCount(initialData.dogs_count || 0);
             setNotes(initialData.notes || '');
             setSelectedCustomerId(initialData.customer_id || null);
+            setSelectedGroupId(initialData.customer?.group_id || 'none');
             setCurrentPitchId(initialData.pitch_id || pitchId);
             setIsManualPrice(initialData.is_manual_price || false);
         } else if (open && !isEditMode) {
@@ -164,20 +165,6 @@ export function BookingCreationModal({
         fetchGroups();
     }, []);
 
-    // Update selected group if customer changes
-    useEffect(() => {
-        if (selectedCustomerId) {
-            // Fetch customer details to get group? 
-            // Better: CustomerAutocomplete could return group_id. 
-            // For now, if we select a customer, we might want to respect their existing group 
-            // or allow override? 
-            // The Pricing API now handles `customerId` lookup internally, so `selectedCustomerId` 
-            // ensures the group is used. 
-            // But if we want to show it in UI? 
-            // Let's rely on manual override only for NEW/Anonymous customers or explicit change.
-        }
-    }, [selectedCustomerId]);
-
     // Fetch price from API whenever dates, pitch type, or counts change
     useEffect(() => {
         const fetchPrice = async () => {
@@ -233,7 +220,7 @@ export function BookingCreationModal({
     }, [checkInState, checkOutState, pitchType, nights, guestsCount, childrenCount, dogsCount, carsCount, selectedCustomerId, selectedGroupId, isManualPrice]);
 
 
-    const handleCustomerSelect = (customer: any) => {
+    const handleCustomerSelect = (customer: Customer) => {
         setSelectedCustomerId(customer.id);
         setFirstName(customer.first_name);
         setLastName(customer.last_name);
@@ -241,19 +228,7 @@ export function BookingCreationModal({
         setCustomerPhone(customer.phone);
         setLicensePlate(customer.license_plate || '');
 
-        // If customer has a group, set it
-        if (customer.customer_groups) {
-            // We don't have the ID directly here usually if validation is strict, 
-            // but let's assume autcomplete returns it or we leave it 'none' and let backend resolve it via ID.
-            // Actually, Autocomplete usually returns joined group details.
-            // For simplicity, let's keep 'none' to indicate "Use Customer Default" 
-            // OR if we want to show it, we need to know the ID.
-            // If manual edit happens, selectedCustomerId becomes null.
-        } else if (customer.group_id) {
-            setSelectedGroupId(customer.group_id);
-        } else {
-            setSelectedGroupId('none');
-        }
+        setSelectedGroupId(customer.group_id || 'none');
 
         toast.success("Dati cliente caricati");
     };
@@ -290,7 +265,41 @@ export function BookingCreationModal({
         setLoading(true);
 
         try {
-            const payload = {
+            const customerPayload: {
+                first_name: string;
+                last_name: string;
+                email: string | null;
+                phone: string;
+                notes: string;
+                license_plate: string | null;
+                group_id?: string | null;
+            } = {
+                first_name: firstName,
+                last_name: lastName,
+                email: customerEmail || null,
+                phone: customerPhone,
+                notes: notes,
+                license_plate: licensePlate || null,
+            };
+
+            if (isEditMode || selectedCustomerId || selectedGroupId !== 'none') {
+                customerPayload.group_id = selectedGroupId === 'none' ? null : selectedGroupId;
+            }
+
+            const payload: {
+                pitch_id: string;
+                check_in: string;
+                check_out: string;
+                guests_count: number;
+                children_count: number;
+                dogs_count: number;
+                cars_count: number;
+                notes: string;
+                total_price: number;
+                is_manual_price: boolean;
+                customer: typeof customerPayload;
+                customer_id?: string;
+            } = {
                 pitch_id: currentPitchId,
                 check_in: checkInState,
                 check_out: checkOutState,
@@ -301,22 +310,14 @@ export function BookingCreationModal({
                 notes: notes,
                 total_price: totalPrice,
                 is_manual_price: isManualPrice,
-                customer: {
-                    first_name: firstName,
-                    last_name: lastName,
-                    email: customerEmail || null,
-                    phone: customerPhone,
-                    notes: notes,
-                    license_plate: licensePlate || null,
-                    group_id: selectedGroupId !== 'none' ? selectedGroupId : undefined
-                },
+                customer: customerPayload,
             };
 
             const url = isEditMode ? `/api/bookings/${bookingId}` : '/api/bookings';
             const method = isEditMode ? 'PATCH' : 'POST';
 
             if (!isEditMode && selectedCustomerId) {
-                (payload as any).customer_id = selectedCustomerId;
+                payload.customer_id = selectedCustomerId;
             }
 
             const bookingRes = await fetch(url, {

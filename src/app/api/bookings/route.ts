@@ -3,7 +3,74 @@ import { logToDb } from '@/lib/logger-server';
 import { supabaseAdmin } from '@/lib/supabase/server';
 import { calculatePrice } from '@/lib/pricing';
 import { parseISO } from 'date-fns';
-import type { CreateBookingRequest } from '@/lib/types';
+import type { CreateBookingRequest, GroupBundle, GroupSeasonConfiguration, PitchType } from '@/lib/types';
+
+function normalizeCustomerGroupId(groupId: unknown): string | null | undefined {
+    if (groupId === undefined) return undefined;
+    if (groupId === null || groupId === '' || groupId === 'none') return null;
+    return String(groupId);
+}
+
+function buildExistingCustomerUpdates(customer: CreateBookingRequest['customer']) {
+    const updates: Record<string, unknown> = {};
+
+    if (customer.email !== undefined) updates.email = customer.email;
+    if (customer.address !== undefined) updates.address = customer.address;
+    if (customer.notes !== undefined) updates.notes = customer.notes;
+    if (customer.license_plate !== undefined) updates.license_plate = customer.license_plate;
+
+    const groupId = normalizeCustomerGroupId(customer.group_id);
+    if (groupId !== undefined) updates.group_id = groupId;
+
+    return updates;
+}
+
+async function calculateBookingPriceWithGroup(
+    body: CreateBookingRequest,
+    pitchType: PitchType,
+    groupId: string | null
+) {
+    const { data: seasons, error: seasonsError } = await supabaseAdmin
+        .from('pricing_seasons')
+        .select('*')
+        .eq('is_active', true)
+        .order('priority', { ascending: false });
+
+    if (seasonsError) {
+        throw seasonsError;
+    }
+
+    let groupConfigs: GroupSeasonConfiguration[] = [];
+    let groupBundles: GroupBundle[] = [];
+
+    if (groupId) {
+        const { data: configs, error: configError } = await supabaseAdmin
+            .from('group_season_configuration')
+            .select('*')
+            .eq('group_id', groupId);
+
+        if (configError) throw configError;
+        groupConfigs = configs || [];
+
+        const { data: bundles, error: bundlesError } = await supabaseAdmin
+            .from('group_bundles')
+            .select('*')
+            .eq('group_id', groupId);
+
+        if (bundlesError) throw bundlesError;
+        groupBundles = bundles || [];
+    }
+
+    return calculatePrice(body.check_in, body.check_out, pitchType, {
+        seasons: seasons || [],
+        guests: body.guests_count - (body.children_count || 0),
+        children: body.children_count || 0,
+        dogs: body.dogs_count || 0,
+        cars: body.cars_count || 0,
+        groupConfigs: groupConfigs.length > 0 ? groupConfigs : undefined,
+        bundles: groupBundles.length > 0 ? groupBundles : undefined
+    });
+}
 
 
 /**
@@ -58,30 +125,9 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        let totalPrice = body.total_price;
-
-        if (!body.is_manual_price) {
-            // Fetch active seasons for pricing calculation
-            const { data: seasons } = await supabaseAdmin
-                .from('pricing_seasons')
-                .select('*')
-                .eq('is_active', true)
-                .order('priority', { ascending: false });
-
-            // Calculate total price with context
-            const pricingContext = {
-                seasons: seasons || [],
-                guests: body.guests_count - (body.children_count || 0), // Subtract children to get adults
-                children: body.children_count || 0,
-                dogs: body.dogs_count || 0,
-                cars: body.cars_count || 0
-            };
-
-            totalPrice = calculatePrice(body.check_in, body.check_out, pitch.type, pricingContext);
-        }
-
         // Step 1: Resolve Customer
         let customerId: string;
+        let effectiveCustomerGroupId: string | null = null;
 
         // A) If customer_id is provided explicitly (from Autocomplete)
         if (body.customer_id) {
@@ -90,7 +136,7 @@ export async function POST(request: NextRequest) {
             // Verify existence
             const { data: existing, error: existError } = await supabaseAdmin
                 .from('customers')
-                .select('id')
+                .select('id, group_id')
                 .eq('id', customerId)
                 .single();
 
@@ -103,16 +149,28 @@ export async function POST(request: NextRequest) {
 
             // Update auxiliary details if provided (non-destructive)
             if (body.customer) {
-                await supabaseAdmin
-                    .from('customers')
-                    .update({
-                        email: body.customer.email,
-                        address: body.customer.address,
-                        notes: body.customer.notes,
-                        license_plate: body.customer.license_plate,
-                        // We do NOT update names here to preserve integrity of the selected record
-                    })
-                    .eq('id', customerId);
+                const requestedGroupId = normalizeCustomerGroupId(body.customer.group_id);
+                effectiveCustomerGroupId = requestedGroupId !== undefined ? requestedGroupId : existing.group_id || null;
+
+                const customerUpdates = buildExistingCustomerUpdates(body.customer);
+
+                if (Object.keys(customerUpdates).length > 0) {
+                    const { error: customerUpdateError } = await supabaseAdmin
+                        .from('customers')
+                        .update(customerUpdates)
+                        .eq('id', customerId);
+
+                    if (customerUpdateError) {
+                        await logToDb('error', 'Error updating customer:', customerUpdateError);
+                        console.error('Error updating customer:', customerUpdateError);
+                        return NextResponse.json(
+                            { error: 'Errore durante l\'aggiornamento del cliente' },
+                            { status: 500 }
+                        );
+                    }
+                }
+            } else {
+                effectiveCustomerGroupId = existing.group_id || null;
             }
 
         } else {
@@ -126,7 +184,7 @@ export async function POST(request: NextRequest) {
 
             const { data: candidates } = await supabaseAdmin
                 .from('customers')
-                .select('id, first_name, last_name, phone')
+                .select('id, first_name, last_name, phone, group_id')
                 .eq('phone', targetPhone); // Filter by phone first (indexed)
 
             const exactMatch = candidates?.find(c =>
@@ -137,20 +195,32 @@ export async function POST(request: NextRequest) {
             if (exactMatch) {
                 console.log(`✅ Found existing customer: ${exactMatch.last_name} ${exactMatch.first_name} (${exactMatch.id})`);
                 customerId = exactMatch.id;
+                const requestedGroupId = normalizeCustomerGroupId(body.customer.group_id);
+                effectiveCustomerGroupId = requestedGroupId !== undefined ? requestedGroupId : exactMatch.group_id || null;
 
                 // Optional: Update email/notes if changed
-                await supabaseAdmin
-                    .from('customers')
-                    .update({
-                        email: body.customer.email,
-                        address: body.customer.address,
-                        notes: body.customer.notes,
-                        license_plate: body.customer.license_plate,
-                    })
-                    .eq('id', customerId);
+                const customerUpdates = buildExistingCustomerUpdates(body.customer);
+
+                if (Object.keys(customerUpdates).length > 0) {
+                    const { error: customerUpdateError } = await supabaseAdmin
+                        .from('customers')
+                        .update(customerUpdates)
+                        .eq('id', customerId);
+
+                    if (customerUpdateError) {
+                        await logToDb('error', 'Error updating customer:', customerUpdateError);
+                        console.error('Error updating customer:', customerUpdateError);
+                        return NextResponse.json(
+                            { error: 'Errore durante l\'aggiornamento del cliente' },
+                            { status: 500 }
+                        );
+                    }
+                }
 
             } else {
                 console.log(`🆕 Creating NEW customer for: ${targetFirst} ${targetLast} (Phone: ${targetPhone})`);
+                const requestedGroupId = normalizeCustomerGroupId(body.customer.group_id);
+                effectiveCustomerGroupId = requestedGroupId || null;
 
                 // Create new customer
                 const { data: newCustomer, error: customerError } = await supabaseAdmin
@@ -163,7 +233,7 @@ export async function POST(request: NextRequest) {
                         address: body.customer.address,
                         notes: body.customer.notes,
                         license_plate: body.customer.license_plate,
-                        group_id: body.customer.group_id || null
+                        group_id: effectiveCustomerGroupId
                     })
                     .select('id')
                     .single();
@@ -179,6 +249,16 @@ export async function POST(request: NextRequest) {
 
                 customerId = newCustomer.id;
             }
+        }
+
+        let totalPrice = body.total_price;
+
+        if (!body.is_manual_price) {
+            totalPrice = await calculateBookingPriceWithGroup(
+                body,
+                pitch.type,
+                effectiveCustomerGroupId
+            );
         }
 
         // 3. Crea la prenotazione usando daterange

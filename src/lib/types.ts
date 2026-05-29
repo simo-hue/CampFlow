@@ -147,7 +147,7 @@ export interface Customer {
     document_issue_date?: string;
     document_issuer?: string; // Ente
 
-    group_id?: string; // Link to CustomerGroup
+    group_id?: string | null; // Link to CustomerGroup
     group?: CustomerGroup; // Joined data
 
     created_at: string;
@@ -208,7 +208,7 @@ export interface CreateCustomerRequest {
     document_issue_city?: string;
     document_issue_date?: string;
     document_issuer?: string;
-    group_id?: string; // Optional group assignment
+    group_id?: string | null; // Optional group assignment
 }
 
 export interface CreateBookingRequest {

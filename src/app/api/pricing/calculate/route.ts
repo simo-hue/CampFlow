@@ -71,14 +71,14 @@ export async function GET(request: Request) {
 
         // Override with explicit groupId if provided (e.g. overriding existing customer or new customer)
         const explicitGroupId = searchParams.get('groupId');
-        if (explicitGroupId && explicitGroupId !== 'none') {
-            targetGroupId = explicitGroupId;
+        if (explicitGroupId !== null) {
+            targetGroupId = explicitGroupId && explicitGroupId !== 'none' ? explicitGroupId : null;
         }
 
         if (targetGroupId) {
             // Fetch configurations for this group
             const { data: configs, error: configError } = await supabase
-                .from('group_season_configurations')
+                .from('group_season_configuration')
                 .select('*')
                 .eq('group_id', targetGroupId);
 
