@@ -5,14 +5,14 @@ import { supabaseAdmin } from '@/lib/supabase/server';
 export async function GET(request: Request) {
     const supabase = supabaseAdmin;
     const { searchParams } = new URL(request.url);
-    const query = searchParams.get('q');
+    const query = searchParams.get('q') || searchParams.get('search');
 
     let queryBuilder = supabase
         .from('customers')
         .select('*, customer_groups ( name, color )');
 
     if (query) {
-        queryBuilder.or(`first_name.ilike.%${query}%,last_name.ilike.%${query}%,email.ilike.%${query}%,phone.ilike.%${query}%`);
+        queryBuilder.or(`first_name.ilike.%${query}%,last_name.ilike.%${query}%,email.ilike.%${query}%,phone.ilike.%${query}%,license_plate.ilike.%${query}%`);
     }
 
     const groupId = searchParams.get('group_id');

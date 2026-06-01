@@ -77,7 +77,7 @@ export function GlobalSearchBar() {
             {/* Command Dialog */}
             <CommandDialog open={open} onOpenChange={setOpen}>
                 <CommandInput
-                    placeholder="Cerca per nome, telefono, o ID prenotazione..."
+                    placeholder="Cerca per nome, telefono, targa, o ID prenotazione..."
                     value={searchTerm}
                     onValueChange={setSearchTerm}
                 />

@@ -135,3 +135,9 @@
 - `PATCH /api/bookings/[id]`: include `group_id` negli aggiornamenti cliente e restituisce errore se il salvataggio cliente fallisce.
 - `GET /api/pricing/calculate`: corretta la tabella `group_season_configuration` e gestita la selezione esplicita di "nessun gruppo".
 - Build verificata con successo tramite `npm run build`.
+
+## [2026-06-01 11:43]: Ricerca globale per targa e fix parametro query
+*Details*: Aggiunta la possibilità di cercare un cliente inserendo la targa del veicolo nella barra di ricerca globale (GlobalSearchBar).
+*Tech Notes*:
+- `src/app/api/customers/route.ts`: Modificata la logica per supportare sia il query param `q` che `search` (utilizzato dal componente `GlobalSearchBar`). Aggiunta la colonna `license_plate` alla query `.or` con operatore `ilike`.
+- `src/components/dashboard/GlobalSearchBar.tsx`: Aggiornato il testo del placeholder per indicare esplicitamente che è possibile cercare per targa.
