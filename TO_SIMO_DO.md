@@ -13,3 +13,5 @@
    - In questo modo, le tue impostazioni per Agosto funzioneranno ogni anno senza dover cambiare le date!
 
 3. **Verify Pricing**: After updating the dates, create a test booking for August to verify that the "Alta Stagione" rate is correctly applied.
+
+- [ ] Restart the development server with `npm run dev` (I had to kill it and clear the `.next` cache to fix the Turbopack panic).
