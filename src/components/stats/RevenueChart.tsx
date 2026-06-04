@@ -45,7 +45,7 @@ export function RevenueChart({ data, action }: RevenueChartProps) {
             </CardHeader>
             <CardContent className="pl-2 flex-1 min-h-0">
                 <div className="h-[300px] w-full min-w-0">
-                    <ResponsiveContainer width="100%" height="100%">
+                    <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
                         <AreaChart data={data}>
                             <defs>
                                 <linearGradient id="colorRevenueFill" x1="0" y1="0" x2="0" y2="1">

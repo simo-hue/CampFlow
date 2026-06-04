@@ -113,22 +113,23 @@ type Booking = {
     guests?: any[];
 };
 
-const parseBookingPeriod = (period: string) => {
-    if (!period) return { start: null, end: null };
+const parseBookingPeriod = (period: any) => {
+    const fallback = { start: null, end: null };
+    if (!period || typeof period !== 'string') return fallback;
     try {
         const clean = period.replace(/[\[\]\(\)]/g, '');
         const [startStr, endStr] = clean.split(',');
-        const start = new Date(startStr);
-        const end = new Date(endStr);
+        const start = startStr ? new Date(startStr) : fallback.start;
+        const end = endStr ? new Date(endStr) : fallback.end;
 
         // Validate dates
-        if (isNaN(start.getTime()) || isNaN(end.getTime())) {
-            return { start: null, end: null };
+        if (!start || isNaN(start.getTime()) || !end || isNaN(end.getTime())) {
+            return fallback;
         }
 
         return { start, end };
     } catch (e) {
-        return { start: null, end: null };
+        return fallback;
     }
 };
 
@@ -602,7 +603,7 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                             <CardContent className="w-full h-full min-h-[150px] p-4">
                                 {chartData.length > 0 ? (
                                     <div className="w-full h-full">
-                                        <ResponsiveContainer width="100%" height="100%">
+                                        <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
                                             <BarChart data={chartData} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
                                                 <CartesianGrid strokeDasharray="3 3" vertical={false} className="stroke-muted/20" />
                                                 <XAxis

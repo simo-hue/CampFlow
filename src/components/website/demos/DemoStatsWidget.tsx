@@ -72,7 +72,7 @@ export function DemoStatsWidget() {
                 </CardHeader>
                 <CardContent className="p-4 pt-0 h-[150px]">
                     {mounted ? (
-                        <ResponsiveContainer width="100%" height="100%">
+                        <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
                             <LineChart data={data}>
                                 <XAxis
                                     dataKey="name"

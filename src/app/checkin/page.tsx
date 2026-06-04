@@ -24,19 +24,21 @@ import {
 import { cn } from '@/lib/utils';
 import { GuestForm, GuestData } from './components/GuestForm';
 
-// Helper to extract dates from PostgreSQL daterange string "[2024-01-01,2024-01-05)"
-const parseBookingPeriod = (period: string) => {
-    if (!period) return { start: new Date(), end: new Date() };
+const parseBookingPeriod = (period: any) => {
+    const fallback = { start: new Date(), end: new Date() };
+    if (!period || typeof period !== 'string') return fallback;
     try {
-        // Remove braces/brackets and split by comma
         const clean = period.replace(/[\[\]\(\)]/g, '');
         const [startStr, endStr] = clean.split(',');
+        const start = startStr ? new Date(startStr) : fallback.start;
+        const end = endStr ? new Date(endStr) : fallback.end;
+        
         return {
-            start: new Date(startStr),
-            end: new Date(endStr)
+            start: isNaN(start.getTime()) ? fallback.start : start,
+            end: isNaN(end.getTime()) ? fallback.end : end
         };
     } catch (e) {
-        return { start: new Date(), end: new Date() };
+        return fallback;
     }
 };
 

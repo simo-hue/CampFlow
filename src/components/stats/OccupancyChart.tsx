@@ -46,7 +46,7 @@ export function OccupancyChart({ data, title = "Occupazione Giornaliera", action
             </CardHeader>
             <CardContent className="pl-2 flex-1 min-h-0">
                 <div className="h-[300px] w-full min-w-0">
-                    <ResponsiveContainer width="100%" height="100%">
+                    <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
                         <LineChart data={data}>
                             <defs>
                                 <linearGradient id="colorPiazzola" x1="0" y1="0" x2="1" y2="0">

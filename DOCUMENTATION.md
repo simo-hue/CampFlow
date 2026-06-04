@@ -141,3 +141,10 @@
 *Tech Notes*:
 - `src/app/api/customers/route.ts`: Modificata la logica per supportare sia il query param `q` che `search` (utilizzato dal componente `GlobalSearchBar`). Aggiunta la colonna `license_plate` alla query `.or` con operatore `ilike`.
 - `src/components/dashboard/GlobalSearchBar.tsx`: Aggiornato il testo del placeholder per indicare esplicitamente che è possibile cercare per targa.
+
+## [2026-06-04 10:40]: Client-side Error Fix (Invalid Time Value & Recharts)
+*Details*: Fixed a client-side crash occurring on the Check-in page due to an invalid time value provided to `date-fns`, and resolved `Recharts` layout warnings.
+*Tech Notes*:
+- `parseBookingPeriod`: Refactored to safely handle empty/invalid strings and correctly fallback to safe dates instead of crashing `format()` calls. Applied the fix in `src/app/checkin/page.tsx`, `src/components/shared/CheckInDialog.tsx`, and `src/app/customers/[id]/page.tsx`.
+- `ResponsiveContainer`: Added `minWidth={0}` and `minHeight={0}` to all chart responsive containers (`RevenueChart.tsx`, `OccupancyChart.tsx`, `DemoStatsWidget.tsx`, `DemoHeroDashboard.tsx`) to resolve Recharts warnings during flex layout calculations.
+- Confirmed that `NEXT_REDIRECT` error logs are expected Next.js 307 redirect behaviors for non-authenticated/middleware routes and not a crash source.

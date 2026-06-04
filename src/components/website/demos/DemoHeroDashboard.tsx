@@ -150,7 +150,7 @@ export function DemoHeroDashboard() {
                                     </div>
                                     <div className="text-2xl font-bold">€2.4k</div>
                                     <div className="h-[24px] mt-2">
-                                        <ResponsiveContainer width="100%" height="100%">
+                                        <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
                                             {mounted ? (
                                                 <AreaChart data={dailyTraffic}>
                                                     <Area type="monotone" dataKey="value" stroke="none" fill="#f97316" fillOpacity={0.2} />
@@ -174,7 +174,7 @@ export function DemoHeroDashboard() {
                                 </div>
                             </CardHeader>
                             <CardContent className="h-[220px]">
-                                <ResponsiveContainer width="100%" height="100%">
+                                <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
                                     {mounted ? (
                                         <LineChart data={weeklyData}>
                                             <Tooltip
