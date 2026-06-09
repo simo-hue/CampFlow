@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
-import { Grid, Calendar, RefreshCw, Zap, Home, Tent, ChevronLeft, ChevronRight, ChevronsRight, Plus } from 'lucide-react';
+import { Grid, Calendar, RefreshCw, Zap, Home, Tent, ChevronLeft, ChevronRight, ChevronsRight, Plus, Download } from 'lucide-react';
 import { BookingCreationModal } from './BookingCreationModal';
 import { BookingDetailsDialog } from './BookingDetailsDialog';
 import { isDateInRange } from '@/lib/dateUtils';
@@ -15,6 +15,7 @@ import { useSectors, Sector } from '@/hooks/useSectors';
 import { addDays, subDays, format, startOfDay, parseISO, isSameDay } from 'date-fns';
 import { it } from 'date-fns/locale';
 import { toast } from "sonner";
+import { exportOccupancyToPDF } from '@/lib/exportOccupancy';
 
 interface DayOccupancy {
     date: string;
@@ -285,6 +286,34 @@ function SectorOccupancyViewerContent() {
         return mapped;
     }, [fullDataCache, selectedTimeframe]);
 
+
+    const handleExportPDF = () => {
+        if (!selectedSector || displayedData.length === 0) {
+            toast.error("Nessun dato da esportare");
+            return;
+        }
+
+        const startDateStr = format(viewStartDate, 'yyyy-MM-dd');
+        const endDateStr = format(addDays(viewStartDate, selectedTimeframe.days - 1), 'yyyy-MM-dd');
+
+        const exportData = displayedData.map(row => ({
+            pitchNumber: row.pitch.number,
+            days: row.days.map(day => ({
+                date: day.date,
+                isOccupied: day.isOccupied,
+                customerName: day.bookingInfo?.customer_name
+            }))
+        }));
+
+        exportOccupancyToPDF(
+            exportData,
+            selectedSector.name,
+            selectedTimeframe.name,
+            startDateStr,
+            endDateStr
+        );
+        toast.success("PDF generato con successo!");
+    };
 
     // Keyboard support - ESC to cancel selection
     useEffect(() => {
@@ -766,6 +795,16 @@ function SectorOccupancyViewerContent() {
                             <span>Click o Trascina per prenotare</span>
                         )}
                         <div className="h-4 w-px bg-border mx-2" />
+                        <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={handleExportPDF}
+                            disabled={loading || displayedData.length === 0}
+                            className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                        >
+                            <Download className="h-3 w-3 mr-1" />
+                            Esporta PDF
+                        </Button>
                         <Button
                             size="sm"
                             variant="ghost"

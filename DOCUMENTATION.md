@@ -148,3 +148,10 @@
 - `parseBookingPeriod`: Refactored to safely handle empty/invalid strings and correctly fallback to safe dates instead of crashing `format()` calls. Applied the fix in `src/app/checkin/page.tsx`, `src/components/shared/CheckInDialog.tsx`, and `src/app/customers/[id]/page.tsx`.
 - `ResponsiveContainer`: Added `minWidth={0}` and `minHeight={0}` to all chart responsive containers (`RevenueChart.tsx`, `OccupancyChart.tsx`, `DemoStatsWidget.tsx`, `DemoHeroDashboard.tsx`) to resolve Recharts warnings during flex layout calculations.
 - Confirmed that `NEXT_REDIRECT` error logs are expected Next.js 307 redirect behaviors for non-authenticated/middleware routes and not a crash source.
+
+## [2026-06-09 17:20]: Feature - Occupancy PDF Export
+*Details*: Added a feature allowing users to export the current sector occupancy matrix to a professional, clear PDF document. The generated PDF uses a visual matrix with colored cells (Green for available, Red for occupied) to match the UI.
+*Tech Notes*:
+- Installed `jspdf` and `jspdf-autotable` dependencies.
+- `src/lib/exportOccupancy.ts`: Created utility `exportOccupancyToPDF` to parse the `displayedData` and generate a paginated PDF using A4 landscape orientation and `autotable` hooks for cell coloring based on availability.
+- `src/components/dashboard/SectorOccupancyViewer.tsx`: Added an "Esporta PDF" button next to "Aggiorna", which delegates the currently filtered `displayedData`, sector, and timeframe to the export utility.
