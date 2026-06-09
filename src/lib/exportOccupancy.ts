@@ -12,6 +12,15 @@ export interface ExportData {
     }[];
 }
 
+const getSurname = (fullName?: string) => {
+    if (!fullName) return 'OCC';
+    const parts = fullName.trim().split(' ');
+    if (parts.length > 1) {
+        return parts[parts.length - 1].toUpperCase();
+    }
+    return fullName.toUpperCase();
+};
+
 export const exportOccupancyToPDF = (
     data: ExportData[],
     sectorName: string,
@@ -63,8 +72,7 @@ export const exportOccupancyToPDF = (
         const rowData = [row.pitchNumber];
         row.days.forEach(day => {
              // In the body array, we just need empty strings or text. We will handle colors in hooks.
-             // Print first 3 chars of name if occupied to keep cells small
-             rowData.push(day.isOccupied ? (day.customerName?.substring(0, 3).toUpperCase() || 'OCC') : '');
+             rowData.push(day.isOccupied ? getSurname(day.customerName) : '');
         });
         return rowData;
     });

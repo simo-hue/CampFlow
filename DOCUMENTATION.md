@@ -153,5 +153,5 @@
 *Details*: Added a feature allowing users to export the current sector occupancy matrix to a professional, clear PDF document. The generated PDF uses a visual matrix with colored cells (Green for available, Red for occupied) to match the UI.
 *Tech Notes*:
 - Installed `jspdf` and `jspdf-autotable` dependencies.
-- `src/lib/exportOccupancy.ts`: Created utility `exportOccupancyToPDF` to parse the `displayedData` and generate a paginated PDF using A4 landscape orientation and `autotable` hooks for cell coloring based on availability.
+- `src/lib/exportOccupancy.ts`: Created utility `exportOccupancyToPDF` to parse the `displayedData` and generate a paginated PDF using A4 landscape orientation and `autotable` hooks for cell coloring based on availability. Updated to extract and display the surname of the customer in occupied slots instead of an abbreviation.
 - `src/components/dashboard/SectorOccupancyViewer.tsx`: Added an "Esporta PDF" button next to "Aggiorna", which delegates the currently filtered `displayedData`, sector, and timeframe to the export utility.
