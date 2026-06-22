@@ -252,6 +252,7 @@ export interface BookingGuest {
     document_number?: string;
     nationality?: string;
     guest_type: GuestType;
+    is_head_of_family?: boolean; // present in DB (booking_guests); capo famiglia
     created_at: string;
     updated_at: string;
 }
