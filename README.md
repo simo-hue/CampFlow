@@ -5,7 +5,7 @@
 [![License](https://img.shields.io/badge/License-AGPL_v3-red?style=for-the-badge)](LICENSE)
 [![Status](https://img.shields.io/badge/Status-Production_Ready-success?style=for-the-badge)](https://simo-hue.github.io/CampFlow/)
 
-**CampFlow** is a next-generation **Property Management System (PMS)** engineered for speed, reliability, and ease of use. Designed specifically for campsites, RV parks, and glamping resorts, it eliminates overbooking risks with physical database constraints and offers a blazing fast Progressive Web App (PWA) experience.
+**CampFlow** is a next-generation **Property Management System (PMS)** engineered for speed, reliability, and ease of use. Designed specifically for campsites, RV parks, and glamping resorts, it eliminates overbooking risks with physical database constraints and offers a blazing fast, fully responsive web app experience.
 
 ---
 
@@ -13,11 +13,11 @@
 
 ### 🛡️ Iron-Clad Reliability
 - **Zero Overbooking Guarantee**: Unlike other software that relies on application-level checks, CampFlow uses **PostgreSQL Exclusion Constraints** (GIST) to physically prevent overlapping bookings at the database level.
-- **Transactional Integrity**: Every booking is an atomic transaction.
+- **Booking Integrity**: The database constraint rejects any overlap (HTTP 409), and a new customer created for a booking that then fails is automatically rolled back — no orphaned records.
 
 ### 🚀 Blazing Fast Performance
 - **Instant Availability Search**: Query thousands of pitches in milliseconds using optimized database indexes.
-- **PWA Ready**: Installable on iPad, Android, and Desktop. Works offline-first for critical viewing tasks.
+- **Responsive UI**: Optimized for iPad, Android, and Desktop browsers.
 - **Real-time Dashboard**: Live "Cockpit" heavily optimized for instant load times (<500ms).
 
 ### 💼 Professional Features
@@ -42,7 +42,6 @@
 
 ### 📱 Mobile-First Experience
 - **Responsive Design**: Fully optimized for mobile usage by ground staff.
-- **PWA Installation**: Use it as a native app on iOS and Android.
 
 ---
 
@@ -52,7 +51,7 @@ Built on a modern, type-safe stack designed for maintainability and scale:
 
 | Component | Technology | Why we chose it |
 |-----------|-----------|-----------------|
-| **Frontend** | [Next.js 15](https://nextjs.org/) (App Router) | React Server Components, SEO, Top-tier Performance |
+| **Frontend** | [Next.js 16](https://nextjs.org/) (App Router) | React Server Components, SEO, Top-tier Performance |
 | **Database** | [Supabase](https://supabase.com/) (PostgreSQL) | Real-time, GIST Constraints, Reliable Backups |
 | **UI System** | [Shadcn/UI](https://ui.shadcn.com/) + Tailwind v4 | Beautiful, accessible, and lightweight components |
 | **Language** | [TypeScript](https://www.typescriptlang.org/) | End-to-end type safety for rock-solid code |

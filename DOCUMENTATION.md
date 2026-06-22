@@ -176,3 +176,7 @@
 - **N-1** (code): deleted dead `src/lib/api/stats.ts` and the unused anon `src/lib/supabase/client.ts`. The app is now 100% service-role server-side (no anon key shipped/used).
 - **L-1** (cleanup): removed 4 tracked `.bak/.backup*` files.
 - **M-5** (code): added conservative security headers in `next.config.ts` (X-Frame-Options, X-Content-Type-Options, Referrer-Policy, HSTS, Permissions-Policy, X-DNS-Prefetch-Control). CSP deferred (needs nonce work). Verified live via curl; also confirmed a forged `campflow_auth=true` cookie now returns 401.
+- **L-3** (docs): `env.example` now documents the required `ADMIN_USERNAME`/`ADMIN_PASSWORD` and the recommended `AUTH_SECRET`.
+- **L-4** (docs): README corrected — removed false PWA/offline claims, fixed Next.js 15→16, softened the "atomic transaction" wording to match reality.
+- **N-4** (types): added `is_head_of_family` to `BookingGuest`.
+- **H-2/H-3** (docs): added a prominent STALE warning to `fresh-install/00_init_database.sql` pointing fresh installs to the incremental path (authoritative). Full schema regeneration deferred (needs a live pg_dump).
