@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { logToDb } from '@/lib/logger-server';
 import { supabaseAdmin } from '@/lib/supabase/server';
+import { calculateBookingPrice } from '@/lib/bookingPricing';
 
 function normalizeCustomerGroupId(groupId: unknown): string | null | undefined {
     if (groupId === undefined) return undefined;
@@ -136,6 +137,52 @@ export async function PATCH(
         if (body.dogs_count !== undefined) updates.dogs_count = body.dogs_count;
         if (body.cars_count !== undefined) updates.cars_count = body.cars_count;
         if (body.is_manual_price !== undefined) updates.is_manual_price = body.is_manual_price;
+
+        // Auto-recalculate the total when pricing-relevant fields change and the
+        // booking is not on manual pricing. The server is authoritative for auto
+        // prices, so this overrides any client-sent total_price in that case.
+        const effectiveIsManual = body.is_manual_price !== undefined
+            ? body.is_manual_price
+            : currentBooking.is_manual_price;
+
+        const pricingFieldsTouched =
+            body.check_in !== undefined || body.check_out !== undefined ||
+            body.pitch_id !== undefined || body.guests_count !== undefined ||
+            body.children_count !== undefined || body.dogs_count !== undefined ||
+            body.cars_count !== undefined || body.is_manual_price === false;
+
+        if (!effectiveIsManual && pricingFieldsTouched) {
+            try {
+                const period: string = currentBooking.booking_period;
+                const checkIn = body.check_in || period.match(/\[([^,]+),/)?.[1];
+                const checkOut = body.check_out || period.match(/,([^\)]+)\)/)?.[1];
+                const pitchId = body.pitch_id || currentBooking.pitch_id;
+
+                const [{ data: pitch }, { data: cust }] = await Promise.all([
+                    supabaseAdmin.from('pitches').select('type').eq('id', pitchId).single(),
+                    supabaseAdmin.from('customers').select('group_id').eq('id', currentBooking.customer_id).single(),
+                ]);
+
+                if (pitch && checkIn && checkOut) {
+                    updates.total_price = await calculateBookingPrice({
+                        checkIn,
+                        checkOut,
+                        pitchType: pitch.type,
+                        guestsCount: body.guests_count ?? currentBooking.guests_count,
+                        childrenCount: body.children_count ?? currentBooking.children_count ?? 0,
+                        dogsCount: body.dogs_count ?? currentBooking.dogs_count ?? 0,
+                        carsCount: body.cars_count ?? currentBooking.cars_count ?? 0,
+                        groupId: cust?.group_id ?? null,
+                    });
+                    updates.is_manual_price = false;
+                }
+            } catch (recalcError) {
+                await logToDb('warn', 'Booking price recalculation failed; keeping provided/previous price', {
+                    id,
+                    message: recalcError instanceof Error ? recalcError.message : String(recalcError),
+                });
+            }
+        }
 
         if (Object.keys(updates).length === 0) {
             return NextResponse.json(
