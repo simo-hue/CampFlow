@@ -3,8 +3,10 @@
 import { cookies } from 'next/headers';
 import { logger } from '@/lib/logger';
 import { redirect } from 'next/navigation';
+import { createSessionToken, verifySessionToken, SYS_MONITOR_AUTH_COOKIE } from '@/lib/auth';
 
-const AUTH_COOKIE_NAME = 'sys_monitor_auth';
+const AUTH_COOKIE_NAME = SYS_MONITOR_AUTH_COOKIE;
+const SESSION_MAX_AGE = 60 * 60 * 24; // 24 hours
 
 export async function loginAction(formData: FormData) {
     const username = formData.get('username') as string;
@@ -18,13 +20,15 @@ export async function loginAction(formData: FormData) {
     }
 
     if (username === validUsername && password === validPassword) {
-        // Set a simple auth cookie (HTTP-only)
+        // Set a signed, expiring, HTTP-only session cookie.
         const cookieStore = await cookies();
-        cookieStore.set(AUTH_COOKIE_NAME, 'true', {
+        const token = await createSessionToken(SESSION_MAX_AGE);
+        cookieStore.set(AUTH_COOKIE_NAME, token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
             path: '/',
-            maxAge: 60 * 60 * 24, // 24 hours
+            maxAge: SESSION_MAX_AGE,
         });
 
         redirect('/sys-monitor');
@@ -41,7 +45,7 @@ export async function logoutAction() {
 
 export async function getAuthStatus() {
     const cookieStore = await cookies();
-    return cookieStore.has(AUTH_COOKIE_NAME);
+    return verifySessionToken(cookieStore.get(AUTH_COOKIE_NAME)?.value);
 }
 
 import { cleanupOldLogs } from '@/lib/logger-server';

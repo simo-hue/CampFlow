@@ -167,3 +167,6 @@
 
 ### Changelog
 - **C-3** (DB, pending user run): `20260623100000_drop_public_group_policies.sql` — drops `{public}` RLS policies on customer_groups / group_bundles / group_season_configuration. App is unaffected (uses service role).
+- **C-4** (code): `/api/customers` GET — sanitize user `q` before the PostgREST `.or()` filter (injection fix) + reassign query builder.
+- **C-5** (code): removed `/api/fix-db` GET mutation route.
+- **C-1/C-2** (code): NEW `src/lib/auth.ts` — Edge-compatible HMAC-SHA256 signed, expiring session tokens. `middleware.ts` now verifies the signature (was: presence-only). `login/actions.ts` and `sys-monitor/login/actions.ts` issue signed tokens; `getAuthStatus()` verifies them. Forged `=true` cookies are now rejected (unit-tested). Signing secret = `AUTH_SECRET` || `ADMIN_PASSWORD`. **Side effect: existing sessions invalidated → re-login once.**

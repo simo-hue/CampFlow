@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { verifySessionToken, MAIN_AUTH_COOKIE } from '@/lib/auth';
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
     const { pathname } = request.nextUrl;
 
     // 1. Allow public access to the showcase website (/w/*)
@@ -24,13 +25,12 @@ export function middleware(request: NextRequest) {
         return NextResponse.next();
     }
 
-    // 4. Check for Authentication Cookie
-    // The 'sys_monitor_auth' cookie is currently used. 
-    // We can migrate to 'campflow_auth' later, but for minimal friction let's respect the existing one or look for a new one.
-    // Let's use 'campflow_auth' as the standard moving forward, but for now I'll check both or just set a new one in the universal login.
-    const authToken = request.cookies.get('campflow_auth')?.value;
+    // 4. Verify the signed authentication cookie (HMAC-signed + expiring).
+    //    Presence is not enough — the signature must validate (see src/lib/auth.ts).
+    const authToken = request.cookies.get(MAIN_AUTH_COOKIE)?.value;
+    const isValid = await verifySessionToken(authToken);
 
-    if (!authToken) {
+    if (!isValid) {
         // If it's an API route (and not in the allows list), return 401 (JSON), else Redirect
         if (pathname.startsWith('/api')) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

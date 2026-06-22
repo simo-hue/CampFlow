@@ -2,8 +2,9 @@
 
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
+import { createSessionToken, MAIN_AUTH_COOKIE } from '@/lib/auth';
 
-const AUTH_COOKIE_NAME = 'campflow_auth';
+const SESSION_MAX_AGE = 60 * 60 * 24 * 7; // 7 days
 
 export async function loginAction(formData: FormData) {
     const username = formData.get('username') as string;
@@ -18,22 +19,15 @@ export async function loginAction(formData: FormData) {
 
     if (username === validUsername && password === validPassword) {
         const cookieStore = await cookies();
-        cookieStore.set(AUTH_COOKIE_NAME, 'true', {
+        const token = await createSessionToken(SESSION_MAX_AGE);
+        cookieStore.set(MAIN_AUTH_COOKIE, token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
             path: '/',
-            maxAge: 60 * 60 * 24 * 7, // 7 days
+            maxAge: SESSION_MAX_AGE,
         });
 
-        // Also set the old cookie to keep sys-monitor happy without re-login if it checks strictly
-        // although my new middleware handles protections, sys-monitor might have its own checks.
-        // I will rely on the new middleware for everything, but let's be safe.
-        // Actually, sys-monitor/login/actions.ts checks 'sys_monitor_auth'.
-        // I should probably unify this. For now, I'll set both to be safe.
-
-
-        // Redirect to original destination if possible, else /
-        // For now, redirect to /
         redirect('/');
     } else {
         return { error: 'Invalid Credentials' };

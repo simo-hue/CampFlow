@@ -10,3 +10,9 @@
 > These are non-destructive (no row changes) unless noted. Each file ends with a verification query.
 
 -  [ ] **C-3** → `supabase/migrations/incremental/20260623100000_drop_public_group_policies.sql` — removes the 3 public RLS policies. *(safe, drops policies only)*
+
+## 🔑 OTHER MANUAL ACTIONS
+
+-  [ ] **C-1/C-2 (auth)** — After deploying, your existing login cookie is invalidated (the cookie is now a *signed* token, not the literal `true`). **You + staff must log in again once** at `/login` and `/sys-monitor/login`. Nothing else to do — `ADMIN_PASSWORD` is already set and is used as the signing secret.
+-  [ ] **(Recommended)** Add a dedicated signing secret env var `AUTH_SECRET` (any long random string) on Vercel. If unset, the code falls back to `ADMIN_PASSWORD` (works, but then changing the password logs everyone out).
+
