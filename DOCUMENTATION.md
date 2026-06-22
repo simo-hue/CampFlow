@@ -155,3 +155,15 @@
 - Installed `jspdf` and `jspdf-autotable` dependencies.
 - `src/lib/exportOccupancy.ts`: Created utility `exportOccupancyToPDF` to parse the `displayedData` and generate a paginated PDF using A4 landscape orientation and `autotable` hooks for cell coloring based on availability. Updated to extract and display the surname of the customer in occupied slots instead of an abbreviation.
 - `src/components/dashboard/SectorOccupancyViewer.tsx`: Added an "Esporta PDF" button next to "Aggiorna", which delegates the currently filtered `displayedData`, sector, and timeframe to the export utility.
+
+## [2026-06-23] 🌙 Night Implementation — Security & Data-Integrity Hardening (branch `fix/security-and-data-integrity`)
+*Details*: Working through the findings in `CODEBASE_ANALYSIS.md` step by step (implement → test → commit). DB changes are delivered as SQL migration files for the user to run manually (live DB has real data; no structural revolution).
+
+### CURRENT STATUS / RESUME POINT
+- **Branch**: `fix/security-and-data-integrity` (off `dbaf8e42`).
+- **Done**: (see commits below)
+- **In progress / next**: C-4 (customers filter injection) → C-5 (remove /api/fix-db) → C-1/C-2 (signed-session auth) → N-2 (personal_id_code column) → H-5 (price recalc on edit) → N-1 (dead code) → L-1 (.bak files) → M-5 (security headers) → docs.
+- **Pending user action**: run SQL files listed in `TO_SIMO_DO.md` (C-3 migration first).
+
+### Changelog
+- **C-3** (DB, pending user run): `20260623100000_drop_public_group_policies.sql` — drops `{public}` RLS policies on customer_groups / group_bundles / group_season_configuration. App is unaffected (uses service role).
