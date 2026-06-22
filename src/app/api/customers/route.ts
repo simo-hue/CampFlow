@@ -12,20 +12,28 @@ export async function GET(request: Request) {
         .select('*, customer_groups ( name, color )');
 
     if (query) {
-        queryBuilder.or(`first_name.ilike.%${query}%,last_name.ilike.%${query}%,email.ilike.%${query}%,phone.ilike.%${query}%,license_plate.ilike.%${query}%`);
+        // Sanitize before embedding into a PostgREST `.or()` filter string.
+        // Commas / parentheses / quotes / backslashes are structural in PostgREST
+        // and would let a crafted `q` break out and alter the OR filter (injection).
+        const safe = query.replace(/[,()"\\]/g, ' ').trim();
+        if (safe) {
+            queryBuilder = queryBuilder.or(
+                `first_name.ilike.%${safe}%,last_name.ilike.%${safe}%,email.ilike.%${safe}%,phone.ilike.%${safe}%,license_plate.ilike.%${safe}%`
+            );
+        }
     }
 
     const groupId = searchParams.get('group_id');
     if (groupId && groupId !== 'all') {
         if (groupId === 'none') {
-            queryBuilder.is('group_id', null);
+            queryBuilder = queryBuilder.is('group_id', null);
         } else {
-            queryBuilder.eq('group_id', groupId);
+            queryBuilder = queryBuilder.eq('group_id', groupId);
         }
     }
 
     // Sort by most recent
-    queryBuilder.order('created_at', { ascending: false });
+    queryBuilder = queryBuilder.order('created_at', { ascending: false });
 
     const { data: customers, error } = await queryBuilder;
 
