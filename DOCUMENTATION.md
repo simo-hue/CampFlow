@@ -181,3 +181,13 @@
 - **N-4** (types): added `is_head_of_family` to `BookingGuest`.
 - **H-2/H-3** (docs): added a prominent STALE warning to `fresh-install/00_init_database.sql` pointing fresh installs to the incremental path (authoritative). Full schema regeneration deferred (needs a live pg_dump).
 - **Tests** (infra): added Vitest + `npm test`. `src/lib/auth.test.ts` (7 tests) locks in the signed-token security properties; `src/lib/pricing.test.ts` (8 tests) covers season selection + price calculation. 15/15 passing. (Overbooking regression test M-6 needs a DB and is deferred.)
+
+### ✅ SESSION COMPLETE (2026-06-23 night)
+All **safe, non-structural** fixes from CODEBASE_ANALYSIS.md are implemented, tested and committed on `fix/security-and-data-integrity` (14 commits). Final state: `npm test` 18/18 pass, `npm run build` OK, new files lint-clean (pre-existing `any` lint debt = deferred M-3).
+
+**Awaiting user:**
+1. Run the 2 SQL files in TO_SIMO_DO.md (C-3 drop public policies, N-2 add personal_id_code).
+2. Re-login once (auth cookie format changed).
+3. Decide: N-3 guest-name canonical field, M-1 discount/bundle rule, and whether to regenerate fresh-install from a live pg_dump (H-2/H-3).
+
+**Deliberately deferred (need a decision / DB / carry risk):** N-3, full migration consolidation, CSP, M-6 overbooking DB test, M-2 logger coupling, M-3 any/console cleanup, M-4 component decomposition.
