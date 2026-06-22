@@ -170,3 +170,4 @@
 - **C-4** (code): `/api/customers` GET — sanitize user `q` before the PostgREST `.or()` filter (injection fix) + reassign query builder.
 - **C-5** (code): removed `/api/fix-db` GET mutation route.
 - **C-1/C-2** (code): NEW `src/lib/auth.ts` — Edge-compatible HMAC-SHA256 signed, expiring session tokens. `middleware.ts` now verifies the signature (was: presence-only). `login/actions.ts` and `sys-monitor/login/actions.ts` issue signed tokens; `getAuthStatus()` verifies them. Forged `=true` cookies are now rejected (unit-tested). Signing secret = `AUTH_SECRET` || `ADMIN_PASSWORD`. **Side effect: existing sessions invalidated → re-login once.**
+- **N-2** (DB pending + code): migration `20260623101000_add_personal_id_code.sql` adds `customers.personal_id_code`. Hardened `POST /api/customers` with an allow-list (fixes mass-assignment + includes the Codice Fiscale field; skips empty optionals).
