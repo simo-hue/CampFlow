@@ -180,3 +180,4 @@
 - **L-4** (docs): README corrected — removed false PWA/offline claims, fixed Next.js 15→16, softened the "atomic transaction" wording to match reality.
 - **N-4** (types): added `is_head_of_family` to `BookingGuest`.
 - **H-2/H-3** (docs): added a prominent STALE warning to `fresh-install/00_init_database.sql` pointing fresh installs to the incremental path (authoritative). Full schema regeneration deferred (needs a live pg_dump).
+- **Tests** (infra): added Vitest + `npm test`. `src/lib/auth.test.ts` (7 tests) locks in the signed-token security properties; `src/lib/pricing.test.ts` (8 tests) covers season selection + price calculation. 15/15 passing. (Overbooking regression test M-6 needs a DB and is deferred.)
