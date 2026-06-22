@@ -128,6 +128,7 @@ export async function POST(request: NextRequest) {
         // Step 1: Resolve Customer
         let customerId: string;
         let effectiveCustomerGroupId: string | null = null;
+        let createdNewCustomerId: string | null = null; // set only when we INSERT a new customer (for rollback)
 
         // A) If customer_id is provided explicitly (from Autocomplete)
         if (body.customer_id) {
@@ -248,6 +249,7 @@ export async function POST(request: NextRequest) {
                 }
 
                 customerId = newCustomer.id;
+                createdNewCustomerId = newCustomer.id; // track for rollback if the booking insert fails
             }
         }
 
@@ -285,6 +287,22 @@ export async function POST(request: NextRequest) {
         if (bookingError) {
             await logToDb('error', 'Error creating booking:', bookingError);
             console.error('Error creating booking:', bookingError);
+
+            // Compensating rollback: if we created a brand-new customer for THIS
+            // booking, remove it so a failed booking (e.g. overbooking) does not
+            // leave an orphaned customer record behind.
+            if (createdNewCustomerId) {
+                const { error: cleanupError } = await supabaseAdmin
+                    .from('customers')
+                    .delete()
+                    .eq('id', createdNewCustomerId);
+                if (cleanupError) {
+                    await logToDb('warn', 'Failed to roll back orphaned customer after booking error', {
+                        customerId: createdNewCustomerId,
+                        message: cleanupError.message,
+                    });
+                }
+            }
 
             // Check for exclusion constraint violation (overbooking)
             if (bookingError.code === '23P01') {
