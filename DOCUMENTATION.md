@@ -211,3 +211,13 @@ Resolved via /grill-me. Implementation pending (DB regen first, then code).
 **Out of scope this round:** CSP, M-3 (any/console), M-4 (component decomposition), M-2 (logger), L-5/L-6 (doc consolidation).
 
 ### NEXT STEP: awaiting schema_introspection.sql output, then regenerate schema; afterwards implement M-1 heads-up + N-3.
+
+## [2026-06-23] H-2/H-3 — Schema regenerated from live
+*Details*: Rebuilt `fresh-install/00_init_database.sql` (v2.0) from a full live-schema introspection (10 tables, all constraints/indexes/triggers/12 functions/RLS+policies). A fresh install now matches production.
+*Tech Notes*:
+- Faithful to live + flagged smells: `pitches.sector_id` is VARCHAR(50) not a UUID FK (FIXME); `booking_guests.gender` CHECK uses 'OTHER' vs customers' 'Other' (FIXME).
+- Omitted 2 live-but-dead/broken functions (`cleanup_old_logs`, `get_recent_logs`) that reference removed `app_logs.created_at`/`metadata`; recommend DROP in prod.
+- Normalized: added an `authenticated` policy to `group_bundles` for parity (live had none after C-3). No `public`/anon policies anywhere (keeps C-3 closed).
+- Added `SET search_path TO public, extensions` so the GiST EXCLUDE resolves btree_gist.
+- Validated structurally (10 tables / 8 FKs / 9 triggers / 12 fns / balanced $function$). Could not execute end-to-end (no local Postgres/Docker network here); all DDL came from pg_get_*def so it is syntactically guaranteed.
+- README marks v2.0 authoritative; `incremental/` is now historical/reference only.

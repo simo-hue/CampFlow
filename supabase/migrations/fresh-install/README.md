@@ -2,6 +2,11 @@
 
 This directory contains everything needed to initialize a CampFlow database on a fresh Supabase project.
 
+> **✅ Authoritative (v2.0, regenerated 2026-06-23 from the live production schema).**
+> `00_init_database.sql` is the single source of truth for new installs. The
+> `../incremental/` folder is **historical** (the migrations applied over time) and
+> is kept for reference only — you do **not** need to run it for a fresh install.
+
 ---
 
 ## 📄 Files
