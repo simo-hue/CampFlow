@@ -236,7 +236,9 @@ export function BookingDetailsDialog({ bookingId, open, onClose, onDeleteSuccess
                                     <h4 className="text-sm font-medium">Ospiti Registrati</h4>
                                     <ul className="text-sm list-disc list-inside text-muted-foreground">
                                         {booking.guests.map((g: any) => (
-                                            <li key={g.id}>{g.full_name}</li>
+                                            <li key={g.id}>
+                                                {g.full_name?.trim() || `${g.last_name ?? ''} ${g.first_name ?? ''}`.trim() || '—'}
+                                            </li>
                                         ))}
                                     </ul>
                                 </div>

@@ -191,3 +191,39 @@ All **safe, non-structural** fixes from CODEBASE_ANALYSIS.md are implemented, te
 3. Decide: N-3 guest-name canonical field, M-1 discount/bundle rule, and whether to regenerate fresh-install from a live pg_dump (H-2/H-3).
 
 **Deliberately deferred (need a decision / DB / carry risk):** N-3, full migration consolidation, CSP, M-6 overbooking DB test, M-2 logger coupling, M-3 any/console cleanup, M-4 component decomposition.
+
+## [2026-06-23] Grilling decisions (branch `fix/schema-regen-and-followups`)
+Resolved via /grill-me. Implementation pending (DB regen first, then code).
+
+**M-1 — Pricing model: KEEP AS-IS, now the official spec:**
+- One mode per (group, season): discount % XOR custom rates XOR bundle. Never combined.
+- Stay longer than bundle: bundle nights at bundle price, remaining nights at standard season rate.
+- Multiple bundles per season: apply the single longest-fit bundle once; NO tiling.
+- Stay shorter than the smallest bundle (bundle-mode group): standard season rate, no group benefit. → ADD an inline IT heads-up in BookingCreationModal (candidate: "Nessuna offerta applicabile a questa durata — tariffe standard applicate.").
+- Extras (dog/car) not in a bundle's unit_prices: billed at standard season rate on bundle nights.
+
+**N-3 — Guest names: KEEP full_name as a computed display field.**
+- Remove the DEAD booking-time `guest_names` path in POST /api/bookings (no caller).
+- Make the one reader (BookingDetailsDialog) fall back to `${last_name} ${first_name}` when full_name is empty.
+
+**H-2/H-3 — Schema regen: option (b).** User runs `supabase/diagnostics/schema_introspection.sql` in the SQL Editor; I reconstruct a single authoritative `fresh-install/00_init_database.sql` from the output, then retire the stale/duplicate files.
+
+**Out of scope this round:** CSP, M-3 (any/console), M-4 (component decomposition), M-2 (logger), L-5/L-6 (doc consolidation).
+
+### NEXT STEP: awaiting schema_introspection.sql output, then regenerate schema; afterwards implement M-1 heads-up + N-3.
+
+## [2026-06-23] H-2/H-3 — Schema regenerated from live
+*Details*: Rebuilt `fresh-install/00_init_database.sql` (v2.0) from a full live-schema introspection (10 tables, all constraints/indexes/triggers/12 functions/RLS+policies). A fresh install now matches production.
+*Tech Notes*:
+- Faithful to live + flagged smells: `pitches.sector_id` is VARCHAR(50) not a UUID FK (FIXME); `booking_guests.gender` CHECK uses 'OTHER' vs customers' 'Other' (FIXME).
+- Omitted 2 live-but-dead/broken functions (`cleanup_old_logs`, `get_recent_logs`) that reference removed `app_logs.created_at`/`metadata`; recommend DROP in prod.
+- Normalized: added an `authenticated` policy to `group_bundles` for parity (live had none after C-3). No `public`/anon policies anywhere (keeps C-3 closed).
+- Added `SET search_path TO public, extensions` so the GiST EXCLUDE resolves btree_gist.
+- Validated structurally (10 tables / 8 FKs / 9 triggers / 12 fns / balanced $function$). Could not execute end-to-end (no local Postgres/Docker network here); all DDL came from pg_get_*def so it is syntactically guaranteed.
+- README marks v2.0 authoritative; `incremental/` is now historical/reference only.
+
+## [2026-06-23] A + B1 implemented
+- **M-1** (code): added `isBundle?` to `PriceBreakdownDay`; `BookingCreationModal` now shows an Italian heads-up ("Nessuna offerta applicabile a questa durata — tariffe standard applicate.") when the selected group has bundles but none applied to the stay (computed from the price breakdown).
+- **N-3** (code): removed the dead `guest_names` insert path in POST /api/bookings and the unused `guest_names` type field; `BookingDetailsDialog` now falls back to "Cognome Nome" when `full_name` is empty.
+- **B1** (DB pending): `20260623110000_drop_dead_log_functions.sql` drops `cleanup_old_logs` + `get_recent_logs`.
+- Verified: tsc clean, 18/18 tests, build OK.

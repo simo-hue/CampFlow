@@ -1,19 +1,6 @@
 # MANUAL ACTIONS REQUIRED
 
--  [ ] Implementare collegamento dei dati già esistenti in db in fase di check in
--  [x] **[2026-06-23]** Run `DB_AUDIT.sql` — DONE. Results folded into `CODEBASE_ANALYSIS.md` §1b/§7. Key outcome: PII is NOT publicly exposed (good), but `{public}` RLS policies on `customer_groups`/`group_bundles`/`group_season_configuration` are open to the anon key (C-3), and 890/1720 customers are orphaned (H-1).
+-  [x] **H-2/H-3 schema regen** — introspection run; `fresh-install/00_init_database.sql` rebuilt from live (v2.0). Nothing more to run unless you stand up a fresh project.
 
----
-
-## 🟥 PENDING SQL — run these in the Supabase SQL Editor (in order), then paste the verification output back
-
-> These are non-destructive (no row changes) unless noted. Each file ends with a verification query.
-
--  [x] **C-3** → `supabase/migrations/incremental/20260623100000_drop_public_group_policies.sql` — removes the 3 public RLS policies. *(safe, drops policies only)*
--  [x] **N-2** → `supabase/migrations/incremental/20260623101000_add_personal_id_code.sql` — adds `customers.personal_id_code` (Codice Fiscale). *(safe, ADD COLUMN only)*. After running this, the "Codice Fiscale" field in the customer dialog will save correctly.
-
-## 🔑 OTHER MANUAL ACTIONS
-
--  [ ] **C-1/C-2 (auth)** — After deploying, your existing login cookie is invalidated (the cookie is now a *signed* token, not the literal `true`). **You + staff must log in again once** at `/login` and `/sys-monitor/login`. Nothing else to do — `ADMIN_PASSWORD` is already set and is used as the signing secret.
--  [ ] **(Recommended)** Add a dedicated signing secret env var `AUTH_SECRET` (any long random string) on Vercel. If unset, the code falls back to `ADMIN_PASSWORD` (works, but then changing the password logs everyone out).
-
+## 🟥 PENDING SQL — run in the Supabase SQL Editor
+-  [ ] **B1** → `supabase/migrations/incremental/20260623110000_drop_dead_log_functions.sql` — drops 2 dead/broken log functions. *(safe, drops unused functions only)*

@@ -278,24 +278,8 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // 4. Insert initial guests (names only)
-        if (body.guest_names && body.guest_names.length > 0) {
-            const guestsToInsert = body.guest_names.map(name => ({
-                booking_id: booking.id,
-                full_name: name,
-                guest_type: 'adult' // Default, can be updated at check-in
-            }));
-
-            const { error: guestsError } = await supabaseAdmin
-                .from('booking_guests')
-                .insert(guestsToInsert);
-
-            if (guestsError) {
-                await logToDb('error', 'Error inserting guests:', guestsError);
-                console.error('Error inserting guests:', guestsError);
-                // Non-critical: we continue even if guest names fail (user can add them at check-in)
-            }
-        }
+        // Guests are collected at check-in (PUT /api/bookings/[id]/guests), which
+        // writes structured first_name/last_name. None are created at booking time.
 
 
         return NextResponse.json({
