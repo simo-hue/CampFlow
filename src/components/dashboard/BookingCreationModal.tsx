@@ -140,6 +140,12 @@ export function BookingCreationModal({
     const activeGroup = customerGroups.find(g => g.id === selectedGroupId);
     const groupForcesManual = activeGroup?.force_manual_price || false;
 
+    // M-1: the selected group has bundles, but none applied to this stay (too short
+    // for any package) — so standard rates were used. Warn the operator.
+    const groupHasBundles = (activeGroup?.bundles?.length ?? 0) > 0;
+    const noBundleApplied = priceBreakdown.length > 0 && !priceBreakdown.some(d => d.isBundle);
+    const showNoBundleNote = !isManualPrice && groupHasBundles && noBundleApplied && nights > 0;
+
     // Automatically toggle manual price if group forces it
     useEffect(() => {
         if (groupForcesManual) {
@@ -704,6 +710,13 @@ export function BookingCreationModal({
                                 </div>
                             </div>
                             
+                            {showNoBundleNote && (
+                                <div className="flex items-start gap-1.5 text-xs text-amber-600 dark:text-amber-400 font-medium border-t border-blue-200/50 dark:border-blue-800/30 pt-2">
+                                    <Info className="h-3.5 w-3.5 mt-0.5 shrink-0" />
+                                    <span>Nessuna offerta applicabile a questa durata — tariffe standard applicate.</span>
+                                </div>
+                            )}
+
                             {/* Manual Override Toggle (only visible if the group does not force manual pricing) */}
                             {!groupForcesManual && (
                                 <div className="flex items-center justify-between border-t border-blue-200/50 dark:border-blue-800/30 pt-2 mt-1">

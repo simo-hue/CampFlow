@@ -93,6 +93,7 @@ export interface PriceBreakdownDay {
     rate: number;
     seasonName: string;
     seasonColor: string;
+    isBundle?: boolean; // true when a group bundle priced this day
 }
 
 export interface PriceCalculation {
@@ -220,7 +221,6 @@ export interface CreateBookingRequest {
     check_out: string; // YYYY-MM-DD
 
     guests_count: number;
-    guest_names?: string[]; // Optional: names collected at booking
     children_count?: number; // Added for seasonal pricing
     dogs_count?: number;    // Optional: number of dogs
     cars_count?: number;    // Added for seasonal pricing
