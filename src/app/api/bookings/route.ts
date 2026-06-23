@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { logToDb } from '@/lib/logger-server';
 import { supabaseAdmin } from '@/lib/supabase/server';
-import { calculatePrice } from '@/lib/pricing';
+import { calculateBookingPrice } from '@/lib/bookingPricing';
 import { parseISO } from 'date-fns';
-import type { CreateBookingRequest, GroupBundle, GroupSeasonConfiguration, PitchType } from '@/lib/types';
+import type { CreateBookingRequest } from '@/lib/types';
 
 function normalizeCustomerGroupId(groupId: unknown): string | null | undefined {
     if (groupId === undefined) return undefined;
@@ -24,54 +24,6 @@ function buildExistingCustomerUpdates(customer: CreateBookingRequest['customer']
 
     return updates;
 }
-
-async function calculateBookingPriceWithGroup(
-    body: CreateBookingRequest,
-    pitchType: PitchType,
-    groupId: string | null
-) {
-    const { data: seasons, error: seasonsError } = await supabaseAdmin
-        .from('pricing_seasons')
-        .select('*')
-        .eq('is_active', true)
-        .order('priority', { ascending: false });
-
-    if (seasonsError) {
-        throw seasonsError;
-    }
-
-    let groupConfigs: GroupSeasonConfiguration[] = [];
-    let groupBundles: GroupBundle[] = [];
-
-    if (groupId) {
-        const { data: configs, error: configError } = await supabaseAdmin
-            .from('group_season_configuration')
-            .select('*')
-            .eq('group_id', groupId);
-
-        if (configError) throw configError;
-        groupConfigs = configs || [];
-
-        const { data: bundles, error: bundlesError } = await supabaseAdmin
-            .from('group_bundles')
-            .select('*')
-            .eq('group_id', groupId);
-
-        if (bundlesError) throw bundlesError;
-        groupBundles = bundles || [];
-    }
-
-    return calculatePrice(body.check_in, body.check_out, pitchType, {
-        seasons: seasons || [],
-        guests: body.guests_count - (body.children_count || 0),
-        children: body.children_count || 0,
-        dogs: body.dogs_count || 0,
-        cars: body.cars_count || 0,
-        groupConfigs: groupConfigs.length > 0 ? groupConfigs : undefined,
-        bundles: groupBundles.length > 0 ? groupBundles : undefined
-    });
-}
-
 
 /**
  * POST /api/bookings
@@ -128,6 +80,7 @@ export async function POST(request: NextRequest) {
         // Step 1: Resolve Customer
         let customerId: string;
         let effectiveCustomerGroupId: string | null = null;
+        let createdNewCustomerId: string | null = null; // set only when we INSERT a new customer (for rollback)
 
         // A) If customer_id is provided explicitly (from Autocomplete)
         if (body.customer_id) {
@@ -248,17 +201,23 @@ export async function POST(request: NextRequest) {
                 }
 
                 customerId = newCustomer.id;
+                createdNewCustomerId = newCustomer.id; // track for rollback if the booking insert fails
             }
         }
 
         let totalPrice = body.total_price;
 
         if (!body.is_manual_price) {
-            totalPrice = await calculateBookingPriceWithGroup(
-                body,
-                pitch.type,
-                effectiveCustomerGroupId
-            );
+            totalPrice = await calculateBookingPrice({
+                checkIn: body.check_in,
+                checkOut: body.check_out,
+                pitchType: pitch.type,
+                guestsCount: body.guests_count,
+                childrenCount: body.children_count,
+                dogsCount: body.dogs_count,
+                carsCount: body.cars_count,
+                groupId: effectiveCustomerGroupId,
+            });
         }
 
         // 3. Crea la prenotazione usando daterange
@@ -285,6 +244,22 @@ export async function POST(request: NextRequest) {
         if (bookingError) {
             await logToDb('error', 'Error creating booking:', bookingError);
             console.error('Error creating booking:', bookingError);
+
+            // Compensating rollback: if we created a brand-new customer for THIS
+            // booking, remove it so a failed booking (e.g. overbooking) does not
+            // leave an orphaned customer record behind.
+            if (createdNewCustomerId) {
+                const { error: cleanupError } = await supabaseAdmin
+                    .from('customers')
+                    .delete()
+                    .eq('id', createdNewCustomerId);
+                if (cleanupError) {
+                    await logToDb('warn', 'Failed to roll back orphaned customer after booking error', {
+                        customerId: createdNewCustomerId,
+                        message: cleanupError.message,
+                    });
+                }
+            }
 
             // Check for exclusion constraint violation (overbooking)
             if (bookingError.code === '23P01') {

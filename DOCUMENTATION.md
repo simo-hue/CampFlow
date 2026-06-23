@@ -155,3 +155,39 @@
 - Installed `jspdf` and `jspdf-autotable` dependencies.
 - `src/lib/exportOccupancy.ts`: Created utility `exportOccupancyToPDF` to parse the `displayedData` and generate a paginated PDF using A4 landscape orientation and `autotable` hooks for cell coloring based on availability. Updated to extract and display the surname of the customer in occupied slots instead of an abbreviation.
 - `src/components/dashboard/SectorOccupancyViewer.tsx`: Added an "Esporta PDF" button next to "Aggiorna", which delegates the currently filtered `displayedData`, sector, and timeframe to the export utility.
+
+## [2026-06-23] 🌙 Night Implementation — Security & Data-Integrity Hardening (branch `fix/security-and-data-integrity`)
+*Details*: Working through the findings in `CODEBASE_ANALYSIS.md` step by step (implement → test → commit). DB changes are delivered as SQL migration files for the user to run manually (live DB has real data; no structural revolution).
+
+### CURRENT STATUS / RESUME POINT
+- **Branch**: `fix/security-and-data-integrity` (off `dbaf8e42`).
+- **Done**: (see commits below)
+- **In progress / next**: C-4 (customers filter injection) → C-5 (remove /api/fix-db) → C-1/C-2 (signed-session auth) → N-2 (personal_id_code column) → H-5 (price recalc on edit) → N-1 (dead code) → L-1 (.bak files) → M-5 (security headers) → docs.
+- **Pending user action**: run SQL files listed in `TO_SIMO_DO.md` (C-3 migration first).
+
+### Changelog
+- **C-3** (DB, pending user run): `20260623100000_drop_public_group_policies.sql` — drops `{public}` RLS policies on customer_groups / group_bundles / group_season_configuration. App is unaffected (uses service role).
+- **C-4** (code): `/api/customers` GET — sanitize user `q` before the PostgREST `.or()` filter (injection fix) + reassign query builder.
+- **C-5** (code): removed `/api/fix-db` GET mutation route.
+- **C-1/C-2** (code): NEW `src/lib/auth.ts` — Edge-compatible HMAC-SHA256 signed, expiring session tokens. `middleware.ts` now verifies the signature (was: presence-only). `login/actions.ts` and `sys-monitor/login/actions.ts` issue signed tokens; `getAuthStatus()` verifies them. Forged `=true` cookies are now rejected (unit-tested). Signing secret = `AUTH_SECRET` || `ADMIN_PASSWORD`. **Side effect: existing sessions invalidated → re-login once.**
+- **N-2** (DB pending + code): migration `20260623101000_add_personal_id_code.sql` adds `customers.personal_id_code`. Hardened `POST /api/customers` with an allow-list (fixes mass-assignment + includes the Codice Fiscale field; skips empty optionals).
+- **H-1** (code): `POST /api/bookings` now rolls back a newly-created customer if the booking insert fails (compensating delete), preventing orphan customers without a structural RPC rewrite. Added read-only `supabase/diagnostics/orphan_customers.sql` to triage the existing 890 orphans (user's call; no auto-delete).
+- **H-5** (code): extracted shared `src/lib/bookingPricing.ts` (`calculateBookingPrice`). POST now uses it; PATCH `/api/bookings/[id]` recalculates `total_price` when pricing-relevant fields change and the booking isn't manual (server authoritative). Recalc is wrapped in try/catch so a calc failure can't break an otherwise-valid edit.
+- **N-1** (code): deleted dead `src/lib/api/stats.ts` and the unused anon `src/lib/supabase/client.ts`. The app is now 100% service-role server-side (no anon key shipped/used).
+- **L-1** (cleanup): removed 4 tracked `.bak/.backup*` files.
+- **M-5** (code): added conservative security headers in `next.config.ts` (X-Frame-Options, X-Content-Type-Options, Referrer-Policy, HSTS, Permissions-Policy, X-DNS-Prefetch-Control). CSP deferred (needs nonce work). Verified live via curl; also confirmed a forged `campflow_auth=true` cookie now returns 401.
+- **L-3** (docs): `env.example` now documents the required `ADMIN_USERNAME`/`ADMIN_PASSWORD` and the recommended `AUTH_SECRET`.
+- **L-4** (docs): README corrected — removed false PWA/offline claims, fixed Next.js 15→16, softened the "atomic transaction" wording to match reality.
+- **N-4** (types): added `is_head_of_family` to `BookingGuest`.
+- **H-2/H-3** (docs): added a prominent STALE warning to `fresh-install/00_init_database.sql` pointing fresh installs to the incremental path (authoritative). Full schema regeneration deferred (needs a live pg_dump).
+- **Tests** (infra): added Vitest + `npm test`. `src/lib/auth.test.ts` (7 tests) locks in the signed-token security properties; `src/lib/pricing.test.ts` (8 tests) covers season selection + price calculation. 15/15 passing. (Overbooking regression test M-6 needs a DB and is deferred.)
+
+### ✅ SESSION COMPLETE (2026-06-23 night)
+All **safe, non-structural** fixes from CODEBASE_ANALYSIS.md are implemented, tested and committed on `fix/security-and-data-integrity` (14 commits). Final state: `npm test` 18/18 pass, `npm run build` OK, new files lint-clean (pre-existing `any` lint debt = deferred M-3).
+
+**Awaiting user:**
+1. Run the 2 SQL files in TO_SIMO_DO.md (C-3 drop public policies, N-2 add personal_id_code).
+2. Re-login once (auth cookie format changed).
+3. Decide: N-3 guest-name canonical field, M-1 discount/bundle rule, and whether to regenerate fresh-install from a live pg_dump (H-2/H-3).
+
+**Deliberately deferred (need a decision / DB / carry risk):** N-3, full migration consolidation, CSP, M-6 overbooking DB test, M-2 logger coupling, M-3 any/console cleanup, M-4 component decomposition.

@@ -3,6 +3,21 @@
 -- =====================================================
 -- Version: 1.0
 -- Date: 2026-01-30
+--
+-- ⚠️  WARNING (reviewed 2026-06-23): THIS FILE IS STALE / OUT OF SYNC WITH THE APP.
+--     A database created from THIS FILE ALONE will break at runtime. It is missing
+--     columns the app reads/writes, including:
+--       - customers.first_name / last_name (this file still has full_name)
+--       - customers.personal_id_code, and the birth/residence/document fields
+--       - bookings.children_count / dogs_count / cars_count / is_manual_price / questura_sent
+--       - pricing_seasons.is_recurring
+--       - customer_groups.force_manual_price
+--       - the correct app_logs shape (level lowercase, meta, timestamp, environment)
+--     The AUTHORITATIVE setup is the ordered files in ../incremental/ (that path
+--     produced the correct live schema, confirmed by the 2026-06-23 DB audit).
+--     See CODEBASE_ANALYSIS.md §H-2/H-3. TODO: regenerate this file from the live
+--     schema (pg_dump --schema-only) before using it for a fresh install.
+--
 -- Purpose: Single-file database initialization for fresh Supabase projects
 -- 
 -- USAGE:
