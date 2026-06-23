@@ -221,3 +221,9 @@ Resolved via /grill-me. Implementation pending (DB regen first, then code).
 - Added `SET search_path TO public, extensions` so the GiST EXCLUDE resolves btree_gist.
 - Validated structurally (10 tables / 8 FKs / 9 triggers / 12 fns / balanced $function$). Could not execute end-to-end (no local Postgres/Docker network here); all DDL came from pg_get_*def so it is syntactically guaranteed.
 - README marks v2.0 authoritative; `incremental/` is now historical/reference only.
+
+## [2026-06-23] A + B1 implemented
+- **M-1** (code): added `isBundle?` to `PriceBreakdownDay`; `BookingCreationModal` now shows an Italian heads-up ("Nessuna offerta applicabile a questa durata — tariffe standard applicate.") when the selected group has bundles but none applied to the stay (computed from the price breakdown).
+- **N-3** (code): removed the dead `guest_names` insert path in POST /api/bookings and the unused `guest_names` type field; `BookingDetailsDialog` now falls back to "Cognome Nome" when `full_name` is empty.
+- **B1** (DB pending): `20260623110000_drop_dead_log_functions.sql` drops `cleanup_old_logs` + `get_recent_logs`.
+- Verified: tsc clean, 18/18 tests, build OK.
