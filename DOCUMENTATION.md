@@ -191,3 +191,23 @@ All **safe, non-structural** fixes from CODEBASE_ANALYSIS.md are implemented, te
 3. Decide: N-3 guest-name canonical field, M-1 discount/bundle rule, and whether to regenerate fresh-install from a live pg_dump (H-2/H-3).
 
 **Deliberately deferred (need a decision / DB / carry risk):** N-3, full migration consolidation, CSP, M-6 overbooking DB test, M-2 logger coupling, M-3 any/console cleanup, M-4 component decomposition.
+
+## [2026-06-23] Grilling decisions (branch `fix/schema-regen-and-followups`)
+Resolved via /grill-me. Implementation pending (DB regen first, then code).
+
+**M-1 — Pricing model: KEEP AS-IS, now the official spec:**
+- One mode per (group, season): discount % XOR custom rates XOR bundle. Never combined.
+- Stay longer than bundle: bundle nights at bundle price, remaining nights at standard season rate.
+- Multiple bundles per season: apply the single longest-fit bundle once; NO tiling.
+- Stay shorter than the smallest bundle (bundle-mode group): standard season rate, no group benefit. → ADD an inline IT heads-up in BookingCreationModal (candidate: "Nessuna offerta applicabile a questa durata — tariffe standard applicate.").
+- Extras (dog/car) not in a bundle's unit_prices: billed at standard season rate on bundle nights.
+
+**N-3 — Guest names: KEEP full_name as a computed display field.**
+- Remove the DEAD booking-time `guest_names` path in POST /api/bookings (no caller).
+- Make the one reader (BookingDetailsDialog) fall back to `${last_name} ${first_name}` when full_name is empty.
+
+**H-2/H-3 — Schema regen: option (b).** User runs `supabase/diagnostics/schema_introspection.sql` in the SQL Editor; I reconstruct a single authoritative `fresh-install/00_init_database.sql` from the output, then retire the stale/duplicate files.
+
+**Out of scope this round:** CSP, M-3 (any/console), M-4 (component decomposition), M-2 (logger), L-5/L-6 (doc consolidation).
+
+### NEXT STEP: awaiting schema_introspection.sql output, then regenerate schema; afterwards implement M-1 heads-up + N-3.
