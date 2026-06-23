@@ -9,8 +9,8 @@
 
 > These are non-destructive (no row changes) unless noted. Each file ends with a verification query.
 
--  [ ] **C-3** → `supabase/migrations/incremental/20260623100000_drop_public_group_policies.sql` — removes the 3 public RLS policies. *(safe, drops policies only)*
--  [ ] **N-2** → `supabase/migrations/incremental/20260623101000_add_personal_id_code.sql` — adds `customers.personal_id_code` (Codice Fiscale). *(safe, ADD COLUMN only)*. After running this, the "Codice Fiscale" field in the customer dialog will save correctly.
+-  [x] **C-3** → `supabase/migrations/incremental/20260623100000_drop_public_group_policies.sql` — removes the 3 public RLS policies. *(safe, drops policies only)*
+-  [x] **N-2** → `supabase/migrations/incremental/20260623101000_add_personal_id_code.sql` — adds `customers.personal_id_code` (Codice Fiscale). *(safe, ADD COLUMN only)*. After running this, the "Codice Fiscale" field in the customer dialog will save correctly.
 
 ## 🔑 OTHER MANUAL ACTIONS
 

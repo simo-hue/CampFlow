@@ -13,7 +13,7 @@ This document started as the **discovery phase** output. The discovery has since
 | ID | Finding | Status |
 |----|---------|--------|
 | **C-1/C-2** | Forgeable cookie auth → god-mode | ✅ **Fixed** — HMAC-signed expiring tokens (`src/lib/auth.ts`); verified live that a forged `=true` cookie now returns 401. Unit-tested. |
-| **C-3** | `{public}` RLS on group tables | 🟡 **Ready — run SQL** `20260623100000_drop_public_group_policies.sql` (see `TO_SIMO_DO.md`). |
+| **C-3** | `{public}` RLS on group tables | ✅ **Fixed & applied** (2026-06-23) — public policies dropped; verified only `{authenticated}` remain on customer_groups/group_season_configuration and group_bundles has none (deny-by-default). |
 | **C-4** | PostgREST filter injection (`/api/customers`) | ✅ **Fixed** — input sanitized; only `.or()` site in the codebase. |
 | **C-5** | `/api/fix-db` GET mutation | ✅ **Fixed** — route removed. |
 | **H-1** | Non-atomic booking → orphans | ✅ **Mitigated** — new-customer rollback on booking failure; read-only diagnostic for the 890 existing orphans. |
@@ -24,13 +24,13 @@ This document started as the **discovery phase** output. The discovery has since
 | **M-5** | No security headers | ✅ **Fixed** — headers added & verified live (CSP deferred — needs nonces). |
 | **M-6** | No overbooking regression test | 🟡 **Deferred** — needs a live DB; auth + pricing now unit-tested instead. |
 | **N-1** | Dead `stats.ts` + anon client | ✅ **Fixed** — removed; app is now 100% service-role. |
-| **N-2** | `personal_id_code` not stored | ✅ Code fixed + 🟡 **run SQL** `20260623101000_add_personal_id_code.sql`. |
+| **N-2** | `personal_id_code` not stored | ✅ **Fixed & applied** (2026-06-23) — column added (verified present) + insert allow-list. |
 | **N-3** | Split-brain guest names | 🟡 **Deferred** — needs a product decision (canonical field) + is lossy on live data. |
 | **N-4** | `is_head_of_family` type drift | ✅ **Fixed**. |
 | **L-1/L-3/L-4** | Backups, env.example, README | ✅ **Fixed**. |
 | **M-2/M-3/M-4, L-5/L-6** | Logger coupling, `any`/console, big components, doc sprawl | ⬜ **Deferred** (lower-risk/value; left for a focused pass). |
 
-**You still need to:** run the two SQL files in `TO_SIMO_DO.md` (C-3, N-2), and re-login once (auth cookies changed).
+**Status:** C-3 and N-2 SQL **applied & verified** (2026-06-23). Remaining user action: re-login once after deploy (auth cookie format changed); optionally set `AUTH_SECRET`.
 
 ---
 
