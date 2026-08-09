@@ -9,7 +9,10 @@ export const metadata: Metadata = {
   title: "Free Open Source Camping Management Software | CampFlow",
   description: "CampFlow is the ultimate camping management software. Open Source, free, modern. Manage reservations, pitches and guests without license costs.",
   alternates: {
-    canonical: 'https://campflow.app/w',
+    // Absolute, and pointing at where the site is actually served. The previous
+    // value (campflow.app/w) is a parked domain we do not own — it told Google to
+    // treat a squatter's lander as the authoritative version of this page.
+    canonical: 'https://simo-hue.github.io/CampFlow/',
   }
 };
 
@@ -26,14 +29,15 @@ export default function LandingPage() {
       'priceCurrency': 'EUR'
     },
     'description': 'Open source management software for campsites and accommodation facilities. Reservation management, check-in, and statistics.',
-    'aggregateRating': {
-      '@type': 'AggregateRating',
-      'ratingValue': '5',
-      'ratingCount': '12' // Fake start count or real if available
-    },
+    // NOTE: no `aggregateRating` here. It previously carried a hand-written 5.0/12
+    // with no reviews behind it, which breaches Google's review-snippet policy and
+    // risks a site-wide structured-data manual action. Only ever re-add this from
+    // real, verifiable review data.
     'author': {
       '@type': 'Person',
-      'name': 'Simone Mattioli'
+      '@id': 'https://simo-hue.github.io/#person',
+      'name': 'Simone Mattioli',
+      'url': 'https://simo-hue.github.io/'
     }
   }
 
