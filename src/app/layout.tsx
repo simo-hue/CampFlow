@@ -16,8 +16,20 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+// Never let a production build resolve metadata against a loopback address: every
+// canonical, og:image and JSON-LD @id derives from this, so localhost silently
+// invalidates the whole page's machine-readable identity. Development still gets
+// localhost, which is what it wants.
+const METADATA_BASE =
+  process.env.NEXT_PUBLIC_SITE_URL?.trim().replace(/\/+$/, "") ??
+  (process.env.VERCEL_URL
+    ? `https://${process.env.VERCEL_URL}`
+    : process.env.NODE_ENV === "production"
+      ? "https://simo-hue.github.io/CampFlow"
+      : "http://localhost:3000");
+
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000"),
+  metadataBase: new URL(METADATA_BASE),
   title: "CampFlow | Gestione Campeggi Gratis Open Source",
   description: "La piattaforma all-in-one per ottimizzare prenotazioni, gestione ospiti e monitoraggio occupazione in modo TOTALMENTE GRATIS e OPEN SOURCE.",
 };

@@ -1,7 +1,9 @@
 import { MetadataRoute } from 'next';
 
 export default function sitemap(): MetadataRoute.Sitemap {
-    const baseUrl = 'https://campflow.app'; // Replace with actual domain when deployed
+    // campflow.app is a parked domain we do not own. The public site is on GitHub Pages.
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL?.trim().replace(/\/+$/, '')
+        ?? 'https://simo-hue.github.io/CampFlow';
 
     return [
         {
